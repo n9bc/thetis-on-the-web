@@ -1,0 +1,2216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Thetis On The Web</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  font-size: 13px;
+  min-height: 100vh;
+}
+
+/* ── MONOSPACE for radio values ── */
+.mono { font-family: 'SF Mono', 'Consolas', 'Fira Code', monospace; }
+
+/* ── TOP STATUS BAR ── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  flex-wrap: wrap;
+}
+.callsign { font-size: 13px; color: #7d8590; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #3d444d; flex-shrink: 0; transition: background 0.3s; }
+.status-dot.rx  { background: #3fb950; box-shadow: 0 0 6px #3fb950; }
+.status-dot.tx  { background: #f85149; box-shadow: 0 0 6px #f85149; }
+.status-label   { font-size: 12px; color: #3fb950; transition: color 0.3s; }
+.status-label.tx { color: #f85149; }
+
+.spacer { flex: 1; }
+
+.conn-input {
+  font-family: 'SF Mono','Consolas',monospace;
+  font-size: 11px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  padding: 4px 10px;
+  border-radius: 5px;
+  width: 200px;
+  outline: none;
+}
+.conn-input:focus { border-color: #388bfd; }
+
+.btn-connect {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 14px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-connect:hover  { background: #30363d; }
+.btn-connect.on     { background: #0d2a0d; border-color: #3fb950; color: #3fb950; }
+.btn-connect.err    { background: #3d0d0d; border-color: #f85149; color: #f85149; }
+
+/* Band buttons in top bar */
+.band-btn {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #8b949e;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.band-btn:hover { background: #30363d; color: #e6edf3; }
+.band-btn.active { background: #1f4a8a; border-color: #388bfd; color: #79c0ff; }
+
+/* ── FREQ ROW ── */
+.freq-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 10px 12px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  flex-wrap: wrap;
+}
+
+.vfo-block { display: flex; flex-direction: column; gap: 2px; }
+.vfo-label { font-size: 10px; color: #7d8590; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.vfo-freq {
+  font-family: 'SF Mono','Consolas',monospace;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #58a6ff;
+  cursor: pointer;
+  line-height: 1;
+  user-select: none;
+}
+.vfo-freq .mhz { font-size: 18px; color: #388bfd; }
+.vfo-freq.secondary { font-size: 20px; color: #7d8590; }
+.vfo-freq.secondary .mhz { font-size: 14px; color: #484f58; }
+
+.vfo-freq-input {
+  display: none;
+  font-family: 'SF Mono','Consolas',monospace;
+  font-size: 28px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #388bfd;
+  color: #58a6ff;
+  outline: none;
+  width: 230px;
+}
+
+.vfo-divider { width: 1px; background: #30363d; align-self: stretch; margin: 0 4px; }
+
+/* VFO swap buttons */
+.vfo-swap-row { display: flex; gap: 3px; align-self: center; }
+.vbtn {
+  font-size: 10px;
+  padding: 3px 7px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #8b949e;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'SF Mono','Consolas',monospace;
+}
+.vbtn:hover { background: #30363d; color: #e6edf3; border-color: #388bfd; }
+
+/* Step buttons */
+.step-row { display: flex; gap: 3px; align-self: center; }
+.sbtn {
+  font-size: 10px;
+  padding: 3px 7px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #8b949e;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'SF Mono','Consolas',monospace;
+  transition: all 0.15s;
+}
+.sbtn.active { background: #1f4a8a; border-color: #388bfd; color: #79c0ff; }
+
+/* Mode buttons */
+.mode-grid { display: flex; gap: 3px; flex-wrap: wrap; align-self: center; }
+.mode-btn {
+  font-size: 11px;
+  padding: 4px 10px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #8b949e;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'SF Mono','Consolas',monospace;
+  letter-spacing: 0.03em;
+  transition: all 0.15s;
+}
+.mode-btn:hover { background: #30363d; color: #e6edf3; }
+.mode-btn.active { background: #0d2a0d; border-color: #3fb950; color: #3fb950; }
+
+/* ── MAIN BODY ── */
+.body-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr 240px;
+  height: calc(100vh - 130px); /* fill viewport, not just min */
+}
+
+/* ── SIDE PANELS ── */
+.side-panel {
+  background: #161b22;
+  border-right: 1px solid #30363d;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+.side-panel.right { border-right: none; border-left: 1px solid #30363d; }
+
+.sec-title {
+  font-size: 9px;
+  color: #484f58;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #21262d;
+  font-family: 'SF Mono','Consolas',monospace;
+}
+
+/* ── CTRL CARD (slider rows) ── */
+.ctrl-card {
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+.ctrl-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.ctrl-lbl { font-size: 10px; color: #7d8590; letter-spacing: 0.06em; font-family: 'SF Mono','Consolas',monospace; }
+.ctrl-val { font-size: 12px; color: #e6edf3; font-family: 'SF Mono','Consolas',monospace; }
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  background: #30363d;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #388bfd;
+  border: 2px solid #0d1117;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
+
+/* ── METER ── */
+.meter-card {
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+.meter-head { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.meter-bg { background: #0d1117; border-radius: 3px; height: 7px; overflow: hidden; }
+.meter-fill { height: 100%; border-radius: 3px; transition: width 0.12s ease; width: 0%; }
+.meter-fill.s    { background: linear-gradient(90deg, #3fb950 0%, #e3b341 70%, #f85149 100%); }
+.meter-fill.tx   { background: linear-gradient(90deg, #388bfd 0%, #388bfd 80%, #f85149 100%); }
+.meter-scale { display: flex; justify-content: space-between; margin-top: 3px; }
+.meter-scale span { font-size: 8px; color: #484f58; font-family: 'SF Mono','Consolas',monospace; }
+
+/* ── TOGGLE CHIPS ── */
+.chip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.chip-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.chip-grid.four  { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.chip {
+  font-size: 10px;
+  padding: 5px 4px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #7d8590;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  font-family: 'SF Mono','Consolas',monospace;
+  letter-spacing: 0.04em;
+  transition: all 0.15s;
+}
+.chip:hover { background: #30363d; color: #e6edf3; }
+.chip.on  { background: #0d2a0d; border-color: #3fb950; color: #3fb950; }
+.chip.amber { background: #2a1f0d; border-color: #e3b341; color: #e3b341; }
+.chip.blue  { background: #0d1f3c; border-color: #388bfd; color: #79c0ff; }
+
+/* ── PTT ── */
+.ptt-btn {
+  width: 100%;
+  padding: 14px;
+  background: #21262d;
+  border: 2px solid #da3633;
+  color: #f85149;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.1s;
+  font-family: 'SF Mono','Consolas',monospace;
+}
+.ptt-btn:hover { background: #3d0d0d; }
+.ptt-btn.active { background: #f85149; color: #fff; box-shadow: 0 0 18px #f8514960; }
+
+.tune-btn {
+  width: 100%;
+  padding: 7px;
+  background: #21262d;
+  border: 1px solid #e3b341;
+  color: #e3b341;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  margin-top: 5px;
+  font-family: 'SF Mono','Consolas',monospace;
+  transition: all 0.1s;
+}
+.tune-btn:hover { background: #2a1f0d; }
+.tune-btn.active { background: #e3b341; color: #0d1117; }
+
+
+/* ── FILTER ── */
+.filter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; }
+.f-btn {
+  font-size: 9px;
+  padding: 5px 2px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #7d8590;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  font-family: 'SF Mono','Consolas',monospace;
+  transition: all 0.15s;
+}
+.f-btn:hover { background: #30363d; color: #e6edf3; }
+.f-btn.active { background: #1f4a8a; border-color: #388bfd; color: #79c0ff; }
+
+/* ── AGC ── */
+
+
+/* ── CENTER PANEL ── */
+.center { display: flex; flex-direction: column; background: #0d1117; height: 100%; overflow: hidden; }
+
+/* spectrum */
+.spectrum-wrap {
+  flex: 1;
+  position: relative;
+  background: #010409;
+  border-bottom: 1px solid #30363d;
+  min-height: 120px;
+  overflow: hidden;
+}
+canvas.spec { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.spec-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.spec-msg {
+  text-align: center;
+  font-family: 'SF Mono','Consolas',monospace;
+  font-size: 11px;
+  color: #484f58;
+  line-height: 2;
+}
+.spec-msg strong { color: #7d8590; display: block; font-size: 12px; margin-bottom: 6px; }
+
+/* db labels */
+.db-labels {
+  position: absolute;
+  left: 6px; top: 6px; bottom: 24px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  pointer-events: none;
+}
+.db-labels span { font-family: 'SF Mono','Consolas',monospace; font-size: 9px; color: #484f58; }
+
+/* VFO cursor */
+.vfo-cursor {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: #58a6ff55;
+  left: 50%;
+  pointer-events: none;
+}
+.vfo-cursor::after {
+  content: attr(data-f);
+  position: absolute;
+  bottom: 4px; left: 4px;
+  font-family: 'SF Mono','Consolas',monospace;
+  font-size: 9px;
+  color: #58a6ff;
+  white-space: nowrap;
+}
+
+/* waterfall */
+.wf-wrap {
+  height: 110px;
+  position: relative;
+  background: #010409;
+  border-bottom: 1px solid #30363d;
+  overflow: hidden;
+}
+canvas.wf { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* TCI log */
+.tci-log {
+  height: 90px;
+  overflow-y: auto;
+  padding: 6px 10px;
+  font-family: 'SF Mono','Consolas',monospace;
+  font-size: 10px;
+  color: #484f58;
+  line-height: 1.7;
+  border-top: 1px solid #30363d;
+  background: #161b22;
+}
+.log-tx  { color: #388bfd; }
+.log-rx  { color: #3fb950; }
+.log-err { color: #f85149; }
+.log-sys { color: #484f58; }
+
+/* audio vis */
+.audio-wrap {
+  height: 28px;
+  background: #21262d;
+  border-radius: 4px;
+  overflow: hidden;
+}
+canvas.audio-cv { width: 100%; height: 100%; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #161b22; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+
+/* custom number input in filter section */
+.num-in {
+  font-family: 'SF Mono','Consolas',monospace;
+  font-size: 11px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  padding: 3px 6px;
+  border-radius: 4px;
+  outline: none;
+  width: 58px;
+  -moz-appearance: textfield;
+}
+.num-in:focus { border-color: #388bfd; }
+.num-in::-webkit-outer-spin-button,
+.num-in::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ── TABLET (iPad landscape/portrait) ── */
+@media (max-width: 1100px) {
+  .body-grid { grid-template-columns: 200px 1fr 210px; }
+}
+
+/* ── TABLET PORTRAIT / LARGE PHONE ── */
+@media (max-width: 860px) {
+  /* Stack into single column: controls top, spectrum middle, tx bottom */
+  .body-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    height: auto;
+    min-height: calc(100vh - 90px);
+  }
+  .side-panel {
+    border-right: none;
+    border-bottom: 1px solid #30363d;
+    /* Horizontal scrolling row of panels on mobile */
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow-y: visible;
+    overflow-x: auto;
+    padding: 8px;
+    gap: 8px;
+  }
+  .side-panel.right {
+    border-left: none;
+    border-top: 1px solid #30363d;
+  }
+  .dock-panel { min-width: 160px; flex: 0 0 auto; }
+  .center { min-height: 400px; }
+  .spectrum-wrap { min-height: 200px; }
+  .wf-wrap { height: 80px; }
+  .tci-log { height: 70px; }
+
+  /* Bigger touch targets */
+  .band-btn { padding: 6px 10px; font-size: 12px; }
+  .chip { min-height: 36px; font-size: 12px; }
+  .agc-btn { min-height: 36px; }
+  .f-btn { min-height: 36px; font-size: 11px; }
+  .mode-btn { min-height: 36px; font-size: 11px; }
+  .ptt-btn { min-height: 60px; font-size: 18px; }
+  .tune-btn { min-height: 60px; font-size: 14px; }
+  .sbtn { min-height: 32px; }
+  input[type=range] { height: 20px; }
+  .conn-input { width: 160px; }
+
+  /* Freq row wraps cleanly */
+  .freq-row { gap: 10px; padding: 8px; }
+  .vfo-freq { font-size: 24px; }
+  .vfo-freq.secondary { font-size: 18px; }
+}
+
+/* ── PHONE (iPhone) ── */
+@media (max-width: 480px) {
+  .top-bar { gap: 6px; padding: 6px 8px; }
+  .band-btn { padding: 5px 7px; font-size: 11px; }
+  /* Hide VFO B on very small screens */
+  .vfo-block:last-of-type { display: none; }
+  .vfo-freq { font-size: 28px; }
+  .freq-row { padding: 6px 8px; }
+  .body-grid { grid-template-columns: 1fr; }
+  .dock-panel { min-width: 140px; }
+  .ptt-btn { font-size: 20px; min-height: 70px; }
+  .spectrum-wrap { min-height: 180px; }
+}
+
+/* ── DOCK PANELS ── */
+.dock-panel {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  user-select: none;
+  transition: box-shadow 0.1s;
+}
+.dock-panel.dragging-ghost {
+  opacity: 0.35;
+  pointer-events: none;
+}
+.dock-handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: #1c2128;
+  border-bottom: 1px solid #30363d;
+  border-radius: 6px 6px 0 0;
+  cursor: grab;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b949e;
+}
+.dock-handle:active { cursor: grabbing; }
+.dock-handle .dock-title { pointer-events: none; flex: 1; }
+.dock-handle .dock-collapse {
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0.45;
+  padding: 0 4px;
+  line-height: 1;
+  pointer-events: all;
+}
+.dock-handle .dock-collapse:hover { opacity: 1; }
+.dock-body { padding: 8px; }
+.dock-panel.collapsed .dock-body { display: none; }
+.dock-panel.collapsed .dock-handle { border-bottom: none; border-radius: 6px; }
+
+/* Drop indicator — shown between panels during drag */
+.dock-drop-indicator {
+  height: 3px;
+  background: #388bfd;
+  border-radius: 2px;
+  margin: 2px 0;
+  display: none;
+  pointer-events: none;
+}
+.dock-drop-indicator.active { display: block; }
+
+/* Drag clone following cursor */
+#dock-drag-clone {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.85;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+  border-radius: 6px;
+  min-width: 170px;
+  max-width: 220px;
+}
+</style>
+</head>
+<body style="touch-action: manipulation;">
+
+<!-- ── TOP BAR ── -->
+<div class="top-bar">
+  <div class="status-dot" id="sDot"></div>
+  <span class="status-label" id="sLabel">OFFLINE</span>
+  <span class="callsign">Thetis On The Web</span>
+  <div class="spacer"></div>
+
+  <!-- Band buttons -->
+  <button class="band-btn" data-band="160m" data-freq="1900000">160m</button>
+  <button class="band-btn" data-band="80m"  data-freq="3700000">80m</button>
+  <button class="band-btn" data-band="60m"  data-freq="5330500">60m</button>
+  <button class="band-btn" data-band="40m"  data-freq="7200000">40m</button>
+  <button class="band-btn" data-band="30m"  data-freq="10130000">30m</button>
+  <button class="band-btn active" data-band="20m" data-freq="14225000">20m</button>
+  <button class="band-btn" data-band="17m"  data-freq="18130000">17m</button>
+  <button class="band-btn" data-band="15m"  data-freq="21300000">15m</button>
+  <button class="band-btn" data-band="12m"  data-freq="24940000">12m</button>
+  <button class="band-btn" data-band="10m"  data-freq="28500000">10m</button>
+  <button class="band-btn" data-band="6m"   data-freq="50200000">6m</button>
+
+  <div class="spacer"></div>
+  <input type="text" class="conn-input" id="hostInput" value="ws://127.0.0.1:50001" />
+  <button class="btn-connect" id="connBtn" onclick="toggleConn()">CONNECT</button>
+
+  <!-- TX/RX pill -->
+  <div style="display:flex;align-items:center;gap:6px;padding:3px 10px;background:#21262d;border:1px solid #30363d;border-radius:20px;">
+    <div class="status-dot" id="txrxDot"></div>
+    <span class="mono" style="font-size:11px;" id="txrxLabel">RX</span>
+  </div>
+</div>
+
+<!-- ── VFO / FREQ ROW ── -->
+<div class="freq-row">
+
+  <!-- VFO A -->
+  <div class="vfo-block">
+    <div class="vfo-label">VFO A</div>
+    <div class="vfo-freq" id="vfoADisp" onclick="editFreq('A')">14.225<span class="mhz"> MHz</span></div>
+    <input class="vfo-freq-input" id="vfoAIn" onblur="commitFreq('A')" onkeydown="freqKey(event,'A')" />
+  </div>
+
+  <!-- Swap controls -->
+  <div class="vfo-swap-row">
+    <button class="vbtn" onclick="vfoSwap('A2B')">A→B</button>
+    <button class="vbtn" onclick="vfoSwap('B2A')">B→A</button>
+    <button class="vbtn" onclick="vfoSwap('SWAP')">A⇌B</button>
+  </div>
+
+  <div class="vfo-divider"></div>
+
+  <!-- VFO B -->
+  <div class="vfo-block">
+    <div class="vfo-label">VFO B</div>
+    <div class="vfo-freq secondary" id="vfoBDisp" onclick="editFreq('B')">14.196<span class="mhz"> MHz</span></div>
+    <input class="vfo-freq-input" id="vfoBIn" onblur="commitFreq('B')" onkeydown="freqKey(event,'B')" style="font-size:20px;width:180px;color:#7d8590;" />
+  </div>
+
+  <div class="vfo-divider"></div>
+
+  <!-- Tune step -->
+  <div class="step-row" id="stepRow">
+    <button class="sbtn" data-hz="1" onclick="setStep(this,1)">1Hz</button>
+    <button class="sbtn" data-hz="10" onclick="setStep(this,10)">10</button>
+    <button class="sbtn" data-hz="100" onclick="setStep(this,100)">100</button>
+    <button class="sbtn active" data-hz="500" onclick="setStep(this,500)">500</button>
+    <button class="sbtn" data-hz="1000" onclick="setStep(this,1000)">1k</button>
+    <button class="sbtn" data-hz="5000" onclick="setStep(this,5000)">5k</button>
+    <button class="sbtn" data-hz="9000" onclick="setStep(this,9000)">9k</button>
+  </div>
+
+  <div class="vfo-divider"></div>
+
+  <!-- Modes -->
+  <div style="display:flex;flex-direction:column;gap:4px;">
+    <div class="vfo-label">MODE</div>
+    <div class="mode-grid" id="modeBtns">
+      <button class="mode-btn" data-m="LSB" onclick="setMode('LSB')">LSB</button>
+      <button class="mode-btn active" data-m="USB" onclick="setMode('USB')">USB</button>
+      <button class="mode-btn" data-m="CWL" onclick="setMode('CWL')">CWL</button>
+      <button class="mode-btn" data-m="CWU" onclick="setMode('CWU')">CWU</button>
+      <button class="mode-btn" data-m="AM" onclick="setMode('AM')">AM</button>
+      <button class="mode-btn" data-m="SAM" onclick="setMode('SAM')">SAM</button>
+      <button class="mode-btn" data-m="NFM" onclick="setMode('NFM')">FM</button>
+      <button class="mode-btn" data-m="DIGU" onclick="setMode('DIGU')">DIGU</button>
+      <button class="mode-btn" data-m="DIGL" onclick="setMode('DIGL')">DIGL</button>
+      <button class="mode-btn" data-m="DSB" onclick="setMode('DSB')">DSB</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── BODY ── -->
+<div class="body-grid">
+
+  <!-- ══ LEFT — RECEIVE ══ -->
+  <div class="side-panel" id="leftPanel">
+
+
+    <div class="dock-panel">
+      <div class="dock-handle"><span class="dock-title">AF Gain</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="ctrl-head" style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span class="ctrl-lbl">AF GAIN</span><span class="ctrl-val" id="afV">-10 dB</span>
+        </div>
+        <input type="range" min="-60" max="0" value="-10" step="1" oninput="sl('af',this.value)" style="width:100%">
+      </div>
+    </div>
+
+
+
+
+    <div class="dock-panel">
+      <div class="dock-handle"><span class="dock-title">Noise Reduction</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="chip-grid">
+          <button class="chip" id="nrC"  onclick="tog('nr')">NR</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="dock-panel">
+      <div class="dock-handle"><span class="dock-title">Filter Width</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="filter-grid" id="filtG">
+          <button class="f-btn" data-bw="8000"  onclick="setFilt(this)">8k</button>
+          <button class="f-btn" data-bw="6000"  onclick="setFilt(this)">6k</button>
+          <button class="f-btn" data-bw="4000"  onclick="setFilt(this)">4k</button>
+          <button class="f-btn" data-bw="3000"  onclick="setFilt(this)">3k</button>
+          <button class="f-btn active" data-bw="2800" onclick="setFilt(this)">2.8k</button>
+          <button class="f-btn" data-bw="1800"  onclick="setFilt(this)">1.8k</button>
+          <button class="f-btn" data-bw="500"   onclick="setFilt(this)">500</button>
+          <button class="f-btn" data-bw="250"   onclick="setFilt(this)">250</button>
+        </div>
+        <div style="display:flex;gap:4px;margin-top:5px;align-items:center;">
+          <span class="ctrl-lbl">LO</span>
+          <input type="number" class="num-in" id="flo" value="100">
+          <span class="ctrl-lbl">HI</span>
+          <input type="number" class="num-in" id="fhi" value="2900">
+          <button class="sbtn" onclick="customFilt()">SET</button>
+        </div>
+      </div>
+    </div>
+
+
+
+
+  </div><!-- end left -->
+
+  <!-- ══ CENTER ══ -->
+  <div class="center">
+
+    <!-- Spectrum -->
+    <div class="spectrum-wrap" id="specWrap">
+      <canvas class="spec" id="specC"></canvas>
+      <div class="db-labels">
+        <span>-60</span><span>-80</span><span>-100</span><span>-120</span>
+      </div>
+      <div class="vfo-cursor" id="vfoCursor" data-f="14.225 MHz"></div>
+      <div class="spec-overlay" id="specMsg">
+        <div class="spec-msg">
+          <strong>Panadapter</strong>
+          Connect to Thetis to activate.<br>
+          All controls are live over TCI.<br>
+          <span style="font-size:9px;color:#3d444d;">Spectrum streaming pending Thetis TCI update.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spectrum gain + waterfall speed sliders -->
+    <div style="display:flex;align-items:center;gap:12px;padding:3px 8px;background:#0d1117;border-bottom:1px solid #30363d;">
+      <span style="font-size:9px;color:#7d8590;font-family:'SF Mono',monospace;white-space:nowrap;">SPEC GAIN</span>
+      <input type="range" min="-60" max="120" value="45" step="1" style="flex:1;height:4px;cursor:pointer;"
+        oninput="specGain=parseInt(this.value);document.getElementById('specGainV').textContent=(specGain>=0?'+':'')+specGain+'dB'">
+      <span id="specGainV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:42px;text-align:right;">+45dB</span>
+      <span style="font-size:9px;color:#7d8590;font-family:'SF Mono',monospace;white-space:nowrap;margin-left:8px;">WF SPEED</span>
+      <input type="range" min="1" max="60" value="3" step="1" style="width:80px;height:4px;cursor:pointer;"
+        oninput="wfSpeed=parseInt(this.value);document.getElementById('wfSpeedV').textContent=this.value">
+      <span id="wfSpeedV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:16px;text-align:right;">3</span>
+      <span style="font-size:9px;color:#7d8590;font-family:'SF Mono',monospace;white-space:nowrap;margin-left:8px;">FFT SPEED</span>
+      <input type="range" min="80" max="99" value="89" step="1" style="width:80px;height:4px;cursor:pointer;"
+        oninput="if(S.analyser){S.analyser.smoothingTimeConstant=parseInt(this.value)/100;document.getElementById('fftSpeedV').textContent=(100-parseInt(this.value))+'%'}">
+      <span id="fftSpeedV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:28px;text-align:right;">11%</span>
+    </div>
+
+    <!-- Waterfall -->
+    <div class="wf-wrap">
+      <canvas class="wf" id="wfC"></canvas>
+    </div>
+
+    <!-- TCI Log -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 8px;background:#0d1117;border-top:1px solid #30363d;">
+      <span style="font-size:9px;color:#484f58;font-family:'SF Mono',monospace;">── TCI message log ──</span>
+      <button onclick="toggleLog()" id="logTogBtn" style="font-size:9px;padding:1px 7px;background:#21262d;border:1px solid #30363d;border-radius:3px;color:#8b949e;cursor:pointer;">HIDE</button>
+    </div>
+    <div class="tci-log" id="tciLog">
+    </div>
+
+  </div><!-- end center -->
+
+  <!-- ══ RIGHT — TRANSMIT ══ -->
+  <div class="side-panel right" id="rightPanel">
+
+
+    <div class="dock-panel">
+      <div class="dock-handle"><span class="dock-title">Transmit</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="meter-card" style="margin-bottom:6px;">
+          <div class="meter-head"><span class="ctrl-lbl">TX POWER</span><span class="ctrl-val" id="txPV">0 W</span></div>
+          <div class="meter-bg"><div class="meter-fill tx" id="txPBar"></div></div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <button class="ptt-btn" id="pttBtn"
+            onmousedown="setPTT(true)" onmouseup="setPTT(false)" onmouseleave="setPTT(false)"
+            ontouchstart="event.preventDefault();setPTT(true);" ontouchend="event.preventDefault();setPTT(false);">PTT</button>
+          <button class="tune-btn" id="tuneBtn" onclick="togTune()">TUNE</button>
+        </div>
+        <div class="ctrl-head" style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <span class="ctrl-lbl">DRIVE</span><span class="ctrl-val" id="drV">50%</span>
+        </div>
+        <input type="range" min="0" max="100" value="50" step="1" oninput="sl('drive',this.value)" style="width:100%">
+      </div>
+    </div>
+
+
+
+    <div class="dock-panel">
+      <div class="dock-handle"><span class="dock-title">Options</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="chip-grid">
+          <button class="chip" id="monC"    onclick="tog('mon')">MON</button>
+          <button class="chip" id="splitC"  onclick="tog('split')">SPLIT</button>
+          <button class="chip" id="muteC"   onclick="tog('mute')">MUTE</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="dock-panel">
+      <div class="dock-handle"><span class="dock-title">TCI Audio</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="chip-grid" style="margin-bottom:6px;">
+          <button class="chip" id="rxAuC" onclick="togAudio('rx')">RX AUDIO</button>
+          <button class="chip" id="txMcC" onclick="togAudio('tx')">TX MIC</button>
+        </div>
+        <span class="ctrl-lbl" style="display:block;margin-bottom:3px;">RX LEVEL</span>
+        <div class="audio-wrap"><canvas class="audio-cv" id="auMtr"></canvas></div>
+
+      </div>
+    </div>
+
+
+    <div class="dock-panel">
+      <div class="dock-handle"><span class="dock-title">Antenna</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="chip-grid">
+          <button class="chip on"  id="a1C" onclick="setAnt(1)">ANT 1</button>
+          <button class="chip"     id="a2C" onclick="setAnt(2)">ANT 2</button>
+          <button class="chip"     id="a3C" onclick="setAnt(3)">ANT 3</button>
+          <button class="chip"     id="aXC" onclick="setAnt(0)">EXT</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="dock-panel">
+      <div class="dock-handle"><span class="dock-title">Second Receiver</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <button class="chip" id="rx2C" onclick="togRX2()" style="margin-bottom:6px;">RX2 ON</button>
+        <div class="ctrl-head" style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <span class="ctrl-lbl">RX2 AF</span><span class="ctrl-val" id="rx2V">50</span>
+        </div>
+        <input type="range" min="0" max="100" value="50" step="1" oninput="sl('rx2',this.value)" style="width:100%">
+      </div>
+    </div>
+
+
+  </div><!-- end right -->
+
+</div><!-- end body-grid -->
+
+<!-- ════════════════════ JS ════════════════════ -->
+<script>
+// ── STATE ──
+const S = {
+  ws: null, connected: false,
+  vfoA: 14225000, vfoB: 14196000,
+  mode: 'USB', mox: false, tune: false,
+  step: 500,
+  audioCtx: null, rxOn: false, txMicOn: false, micStream: null, micCtx: null, micStreaming: false, txAnalyser: null,
+};
+
+// noise / toggle states
+const TG = {};
+
+// ── WEBSOCKET ──
+function toggleConn() {
+  S.connected ? disconnect() : connect();
+}
+
+function connect() {
+  const url = document.getElementById('hostInput').value.trim();
+  log('sys', 'Connecting → ' + url);
+  document.getElementById('connBtn').textContent = 'CONNECTING…';
+  try {
+    S.ws = new WebSocket(url);
+    S.ws.binaryType = 'arraybuffer';
+    S.ws.onopen    = () => {
+      S.connected = true;
+      setUI(true);
+      log('sys', 'Connected — Thetis TCI online');
+      // Auto-start RX audio after Thetis sends 'ready'
+      S._autoStartRx = true;
+
+      document.getElementById('specMsg').style.display = 'none';
+    };
+    S.ws.onmessage = onMsg;
+    S.ws.onclose   = () => { S.connected = false; setUI(false); log('sys','Disconnected'); stopRx(); };
+    S.ws.onerror   = () => { log('err','Connection error — is Thetis TCI Server running?'); setUI(false); };
+  } catch(e) { log('err', 'Bad URL: ' + e.message); setUI(false); }
+}
+
+function disconnect() { if (S.ws) S.ws.close(); }
+
+function onMsg(evt) {
+  if (evt.data instanceof ArrayBuffer) {
+    // All binary frames are TCI data (audio or IQ) — route by header type
+    rxAudio(evt.data);
+    return;
+  }
+  // Text frames are TCI command messages
+  evt.data.trim().split(';').map(s=>s.trim()).filter(Boolean).forEach(parseTCI);
+}
+
+// Commands that fire many times/sec — suppress from log to avoid flood
+const _logSilence = new Set([
+  'vfo','if',
+  // Known Thetis startup broadcast messages — informational only, no action needed
+  'protocol','device','receive_only','trx_count','channels_count',
+  'vfo_limits','if_limits','modulations_list','dds',
+  'tx_frequency','tx_frequency_thetis',
+  'rx_enable','rx_nr_enable','rx_nr_enable_ex','rx_anf_enable',
+  'rx_volume','rx_ctun_ex','rx_mute',
+  'tx_profiles_ex','tx_profile_ex','calibration_ex',
+  'rx_channel_enable','tx_enable',
+  'iq_stop','iq_samplerate',
+  'audio_stream_sample_type','audio_stream_channels',
+  'audio_stream_samples','tx_stream_audio_buffering',
+  'mon_enable','mon_volume',
+]);
+
+function parseTCI(msg) {
+  const ci = msg.indexOf(':');
+  if (ci < 0) {
+    log('rx', msg+';');
+    if (msg === 'ready' && S._autoStartRx) {
+      S._autoStartRx = false;
+      setTimeout(() => togAudio('rx'), 300);
+    }
+    return;
+  }
+  const cmdPeek = msg.slice(0, ci).toLowerCase();
+  if (!_logSilence.has(cmdPeek)) log('rx', msg + ';');
+  if (ci < 0) return;
+  const cmd  = msg.slice(0, ci).toLowerCase();
+  const args = msg.slice(ci + 1).split(',');
+  switch (cmd) {
+    case 'vfo':
+      if (args.length >= 3) {
+        const v = parseInt(args[2]);
+        if (args[0]==='0' && args[1]==='0') setVfoDisp('A', v);
+        if (args[0]==='0' && args[1]==='1') setVfoDisp('B', v);
+      }
+      break;
+    case 'modulation':
+      if (args.length >= 2 && args[0] === '0') {
+        S.mode = args[1].toUpperCase();
+        updMode();
+        // Re-apply active filter edges for the new mode
+        const ab = document.querySelector('#filtG .f-btn.active');
+        if (ab && ab.dataset.bw) {
+          const [lo, hi] = bwToLoHi(parseInt(ab.dataset.bw));
+          el('flo').value = lo; el('fhi').value = hi;
+        }
+      }
+      break;
+    case 'trx':
+      if (args.length >= 2) { S.mox = args[1]==='true'; updTXRX(); }
+      break;
+    case 'tune':
+      if (args.length >= 2) { S.tune = args[1]==='true'; updTune(); }
+      break;
+    case 'rx_filter_band':
+      if (args.length >= 3 && args[0]==='0') {
+        document.getElementById('flo').value = args[1];
+        document.getElementById('fhi').value = args[2];
+      }
+      break;
+
+
+    case 'split_enable':
+      TG.split = args[0]==='true'; el('splitC').classList.toggle('on', TG.split);
+      break;
+    case 'line_in':
+      // Thetis broadcasting line_in state to other clients — just log it
+      log('sys', 'Thetis line_in: ' + (args[1]||'?') + ' (notification to other clients)');
+      break;
+    case 'audio_start':
+      log('sys', '✓ Thetis confirmed audio_start — binary frames should follow');
+      break;
+    case 'audio_samplerate':
+      log('sys', '✓ Thetis confirmed audio_samplerate:'+args[0]);
+      break;
+    case 'mute':
+      TG.mute = args[0]==='true'; el('muteC').classList.toggle('on', TG.mute);
+      break;
+
+
+    default:
+      // Log truly unknown commands (not in silence list) — useful for discovering new TCI commands
+      if (!_logSilence.has(cmd)) {
+        log('sys', '? unknown TCI: ' + cmd + ':' + args.join(','));
+      }
+      break;
+  }
+}
+
+function send(msg) {
+  if (S.ws && S.ws.readyState === 1) { S.ws.send(msg); log('tx', msg); }
+}
+
+// ── UI helpers ──
+function el(id) { return document.getElementById(id); }
+
+function setUI(on) {
+  const btn = el('connBtn');
+  btn.textContent = on ? 'DISCONNECT' : 'CONNECT';
+  btn.className = 'btn-connect' + (on ? ' on' : '');
+  el('sDot').className = 'status-dot' + (on ? ' rx' : '');
+  el('sLabel').textContent = on ? 'ONLINE' : 'OFFLINE';
+  el('sLabel').className = 'status-label' + (on ? '' : '');
+  if (!on) { el('txrxDot').className='status-dot'; el('txrxLabel').textContent='RX'; }
+}
+
+function updTXRX() {
+  el('txrxDot').className = 'status-dot ' + (S.mox ? 'tx' : 'rx');
+  el('txrxLabel').textContent = S.mox ? 'TX' : 'RX';
+  el('pttBtn').classList.toggle('active', S.mox);
+  el('txPBar').style.width = '0%';
+  el('txPV').textContent   = '0 W';
+}
+
+function updMode() {
+  document.querySelectorAll('#modeBtns .mode-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.m === S.mode));
+}
+
+
+
+function updTune() { el('tuneBtn').classList.toggle('active', S.tune); }
+
+// ── VFO ──
+const BAND_RANGES = [
+  { band:'160m', lo:1800000,   hi:2000000   },
+  { band:'80m',  lo:3500000,   hi:4000000   },
+  { band:'60m',  lo:5330000,   hi:5410000   },
+  { band:'40m',  lo:7000000,   hi:7300000   },
+  { band:'30m',  lo:10100000,  hi:10150000  },
+  { band:'20m',  lo:14000000,  hi:14350000  },
+  { band:'17m',  lo:18068000,  hi:18168000  },
+  { band:'15m',  lo:21000000,  hi:21450000  },
+  { band:'12m',  lo:24890000,  hi:24990000  },
+  { band:'10m',  lo:28000000,  hi:29700000  },
+  { band:'6m',   lo:50000000,  hi:54000000  },
+];
+
+function freqToBand(hz) {
+  for (const r of BAND_RANGES) if (hz >= r.lo && hz <= r.hi) return r.band;
+  return null;
+}
+
+function updBandButtons(hz) {
+  const band = freqToBand(hz);
+  document.querySelectorAll('.band-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.band === band);
+  });
+}
+
+function setVfoDisp(vfo, hz) {
+  if (vfo==='A') S.vfoA=hz; else S.vfoB=hz;
+  const mhz = hz / 1e6;
+  const whole = Math.floor(mhz);
+  const dec = mhz.toFixed(4).split('.')[1];
+  const disp = el('vfo' + vfo + 'Disp');
+  disp.innerHTML = whole + '.' + dec + '<span class="mhz"> MHz</span>';
+  if (vfo==='A') updBandButtons(hz);  // keep band bar in sync with VFO A
+}
+
+function editFreq(vfo) {
+  const disp = el('vfo' + vfo + 'Disp');
+  const inp  = el('vfo' + vfo + 'In');
+  disp.style.display = 'none';
+  inp.style.display  = 'block';
+  inp.value = ((vfo==='A' ? S.vfoA : S.vfoB) / 1e6).toFixed(4);
+  inp.select(); inp.focus();
+}
+
+function commitFreq(vfo) {
+  const inp  = el('vfo' + vfo + 'In');
+  const disp = el('vfo' + vfo + 'Disp');
+  const hz = Math.round(parseFloat(inp.value) * 1e6);
+  if (!isNaN(hz) && hz > 0) {
+    setVfoDisp(vfo, hz);
+    send('vfo:0,' + (vfo==='A'?'0':'1') + ',' + hz + ';');
+  }
+  inp.style.display  = 'none';
+  disp.style.display = 'block';
+}
+
+function freqKey(e, vfo) {
+  if (e.key==='Enter')  { commitFreq(vfo); return; }
+  if (e.key==='Escape') {
+    el('vfo'+vfo+'In').style.display='none';
+    el('vfo'+vfo+'Disp').style.display='block';
+    return;
+  }
+  const inp = el('vfo'+vfo+'In');
+  const v   = parseFloat(inp.value)||0;
+  if (e.key==='ArrowUp')   { e.preventDefault(); inp.value=(v+S.step/1e6).toFixed(4); }
+  if (e.key==='ArrowDown') { e.preventDefault(); inp.value=(v-S.step/1e6).toFixed(4); }
+}
+
+// Mouse-wheel tuning on VFO display
+document.addEventListener('wheel', e => {
+  const t = e.target.closest('#vfoADisp,#vfoBDisp');
+  if (!t) return;
+  e.preventDefault();
+  const vfo = t.id.includes('A') ? 'A' : 'B';
+  const dir = e.deltaY < 0 ? 1 : -1;
+  const hz  = Math.max(0, (vfo==='A'?S.vfoA:S.vfoB) + dir*S.step);
+  setVfoDisp(vfo, hz);
+  send('vfo:0,'+(vfo==='A'?'0':'1')+','+hz+';');
+}, { passive: false });
+
+function vfoSwap(cmd) {
+  if (cmd==='A2B') { setVfoDisp('B',S.vfoA); send('vfo:0,1,'+S.vfoA+';'); }
+  else if (cmd==='B2A') { setVfoDisp('A',S.vfoB); send('vfo:0,0,'+S.vfoB+';'); }
+  else {
+    const t=S.vfoA; setVfoDisp('A',S.vfoB); setVfoDisp('B',t);
+    send('vfo:0,0,'+S.vfoB+';'); send('vfo:0,1,'+t+';');
+  }
+}
+
+function setStep(btn, hz) {
+  S.step = hz;
+  document.querySelectorAll('#stepRow .sbtn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.hz)===hz));
+}
+
+// ── BAND ──
+const bandDfltMode = {
+  '160m':'LSB','80m':'LSB','60m':'USB','40m':'LSB','30m':'USB',
+  '20m':'USB','17m':'USB','15m':'USB','12m':'USB','10m':'USB','6m':'USB'
+};
+document.querySelectorAll('.band-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.band-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  const hz = parseInt(b.dataset.freq);
+  setVfoDisp('A', hz);
+  send('vfo:0,0,'+hz+';');
+  setMode(bandDfltMode[b.dataset.band]||'USB');
+}));
+
+// ── MODE ──
+function setMode(m) {
+  S.mode = m; updMode();
+  send('modulation:0,'+m+';');
+  // Re-apply active filter with correct lo/hi for the new mode
+  const activeBtn = document.querySelector('#filtG .f-btn.active');
+  if (activeBtn && activeBtn.dataset.bw) {
+    const [lo, hi] = bwToLoHi(parseInt(activeBtn.dataset.bw));
+    el('flo').value = lo; el('fhi').value = hi;
+    send('rx_filter_band:0,' + lo + ',' + hi + ';');
+  }
+}
+
+// ── FILTER ──
+function bwToLoHi(bw) {
+  // Convert a bandwidth value to lo/hi edges based on current mode
+  const m = (S.mode||'USB').toUpperCase();
+  const half = Math.round(bw / 2);
+  if (['USB','DIGU'].includes(m))       return [100, 100 + bw];
+  if (['LSB','DIGL'].includes(m))       return [-(100 + bw), -100];
+  if (['CWU'].includes(m))              return [600 - half, 600 + half];
+  if (['CWL'].includes(m))              return [-(600 + half), -(600 - half)];
+  if (['AM','SAM','DSB','NFM','FM'].includes(m)) return [-half, half];
+  // Default: treat as USB
+  return [100, 100 + bw];
+}
+
+function setFilt(btn) {
+  document.querySelectorAll('#filtG .f-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const bw = parseInt(btn.dataset.bw);
+  const [lo, hi] = bwToLoHi(bw);
+  el('flo').value = lo;
+  el('fhi').value = hi;
+  send('rx_filter_band:0,' + lo + ',' + hi + ';');
+}
+function customFilt() {
+  document.querySelectorAll('#filtG .f-btn').forEach(b => b.classList.remove('active'));
+  send('rx_filter_band:0,'+el('flo').value+','+el('fhi').value+';');
+}
+
+// ── AGC ──
+
+// ── NOISE TOGGLES ──
+const noiseCmd = {
+  nr:'rx_nr_enable:0,'
+};
+const noiseSpecial = {};
+function tog(k) {
+  TG[k] = !TG[k];
+  const c = el(k+'C'); if (c) c.classList.toggle('on', TG[k]);
+  if (noiseSpecial[k]) { noiseSpecial[k](TG[k]); return; }
+  const cmd = noiseCmd[k];
+  if (cmd) { send(cmd+TG[k]+';'); return; }
+  const txCmds = {
+    mon:'mon_enable:',      // monitor enable
+    split:'split_enable:0,', // split operation
+    mute:'mute:'            // confirmed working
+  };
+  if (txCmds[k]) send(txCmds[k]+TG[k]+';');
+}
+
+// ── PTT / TUNE ──
+function setPTT(on) {
+  if (S.mox === on) return; // ignore duplicate events
+  S.mox = on;
+  updTXRX();
+  send('trx:0,' + on + (on ? ',tci' : '') + ';');
+  if (on) {
+    if (!S.txMicOn) {
+      log('err', 'TX MIC not armed — click TX MIC button first, then PTT');
+    } else {
+      startMicStream();
+    }
+  } else {
+    stopMicStream();
+  }
+}
+function togTune() { S.tune=!S.tune; updTune(); send('tune:0,'+S.tune+';'); }
+
+// ── SLIDERS ──
+function sl(k, v) {
+  v = parseInt(v);
+  const map = {
+    af:    () => { el('afV').textContent=v+' dB';     send('rx_volume:0,0,'+v+';'); },
+
+    drive: () => { el('drV').textContent=v+'%';       send('drive:0,'+v+';'); },
+
+    rx2:   () => { el('rx2V').textContent=v;          send('rx_volume:1,'+(v-100)+';'); },
+  };
+  if (map[k]) map[k]();
+}
+
+
+
+// ── ANTENNA ──
+function setAnt(n) {
+  [el('a1C'),el('a2C'),el('a3C'),el('aXC')].forEach(b => b.classList.remove('on'));
+  const targets = {1:'a1C',2:'a2C',3:'a3C',0:'aXC'};
+  el(targets[n]).classList.add('on');
+  send('rx_antenna:0,'+(n>0?n-1:3)+';');
+}
+
+// ── RX2 / DIV ──
+function togRX2() { TG.rx2=!TG.rx2; el('rx2C').classList.toggle('on',TG.rx2); send('rx_enable:1,'+TG.rx2+';'); }
+
+// ── AUDIO ──
+async function togAudio(dir) {
+  if (dir==='rx') {
+    if (S.rxOn) { stopRx(); } else { await startRx(); }
+  } else {
+    if (S.txMicOn) { stopTxMic(); } else { await startTxMic(); }
+  }
+}
+
+// ── TCI AUDIO BINARY FRAME FORMAT (TCI Protocol v2.0) ──
+// 64-byte header (8 × uint32):
+//   [0]  receiver     (0 = TRX0)
+//   [4]  sample_rate  (48000)
+//   [8]  format       (3 = FLOAT32)
+//   [12] codec        (0 = uncompressed)
+//   [16] crc          (0 = not implemented)
+//   [20] length       (number of float32 samples)
+//   [24] type         (0=IQ, 1=RX_AUDIO, 2=TX_AUDIO, 3=TX_CHRONO, 4=LINEOUT)
+//   [28] channels     (2 = stereo)
+//   [32–63] reserv[8] (zeros)
+// Followed by: length × float32 samples, interleaved stereo (L,R,L,R,…)
+// TX PTT: send trx:0,true,tci; to route TCI audio to TX chain
+
+// TCI stream types (per TCI 2.0 spec, offset 24 in 64-byte header)
+// 0=IQ, 1=RX_AUDIO, 2=TX_AUDIO, 3=TX_CHRONO, 4=LINEOUT
+
+// Diagnostic counters
+const audioDiag = {
+  binaryFrames: 0,      // total binary WS frames received
+  audioFrames: 0,       // frames with streamType=1
+  unknownTypes: {},     // any other stream types seen
+  shortFrames: 0,       // frames too short to parse
+  played: 0,            // successfully scheduled for playback
+  lastType: null,
+  lastSize: null,
+  lastSampleCount: null,
+};
+
+// Scheduled playback time for gapless audio
+let rxNextTime = 0;
+
+async function startRx() {
+  try {
+    if (S.audioCtx) { S.audioCtx.close(); }
+    S.audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+    // Analyser for real-time spectrum display
+    S.analyser = S.audioCtx.createAnalyser();
+    S.analyser.fftSize = 2048;
+    S.analyser.smoothingTimeConstant = 0.89;
+    S.analyser.connect(S.audioCtx.destination);
+
+    // Chrome suspends AudioContext until user gesture — resume it
+    if (S.audioCtx.state === 'suspended') {
+      await S.audioCtx.resume();
+      log('sys', 'AudioContext resumed from suspended state');
+    }
+
+    rxNextTime = S.audioCtx.currentTime + 0.05;
+    S.rxOn = true;
+    el('rxAuC').classList.add('on');
+
+    // Reset diagnostic counters
+    Object.assign(audioDiag, {binaryFrames:0,audioFrames:0,unknownTypes:{},shortFrames:0,played:0,lastType:null,lastSize:null,lastSampleCount:null});
+
+    // Send all audio init in ONE WebSocket frame to guarantee order.
+    // Thetis needs audio_start first, audio_samplerate last to trigger streaming.
+    // Send each command with a small delay to guarantee Thetis receives them in order.
+    // Must match MSHV exactly: audio_start first, audio_samplerate last.
+    const audioSeq = [
+      'audio_start:0;',
+      'tx_stream_audio_buffering:50;',
+      'audio_stream_samples:2048;',
+      'audio_stream_channels:2;',
+      'audio_stream_sample_type:float32;',
+      'audio_samplerate:48000;'
+    ];
+    audioSeq.forEach((cmd, i) => {
+      setTimeout(() => {
+        if (S.ws && S.ws.readyState === 1) {
+          S.ws.send(cmd);
+          log('tx', cmd);
+        }
+      }, i * 20); // 20ms between each command
+    });
+    log('sys', 'RX AUDIO ON — sent full MSHV audio start sequence — ctx: '+S.audioCtx.state);
+    log('sys', 'Waiting for binary frames from Thetis…');
+
+    // After 3s, report what we got
+    setTimeout(() => {
+      if (!S.rxOn) return;
+      log('sys', '--- Audio diagnostics (3s) ---');
+      log('sys', 'Binary WS frames received: ' + audioDiag.binaryFrames);
+      log('sys', 'Stream type=1 (RX audio) frames: ' + audioDiag.audioFrames);
+      log('sys', 'Frames played to AudioContext: ' + audioDiag.played);
+      log('sys', 'Frames too short: ' + audioDiag.shortFrames);
+      log('sys', 'AudioContext state now: ' + (S.audioCtx ? S.audioCtx.state : 'null'));
+      if (audioDiag.lastType !== null) {
+        log('sys', 'Last frame — type:'+audioDiag.lastType+' size:'+audioDiag.lastSize+'b samples:'+audioDiag.lastSampleCount);
+      }
+      const otherTypes = Object.keys(audioDiag.unknownTypes);
+      if (otherTypes.length) log('sys', 'Other stream types seen: ' + otherTypes.map(t=>t+'(×'+audioDiag.unknownTypes[t]+')').join(', '));
+
+      if (audioDiag.binaryFrames === 0) {
+        log('err', '⚠ No binary frames received — Thetis is not streaming audio.');
+        log('err', 'Sent: audio_samplerate:48000; — Thetis should now stream audio.');
+        log('err', 'If still no frames: check Thetis version supports TCI audio (v2.10.3.11+).');
+        log('err', 'Also check: is MSHV still connected? Only one TCI audio client at a time.');
+      } else if (audioDiag.audioFrames === 0) {
+        log('err', '⚠ Binary frames received but none are stream type 1 (RX audio).');
+        log('err', 'Types seen: '+JSON.stringify(audioDiag.unknownTypes)+' — frame format may differ from expected.');
+        log('err', 'Try disabling header parsing (see diag below for raw bytes).');
+      } else if (audioDiag.played === 0) {
+        log('err', '⚠ RX audio frames received but none played — sample count or buffer issue.');
+      } else {
+        log('sys', '✓ Audio pipeline looks healthy — '+audioDiag.played+' buffers played');
+      }
+    }, 3000);
+
+  } catch(e) { log('err', 'Audio context error: '+e.message); }
+}
+
+function stopRx() {
+  S.rxOn = false;
+  el('rxAuC').classList.remove('on');
+  if (S.connected) send('audio_stop:0;');
+  if (S.audioCtx) { S.audioCtx.close(); S.audioCtx = null; S.analyser = null; }
+  rxNextTime = 0;
+}
+
+function rxAudio(buf) {
+  audioDiag.binaryFrames++;
+  audioDiag.lastSize = buf.byteLength;
+
+  // Watch for TX_CHRONO even when RX audio is off
+  if (buf.byteLength >= 64) {
+    const dv = new DataView(buf);
+    const typeAt24 = dv.getUint32(24, true);
+    if (typeAt24 === 3) { handleTxChrono(dv); return; }
+  }
+
+  if (!S.audioCtx || !S.rxOn) return;
+  if (S.audioCtx.state === 'suspended') S.audioCtx.resume();
+
+  // Thetis uses a non-standard header — we determined experimentally:
+  // bytes 0-1: uint16 type (0 in practice), bytes 2-3: uint16 receiver,
+  // bytes 4-7: uint32 = 48000 (sample rate, not count)
+  // Derive float count from payload size, not header field.
+  const MIN_HEADER = 8;
+  if (buf.byteLength < MIN_HEADER) { audioDiag.shortFrames++; tryRawAudio(buf); return; }
+
+  const view      = new DataView(buf);
+  const frameType = view.getUint16(0, true);
+  const receiver  = view.getUint16(2, true);
+  const field3    = view.getUint32(4, true);
+
+  audioDiag.lastType        = frameType;
+  audioDiag.lastSampleCount = field3;
+
+  if (frameType === 0 || frameType === 1) {
+    audioDiag.audioFrames++;
+    if (audioDiag.audioFrames === 1) {
+      log('sys', 'First audio frame: type='+frameType+' recv='+receiver+' field3='+field3+' size='+buf.byteLength+'b');
+      let hex = '';
+      for (let b = 0; b < Math.min(16, buf.byteLength); b++) hex += view.getUint8(b).toString(16).padStart(2,'0')+' ';
+      log('sys', 'First 16 bytes (hex): ' + hex);
+    }
+    // Use payload size to derive float count — field3 is sample rate not count
+    const payloadBytes = buf.byteLength - MIN_HEADER;
+    const actualFloats = Math.floor(payloadBytes / 4);
+    if (actualFloats < 2) { tryRawAudio(buf); return; }
+    playFloat32Stereo(buf, MIN_HEADER, actualFloats);
+    return;
+  }
+
+  // Unknown type — log once
+  if (!audioDiag.unknownTypes[frameType]) {
+    audioDiag.unknownTypes[frameType] = 0;
+    log('sys', 'Binary frame type='+frameType+' recv='+receiver+' field3='+field3+' size='+buf.byteLength+'b');
+  }
+  audioDiag.unknownTypes[frameType]++;
+  tryRawAudio(buf);
+}
+
+// ── TX_CHRONO handler: Thetis is asking us to send TX audio ──
+let txChronoCount = 0;
+function handleTxChrono(dv) {
+  txChronoCount++;
+  if (txChronoCount === 1) log('sys', 'TX_CHRONO received! Thetis is requesting TX audio frames');
+  if (txChronoCount === 10) log('sys', 'TX_CHRONO: 10 received');
+}
+
+// ── Play float32 interleaved stereo from an ArrayBuffer ──
+function playFloat32Stereo(buf, offset, sampleCount) {
+  const frames = Math.floor(sampleCount / 2);
+  if (frames < 1) return;
+  const floats = new Float32Array(buf, offset, sampleCount);
+  const ab = S.audioCtx.createBuffer(2, frames, 48000);
+  const L = ab.getChannelData(0);
+  const R = ab.getChannelData(1);
+
+  // Fade length: 64 samples (~1.3ms at 48kHz) — enough to kill clicks, short enough to be inaudible
+  const FADE = Math.min(64, frames >> 2);
+
+  for (let i = 0; i < frames; i++) {
+    let s = 1.0;
+    if (i < FADE)             s = i / FADE;           // fade in
+    else if (i >= frames - FADE) s = (frames - i) / FADE; // fade out
+    L[i] = floats[i * 2]     * s;
+    R[i] = floats[i * 2 + 1] * s;
+  }
+  schedulePlayback(ab);
+}
+
+// ── Fallback: try treating entire buffer as raw float32 mono or stereo ──
+// Used when Thetis sends audio without the expected header, or header parsing failed
+function tryRawAudio(buf) {
+  if (!S.audioCtx) return;
+  const totalFloats = Math.floor(buf.byteLength / 4);
+  if (totalFloats < 2) return;
+
+  // Try as interleaved stereo float32 (no header)
+  const frames = Math.floor(totalFloats / 2);
+  const floats = new Float32Array(buf, 0, totalFloats);
+  const ab = S.audioCtx.createBuffer(2, frames, 48000);
+  const L = ab.getChannelData(0);
+  const R = ab.getChannelData(1);
+  for (let i = 0; i < frames; i++) {
+    L[i] = floats[i * 2];
+    R[i] = floats[i * 2 + 1];
+  }
+  schedulePlayback(ab);
+}
+
+// ── Schedule a buffer for gapless playback ──
+function schedulePlayback(ab) {
+  const now = S.audioCtx.currentTime;
+  if (rxNextTime < now) rxNextTime = now + 0.02;
+  const src = S.audioCtx.createBufferSource();
+  src.buffer = ab;
+  src.connect(S.analyser || S.audioCtx.destination);
+  src.start(rxNextTime);
+  rxNextTime += ab.duration;
+  audioDiag.played++;
+  drawAuMeter(ab.getChannelData(0));
+}
+
+// ── TX MIC — device setup (button toggle) ──
+// Grabs the mic device and arms it. Actual streaming starts/stops
+// when Thetis sends line_in:0,true / line_in:0,false (on PTT).
+async function startTxMic() {
+  try {
+    S.micStream = await navigator.mediaDevices.getUserMedia({
+      audio: { sampleRate:48000, channelCount:1,
+               echoCancellation:false, noiseSuppression:false, autoGainControl:false }
+    });
+    S.micCtx = new AudioContext({ sampleRate: 48000 });
+    const src = S.micCtx.createMediaStreamSource(S.micStream);
+
+    // TX analyser — feeds spectrum/waterfall during TX
+    S.txAnalyser = S.micCtx.createAnalyser();
+    S.txAnalyser.fftSize = 2048;
+    S.txAnalyser.smoothingTimeConstant = 0.89;
+
+    // 2048 buffer → 2048 mono samples → 4096 stereo floats → 16384 bytes payload
+    const proc = S.micCtx.createScriptProcessor(2048, 1, 1);
+
+    let txFrameCount = 0;
+    proc.onaudioprocess = e => {
+      if (!S.connected || !S.micStreaming) return;
+      const inp = e.inputBuffer.getChannelData(0);
+      const frameCount = inp.length;           // 2048 mono samples
+      const stereoCount = frameCount * 2;      // 4096 stereo float32s
+
+      // TCI 2.0 spec Stream structure (64-byte header):
+      // uint32 receiver, uint32 sample_rate, uint32 format, uint32 codec(0),
+      // uint32 crc(0), uint32 length, uint32 type, uint32 channels,
+      // uint32 reserv[8] (32 bytes), then float32 samples
+      const HEADER = 64;
+      const buf = new ArrayBuffer(HEADER + stereoCount * 4);
+      const dv  = new DataView(buf);
+      dv.setUint32(0,  0,                 true); // receiver = 0
+      dv.setUint32(4,  48000,             true); // sample_rate
+      dv.setUint32(8,  3,                 true); // format = FLOAT32 (3)
+      dv.setUint32(12, 0,                 true); // codec = 0
+      dv.setUint32(16, 0,                 true); // crc = 0
+      dv.setUint32(20, stereoCount,       true); // length = total float32 count
+      dv.setUint32(24, 2,                 true); // type = TX_AUDIO_STREAM (2)
+      dv.setUint32(28, 2,                 true); // channels = 2
+      // bytes 32–63: reserv[8] — all zero (ArrayBuffer is zero-initialized)
+
+      const floats = new Float32Array(buf, HEADER);
+      for (let i = 0; i < frameCount; i++) {
+        const s = Math.max(-1.0, Math.min(1.0, inp[i]));
+        floats[i * 2]     = s; // L
+        floats[i * 2 + 1] = s; // R
+      }
+
+      if (S.ws && S.ws.readyState === 1) {
+        S.ws.send(buf);
+        txFrameCount++;
+        if (txFrameCount === 1) {
+          log('sys', 'TX frame 1: 64-byte header + '+stereoCount+' floats = '+buf.byteLength+'b total');
+        }
+        if (txFrameCount === 50) log('sys', 'TX: 50 frames sent — check Thetis TX power meter');
+      } else {
+        if (txFrameCount === 0) log('err', 'TX: WS not open — readyState='+(S.ws?S.ws.readyState:'null'));
+      }
+    };
+
+    src.connect(S.txAnalyser);
+    src.connect(proc);
+    // Note: proc is NOT connected to destination — we don't want mic playback,
+    // only capture. ScriptProcessor requires a destination connection to fire
+    // onaudioprocess, so connect to destination with zero gain.
+    const silencer = S.micCtx.createGain();
+    silencer.gain.value = 0;
+    proc.connect(silencer);
+    silencer.connect(S.micCtx.destination);
+    S.txMicOn = true;
+    S.micStreaming = false; // streaming starts only when Thetis sends line_in:0,true
+    el('txMcC').classList.add('on');
+    log('sys', 'TX mic armed — press PTT to transmit');
+  } catch(e) { log('err', 'Mic error: '+e.message); }
+}
+
+function stopTxMic() {
+  stopMicStream();
+  if (S.micStream) { S.micStream.getTracks().forEach(t => t.stop()); S.micStream = null; }
+  if (S.micCtx) { S.micCtx.close(); S.micCtx = null; }
+  S.txAnalyser = null;
+  S.txMicOn = false;
+  S.micStreaming = false;
+  el('txMcC').classList.remove('on');
+}
+
+// Start/stop mic audio streaming — called directly on PTT
+function startMicStream() {
+  if (!S.txMicOn) return;
+  S.micStreaming = true;
+  log('sys', 'TX: mic streaming started — txMicOn='+S.txMicOn+' ws='+(S.ws?S.ws.readyState:'null'));
+}
+
+function stopMicStream() {
+  if (!S.micStreaming) return;
+  S.micStreaming = false;
+  log('sys', 'TX: mic streaming stopped');
+}
+
+
+
+// ── AUDIO LEVEL METER ──
+let _auSmooth = 0;
+function drawAuMeter(smp) {
+  const cv = el('auMtr'); if (!cv) return;
+  cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+  const ctx = cv.getContext('2d');
+
+  // RMS level
+  let rms = 0; for (const s of smp) rms += s * s;
+  rms = Math.sqrt(rms / smp.length);
+
+  // Smooth: fast attack, slow decay
+  _auSmooth = rms > _auSmooth ? rms * 0.8 + _auSmooth * 0.2
+                               : rms * 0.05 + _auSmooth * 0.95;
+  const level = Math.min(1, _auSmooth * 6); // scale so typical speech hits ~0.6
+
+  const w = cv.width, h = cv.height;
+
+  // Background
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, w, h);
+
+  if (level > 0.001) {
+    // Full gradient bar — green → yellow → red
+    const g = ctx.createLinearGradient(0, 0, w, 0);
+    g.addColorStop(0,    '#3fb950'); // green
+    g.addColorStop(0.6,  '#3fb950'); // green
+    g.addColorStop(0.75, '#e3b341'); // yellow
+    g.addColorStop(0.9,  '#f85149'); // red
+    g.addColorStop(1.0,  '#ff0000');
+
+    // Clip to level width
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, level * w, h);
+    ctx.clip();
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  }
+
+  // Peak tick — brief hold at peak
+  if (!drawAuMeter._peak || _auSmooth > drawAuMeter._peak) {
+    drawAuMeter._peak = _auSmooth;
+    drawAuMeter._peakTime = Date.now();
+  } else if (Date.now() - drawAuMeter._peakTime > 800) {
+    drawAuMeter._peak *= 0.95; // decay
+  }
+  const px = Math.min(w - 2, drawAuMeter._peak * 6 * w);
+  if (px > 2) {
+    ctx.fillStyle = drawAuMeter._peak * 6 > 0.9 ? '#f85149' : '#e3b341';
+    ctx.fillRect(px, 0, 2, h);
+  }
+}
+
+// ── SPECTRUM CANVAS ──
+let specRAF;
+drawSpec.heldPeaks = [];
+const DB_MIN = -120, DB_MAX = -10; // dBFS range shown
+let specGain = 45; // dB boost applied visually — adjusted by slider
+
+function drawSpec() {
+  const cv = el('specC'); if (!cv) return;
+  const W = cv.width || cv.parentElement.offsetWidth;
+  const H = cv.height || cv.parentElement.offsetHeight;
+  const ctx = cv.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#010409';
+  ctx.fillRect(0, 0, W, H);
+
+  // Use TX analyser during TX (shows mic audio), RX analyser otherwise
+  const activeAnalyser = (S.mox && S.txAnalyser) ? S.txAnalyser : S.analyser;
+
+  if (!S.connected || !activeAnalyser || (!S.rxOn && !S.mox)) {
+    // Show placeholder text when not streaming
+    ctx.fillStyle = '#21262d';
+    ctx.font = '11px SF Mono, Consolas, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('Audio spectrum — enable RX AUDIO to activate', W/2, H/2);
+    specRAF = requestAnimationFrame(drawSpec);
+    return;
+  }
+
+  const analyser = activeAnalyser;
+  const bufLen = analyser.frequencyBinCount; // fftSize/2 = 1024
+  const freqData = new Float32Array(bufLen);
+  analyser.getFloatFrequencyData(freqData);
+
+  const sampleRate = 48000;
+  const hzPerBin = sampleRate / analyser.fftSize;
+  const dbRange = DB_MAX - DB_MIN;
+
+  // Get current filter edges — fhi drives the display range
+  const flo = Math.abs(parseInt(el('flo').value) || 100);
+  const fhi = Math.abs(parseInt(el('fhi').value) || 2900);
+  const passBandLo = Math.min(flo, fhi);
+  const passBandHi = Math.max(flo, fhi);
+
+  // Display range: always show from 0 to fhi + 15% padding, min 4kHz
+  const displayMax = Math.max(4000, Math.ceil(passBandHi * 1.15 / 500) * 500);
+  const maxBin = Math.min(bufLen - 1, Math.floor(displayMax / hzPerBin));
+
+  // dB grid lines
+  ctx.strokeStyle = '#0d1820'; ctx.lineWidth = 0.5;
+  [-100, -80, -60, -40, -20].forEach(db => {
+    const y = H * (1 - (db - DB_MIN) / dbRange);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    ctx.fillStyle = '#3d444d';
+    ctx.font = '8px SF Mono, Consolas, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(db + 'dB', 2, y - 2);
+  });
+
+  // Log scale helpers
+  const LOG_MIN = 50; // left edge Hz
+  const logMin = Math.log10(LOG_MIN);
+  const logMax = Math.log10(displayMax);
+  const hzToX = hz => hz <= 0 ? 0 : ((Math.log10(Math.max(LOG_MIN, hz)) - logMin) / (logMax - logMin)) * W;
+  const binToX = bin => hzToX(bin * hzPerBin);
+
+  // Log frequency grid lines
+  const gridFreqs = [50,100,200,300,500,700,1000,1500,2000,3000,4000,5000,6000,8000,10000]
+    .filter(f => f >= LOG_MIN && f <= displayMax);
+  ctx.strokeStyle = '#0d1820'; ctx.lineWidth = 0.5;
+  gridFreqs.forEach(f => {
+    const x = hzToX(f);
+    // Grid line — brighter for decade markers (100, 1k, 10k)
+    const decade = (f === 100 || f === 1000 || f === 10000);
+    ctx.strokeStyle = decade ? '#1a2a3a' : '#0d1820';
+    ctx.lineWidth = decade ? 1 : 0.5;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+
+    // Label background pill for readability
+    const label = f >= 1000 ? (f/1000)+'k' : f+'Hz';
+    ctx.font = 'bold 10px SF Mono, Consolas, monospace';
+    ctx.textAlign = 'center';
+    const tw = ctx.measureText(label).width;
+    const lx = x, ly = H - 4;
+    // Pill background
+    ctx.fillStyle = '#010409ee';
+    ctx.fillRect(lx - tw/2 - 3, ly - 11, tw + 6, 13);
+    // Label text — brighter for decade markers
+    ctx.fillStyle = decade ? '#8b949e' : '#484f58';
+    ctx.fillText(label, lx, ly);
+  });
+
+  // Filter boundary pixel positions (log scale)
+  const xLo = hzToX(passBandLo);
+  const xHi = hzToX(passBandHi);
+
+  // Shade outside passband
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(0,    0, xLo,     H); // below low edge
+  ctx.fillRect(xHi,  0, W - xHi, H); // above high edge
+
+  // TX passband highlight — red/orange fill when in TX mode
+  if (S.mox) {
+    ctx.fillStyle = 'rgba(255,80,0,0.13)';
+    ctx.fillRect(xLo, 0, xHi - xLo, H);
+  }
+
+  // Filter edge lines — amber in RX, red in TX
+  ctx.strokeStyle = S.mox ? '#ff5500cc' : '#e3b34199';
+  ctx.lineWidth = S.mox ? 1.5 : 1;
+  ctx.setLineDash([3, 3]);
+  [xLo, xHi].forEach(x => {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // Spectrum fill (log scale)
+  ctx.beginPath();
+  for (let i = 0; i <= maxBin; i++) {
+    const x = binToX(i);
+    const db = Math.max(DB_MIN, Math.min(DB_MAX, freqData[i] + specGain));
+    const y = H * (1 - (db - DB_MIN) / dbRange);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, 'rgba(56,139,253,0.7)');
+  g.addColorStop(1, 'rgba(56,139,253,0.05)');
+  ctx.fillStyle = g;
+  ctx.fill();
+
+  // Spectrum line (log scale)
+  ctx.beginPath();
+  for (let i = 0; i <= maxBin; i++) {
+    const x = binToX(i);
+    const db = Math.max(DB_MIN, Math.min(DB_MAX, freqData[i] + specGain));
+    const y = H * (1 - (db - DB_MIN) / dbRange);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = '#58a6ff'; ctx.lineWidth = 1.2; ctx.stroke();
+
+  // ── Peak hold detection ──
+  // Track peak bins — label stays visible as long as that frequency
+  // remains above the noise threshold (dot always follows current spectrum)
+  const peakMinDb = DB_MIN + (DB_MAX - DB_MIN) * 0.25;
+  const minBinGap = Math.max(3, Math.floor(maxBin / 60));
+  const now = Date.now();
+  const PEAK_HOLD_MS = 3000; // keep label for 3s after bin drops below threshold
+
+  // Find current local peaks
+  for (let i = 2; i < maxBin - 2; i++) {
+    const db = freqData[i] + specGain;
+    if (db < peakMinDb) continue;
+    if (db > freqData[i-1]+specGain && db > freqData[i-2]+specGain &&
+        db > freqData[i+1]+specGain && db > freqData[i+2]+specGain) {
+      let found = false;
+      for (const h of drawSpec.heldPeaks) {
+        if (Math.abs(h.bin - i) < minBinGap) {
+          // Update bin to strongest position, refresh timer
+          if (db >= h.db) h.bin = i;
+          h.db = db;
+          h.lastSeen = now;
+          found = true; break;
+        }
+      }
+      if (!found) drawSpec.heldPeaks.push({ bin: i, db, lastSeen: now });
+    }
+  }
+
+  // Remove peaks that have been gone longer than hold time
+  drawSpec.heldPeaks = drawSpec.heldPeaks.filter(h => (now - h.lastSeen) < PEAK_HOLD_MS);
+
+  // Pick top 6 by last-seen db, enforcing min gap
+  const sorted = [...drawSpec.heldPeaks].sort((a,b) => b.db - a.db);
+  const shown = [];
+  for (const p of sorted) {
+    if (shown.length >= 8) break;
+    if (shown.every(s => Math.abs(s.bin - p.bin) >= minBinGap)) shown.push(p);
+  }
+
+  // Draw — dot always sits ON the current spectrum line at that bin
+  shown.forEach(p => {
+    const x = binToX(p.bin);
+    // Use CURRENT spectrum level for the dot position, not the held level
+    const curDb = Math.max(DB_MIN, Math.min(DB_MAX, freqData[p.bin] + specGain));
+    const y = H * (1 - (curDb - DB_MIN) / (DB_MAX - DB_MIN));
+    const hz = Math.round(p.bin * hzPerBin);
+    const label = hz >= 1000 ? (hz/1000).toFixed(2).replace(/\.?0+$/,'')+'k' : hz+'Hz';
+    // Fade label as hold expires
+    const age = now - p.lastSeen;
+    const alpha = age < 500 ? 1.0 : Math.max(0.3, 1.0 - (age - 500) / (PEAK_HOLD_MS - 500));
+    const col = `rgba(240,200,74,${alpha})`;
+
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(x, y - 4);
+    ctx.lineTo(x, y - 18);
+    ctx.strokeStyle = `rgba(240,200,74,${alpha * 0.5})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    const labelW = ctx.measureText(label).width;
+    const lx = x + (x > W - 40 ? -(labelW + 4) : 4);
+    ctx.fillStyle = col;
+    ctx.font = 'bold 12px SF Mono, Consolas, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(label, lx, y - 20);
+  });
+
+  specRAF = requestAnimationFrame(drawSpec);
+}
+
+// ── WATERFALL ──
+let wfRAF, wfImg=null;
+let wfFrameSkip = 0;
+let wfSpeed = 3; // frames to skip between rows — higher = slower
+
+function drawWF() {
+  const cv=el('wfC'); if (!cv) return;
+  const W=cv.parentElement.offsetWidth, H=cv.parentElement.offsetHeight;
+  if (cv.width!==W||cv.height!==H) { cv.width=W; cv.height=H; wfImg=null; }
+  const ctx=cv.getContext('2d');
+
+  if (!S.connected || (!S.analyser && !S.txAnalyser) || (!S.rxOn && !S.mox)) {
+    ctx.fillStyle='#010409'; ctx.fillRect(0,0,W,H);
+    wfRAF=requestAnimationFrame(drawWF); return;
+  }
+
+  // Only add a new row every 3 frames (~20 rows/sec) for readable scroll speed
+  wfFrameSkip = (wfFrameSkip + 1) % wfSpeed;
+  if (wfFrameSkip !== 0) { wfRAF=requestAnimationFrame(drawWF); return; }
+
+  if (!wfImg) {
+    wfImg=ctx.createImageData(W,H);
+    const d=wfImg.data;
+    for (let i=0;i<d.length;i+=4){d[i]=1;d[i+1]=4;d[i+2]=9;d[i+3]=255;}
+  }
+
+  // Get FFT data — use TX analyser during TX, RX analyser otherwise
+  const analyser = (S.mox && S.txAnalyser) ? S.txAnalyser : S.analyser;
+  const bufLen = analyser.frequencyBinCount;
+  const freqData = new Float32Array(bufLen);
+  analyser.getFloatFrequencyData(freqData);
+
+  const flo = Math.abs(parseInt(el('flo').value) || 100);
+  const fhi = Math.abs(parseInt(el('fhi').value) || 2900);
+  const passBandHi = Math.max(flo, fhi);
+  const displayMax = Math.max(4000, Math.ceil(passBandHi * 1.15 / 500) * 500);
+  const hzPerBin = 48000 / analyser.fftSize;
+  const maxBin = Math.min(bufLen - 1, Math.floor(displayMax / hzPerBin));
+
+  // Scroll existing image down by one row
+  const d = wfImg.data;
+  d.copyWithin(W*4, 0, W*(H-1)*4);
+
+  // Write new top row from FFT data
+  // Waterfall row uses log scale matching spectrum
+  const wfLogMin = Math.log10(50);
+  const wfLogMax = Math.log10(displayMax);
+  for (let x=0; x<W; x++) {
+    const hz = Math.pow(10, wfLogMin + (x / W) * (wfLogMax - wfLogMin));
+    const bin = Math.min(maxBin, Math.round(hz / hzPerBin));
+    const db = Math.max(DB_MIN, Math.min(DB_MAX, freqData[bin] + specGain));
+    const t = (db - DB_MIN) / (DB_MAX - DB_MIN); // 0=noise floor, 1=loud
+    const [r,g,b] = wfCol(t);
+    const idx = x*4;
+    d[idx]=r; d[idx+1]=g; d[idx+2]=b; d[idx+3]=255;
+  }
+  ctx.putImageData(wfImg,0,0);
+
+  // Overlay filter edge lines on waterfall — amber in RX, red in TX
+  const wfFlo = Math.abs(parseInt(el('flo').value) || 100);
+  const wfFhi = Math.abs(parseInt(el('fhi').value) || 2900);
+  const wfPlo = Math.min(wfFlo, wfFhi);
+  const wfPhi = Math.max(wfFlo, wfFhi);
+  const toWfX = hz => hz <= 0 ? 0 : ((Math.log10(Math.max(50,hz)) - wfLogMin) / (wfLogMax - wfLogMin)) * W;
+  const wxLo = toWfX(wfPlo);
+  const wxHi = toWfX(wfPhi);
+
+  if (S.mox) {
+    // TX: red tint between edges + red dashed lines
+    ctx.fillStyle = 'rgba(255,80,0,0.08)';
+    ctx.fillRect(wxLo, 0, wxHi - wxLo, H);
+    ctx.strokeStyle = '#ff5500cc';
+    ctx.lineWidth = 1.5;
+  } else {
+    ctx.strokeStyle = '#e3b34166';
+    ctx.lineWidth = 1;
+  }
+  ctx.setLineDash([3,3]);
+  [wxLo, wxHi].forEach(x => {
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  wfRAF=requestAnimationFrame(drawWF);
+}
+
+function wfCol(t) {
+  // Black → deep blue → cyan → green → yellow → red
+  if (t < 0.2) { const s=t/0.2;       return [0, 0, Math.round(s*180)]; }
+  if (t < 0.4) { const s=(t-0.2)/0.2; return [0, Math.round(s*180), 180]; }
+  if (t < 0.6) { const s=(t-0.4)/0.2; return [0, Math.round(180+s*75), Math.round(180-s*180)]; }
+  if (t < 0.8) { const s=(t-0.6)/0.2; return [Math.round(s*255), 255, 0]; }
+  const s=(t-0.8)/0.2;                 return [255, Math.round(255-s*200), 0];
+}
+
+// ── LOG ──
+let logN=0;
+function log(type, msg) {
+  const box=el('tciLog');
+  const div=document.createElement('div');
+  div.className='log-'+type;
+  const ts=new Date().toLocaleTimeString('en',{hour12:false});
+  div.textContent=ts+'  '+msg;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+  if (++logN>120) { box.removeChild(box.firstChild); logN--; }
+}
+
+function toggleLog() {
+  const log = el('tciLog');
+  const btn = el('logTogBtn');
+  const hidden = log.style.display === 'none';
+  log.style.display = hidden ? '' : 'none';
+  btn.textContent = hidden ? 'HIDE' : 'SHOW';
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if (e.target.tagName==='INPUT') return;
+  if (e.code==='Space') { e.preventDefault(); setPTT(true); }
+});
+document.addEventListener('keyup', e => {
+  if (e.code==='Space') setPTT(false);
+});
+
+// ── INIT ──
+window.addEventListener('load', () => {
+  // Keep canvas pixel dimensions in sync with container size on window resize
+  const resizeCanvases = () => {
+    const specWrap = el('specC') && el('specC').parentElement;
+    const wfWrap   = el('wfC')  && el('wfC').parentElement;
+    if (specWrap) { el('specC').width = specWrap.offsetWidth; el('specC').height = specWrap.offsetHeight; }
+    if (wfWrap)   { el('wfC').width   = wfWrap.offsetWidth;   el('wfC').height   = wfWrap.offsetHeight; }
+  };
+  resizeCanvases();
+  window.addEventListener('resize', resizeCanvases);
+  // Also observe the body-grid in case panels are rearranged
+  if (window.ResizeObserver) {
+    new ResizeObserver(resizeCanvases).observe(document.querySelector('.body-grid') || document.body);
+  }
+
+  drawSpec(); drawWF();
+  log('sys','Thetis On The Web — ready');
+  log('sys','Thetis: Setup → Network → TCI Server → tick Server Running');
+  log('sys','Enter ws://[pc-ip]:50001 above, then click CONNECT');
+});
+
+// ── DOCK PANEL SNAP SYSTEM ──
+(function() {
+  let dragPanel = null, clone = null, ox = 0, oy = 0;
+  let dropTarget = null; // { parent, before } — where to insert on drop
+
+  // All droppable columns
+  function getColumns() {
+    return Array.from(document.querySelectorAll('.side-panel'));
+  }
+
+  // Get all drop slots in a column: before each child + after last
+  function getSlots(col) {
+    const panels = Array.from(col.querySelectorAll(':scope > .dock-panel'));
+    return panels.map(p => {
+      const r = p.getBoundingClientRect();
+      return { y: r.top + r.height / 2, before: p, parent: col };
+    }).concat([{ y: Infinity, before: null, parent: col }]);
+  }
+
+  // Show/hide drop indicator
+  function clearIndicators() {
+    document.querySelectorAll('.dock-drop-indicator').forEach(d => d.classList.remove('active'));
+  }
+
+  function showIndicator(parent, before) {
+    clearIndicators();
+    let ind;
+    if (before) {
+      ind = before.previousElementSibling;
+      if (!ind || !ind.classList.contains('dock-drop-indicator')) {
+        ind = before.parentElement.querySelector('.dock-drop-indicator[data-before="'+before.dataset.dockId+'"]');
+      }
+    } else {
+      ind = parent.querySelector('.dock-drop-indicator[data-before="end"]');
+    }
+    if (ind) ind.classList.add('active');
+  }
+
+  function insertIndicators() {
+    getColumns().forEach(col => {
+      const panels = Array.from(col.querySelectorAll(':scope > .dock-panel'));
+      // Remove old indicators
+      col.querySelectorAll('.dock-drop-indicator').forEach(d => d.remove());
+      // Add before each panel
+      panels.forEach(p => {
+        const ind = document.createElement('div');
+        ind.className = 'dock-drop-indicator';
+        ind.dataset.before = p.dataset.dockId;
+        col.insertBefore(ind, p);
+      });
+      // Add at end
+      const endInd = document.createElement('div');
+      endInd.className = 'dock-drop-indicator';
+      endInd.dataset.before = 'end';
+      col.appendChild(endInd);
+    });
+  }
+
+  function removeIndicators() {
+    document.querySelectorAll('.dock-drop-indicator').forEach(d => d.remove());
+  }
+
+  function findDropTarget(cx, cy) {
+    const cols = getColumns();
+    // Find nearest column by x distance
+    let bestCol = null, bestDist = Infinity;
+    cols.forEach(col => {
+      const r = col.getBoundingClientRect();
+      const dx = Math.max(0, r.left - cx, cx - r.right);
+      if (dx < bestDist) { bestDist = dx; bestCol = col; }
+    });
+    if (!bestCol) return null;
+
+    // Find nearest slot by y within that column
+    const slots = getSlots(bestCol);
+    let best = slots[slots.length - 1];
+    for (const slot of slots) {
+      if (cy < slot.y) { best = slot; break; }
+    }
+    return best;
+  }
+
+  function initPanel(panel) {
+    const handle = panel.querySelector('.dock-handle');
+    const colBtn = panel.querySelector('.dock-collapse');
+    if (!handle) return;
+
+    // Collapse/expand on button click or double-click handle
+    if (colBtn) colBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const arrow = panel.classList.toggle('collapsed') ? '▸' : '▾';
+      colBtn.textContent = arrow;
+    });
+    handle.addEventListener('dblclick', () => {
+      const arrow = panel.classList.toggle('collapsed') ? '▸' : '▾';
+      if (colBtn) colBtn.textContent = arrow;
+    });
+
+    handle.addEventListener('mousedown', e => {
+      if (e.target === colBtn) return;
+      e.preventDefault();
+      dragPanel = panel;
+
+      const r = panel.getBoundingClientRect();
+      ox = e.clientX - r.left;
+      oy = e.clientY - r.top;
+
+      // Create visual clone
+      clone = panel.cloneNode(true);
+      clone.id = 'dock-drag-clone';
+      clone.style.width = r.width + 'px';
+      clone.style.left  = r.left + 'px';
+      clone.style.top   = r.top + 'px';
+      document.body.appendChild(clone);
+
+      // Ghost the original
+      panel.classList.add('dragging-ghost');
+
+      // Insert drop indicators
+      insertIndicators();
+    });
+  }
+
+  document.addEventListener('mousemove', e => {
+    if (!dragPanel || !clone) return;
+    clone.style.left = (e.clientX - ox) + 'px';
+    clone.style.top  = (e.clientY - oy) + 'px';
+
+    const target = findDropTarget(e.clientX, e.clientY);
+    if (target) {
+      dropTarget = target;
+      // Highlight correct indicator
+      clearIndicators();
+      const beforeId = target.before ? target.before.dataset.dockId : 'end';
+      const ind = target.parent.querySelector('.dock-drop-indicator[data-before="'+beforeId+'"]');
+      if (ind) ind.classList.add('active');
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragPanel) return;
+
+    // Remove clone and ghost
+    if (clone) { clone.remove(); clone = null; }
+    dragPanel.classList.remove('dragging-ghost');
+
+    // Snap into drop position
+    if (dropTarget) {
+      const { parent, before } = dropTarget;
+      parent.insertBefore(dragPanel, before || null);
+      // Re-insert indicators (panel order changed)
+    }
+
+    removeIndicators();
+    dragPanel = null;
+    dropTarget = null;
+  });
+
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.dock-panel').forEach((p, i) => {
+      p.dataset.dockId = 'dp' + i;
+      initPanel(p);
+    });
+
+    // Touch swipe on VFO display for tuning (swipe up = higher freq)
+    let _tvY = null;
+    ['vfoADisp','vfoBDisp'].forEach(id => {
+      const e2 = document.getElementById(id);
+      if (!e2) return;
+      e2.addEventListener('touchstart', ev => { _tvY = ev.touches[0].clientY; ev.preventDefault(); }, { passive: false });
+      e2.addEventListener('touchmove', ev => {
+        if (_tvY === null) return;
+        const dy = _tvY - ev.touches[0].clientY;
+        if (Math.abs(dy) > 4) {
+          const vfo = id === 'vfoADisp' ? 'A' : 'B';
+          const hz = Math.max(0, (vfo==='A'?S.vfoA:S.vfoB) + Math.sign(dy) * S.step);
+          setVfoDisp(vfo, hz);
+          send('vfo:0,'+(vfo==='A'?'0':'1')+','+hz+';');
+          _tvY = ev.touches[0].clientY;
+        }
+        ev.preventDefault();
+      }, { passive: false });
+      e2.addEventListener('touchend', () => { _tvY = null; });
+    });
+  });
+})();
+
+</script>
+</body>
+</html>
+
