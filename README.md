@@ -1,32 +1,71 @@
-# Thetis On The Web
+# Thetis On The Web (TOTW)
 
-A single-file browser application that gives you full remote control 
-of an Apache Labs ANAN-G2 and other SDR transceivers running Thetis software — 
-from any device on your network or the internet.
+Thetis On The Web is a lightweight, zero-install, browser-based client for the Thetis SDR software. It communicates with Thetis via WebSockets using the TCI (Transceiver Control Interface) Protocol v2.0, providing full rig control, real-time IQ panadapter displays, and two-way audio streaming directly in your web browser.
 
-## Features
-- Full VFO A/B control with mouse wheel and touch tuning
-- Band, mode, and filter control
-- RX audio streaming to browser
-- TX audio from browser microphone via TCI
-- Real-time audio spectrum and waterfall display
-  RX level meter
-- Split, NR, Mute, Monitor, Tune
-- RX2 
-- Antenna selection
-- Mobile and tablet responsive
-- No install, no dependencies — just open the HTML file
+Built entirely with vanilla HTML, CSS, and JavaScript, it requires no build tools or external dependencies.
 
-## Requirements
-- Thetis v2.10.3.11 or later
-- Chrome or Firefox
-- Page must be served over HTTPS for microphone access (TX audio)
+## ✨ Features
 
-## Usage
-1. Host thetis-on-the-web.html on any HTTPS server (GitHub Pages works great)
-2. In Thetis: Setup → Network → TCI Server → tick Server Running
-3. Open the page, enter ws://[your-pc-ip]:50001 and click CONNECT
+* **Real-Time Panadapter & Waterfall:** Hardware-accelerated Canvas rendering with client-side FFT processing for smooth, high-resolution IQ spectrum displays.
+* **Full Rig Control:** * VFO A / VFO B control with Split and Swap functions.
+    * Mode selection (USB, LSB, CW, AM, DIGI, etc.).
+    * Adjustable tune steps, filter widths, and AF/Drive gain.
+    * Noise Reduction (NR1-4) and Auto Notch Filter (ANF) toggles.
+* **Two-Way TCI Audio:** Listen to RX audio and transmit using your local microphone directly through the browser.
+* **DX Cluster Integration:** Built-in Spothole API integration overlays DX spots directly onto the panadapter, with filtering by continent and CQ zone.
+* **Memory Management:** Save, recall, import, and export frequency memories as JSON files.
+* **Customizable Workspace:** * Draggable, dockable, and collapsible UI panels.
+    * Multiple color themes (Classic, Heat, Gray, Night, Amber).
+    * Resizable spectrum and waterfall displays.
+* **Analog & LED Metering:** High-fidelity, vintage-style analog S-Meter/Power/SWR display and a CB-style LED signal bar.
+* **Digital Mode Markers:** Visual markers on the panadapter for common FT8, FT4, WSPR, and JS8 frequencies.
 
-## TCI Protocol
-Built on TCI Protocol v2.0 (Expert Electronics).
-Tested with Apache Labs ANAN-G2 / Thetis.
+## 🚀 Getting Started
+
+### Prerequisites
+1.  **Thetis:** You must have Thetis running and configured to accept TCI connections.
+2.  **Modern Web Browser:** Chrome, Edge, or Firefox are recommended for optimal WebAudio and Canvas performance.
+
+### Installation & Usage
+Because TOTW is a single-file web application, "installation" is instant:
+
+1.  Open Thetis and ensure the **TCI Server** is enabled (usually found in Setup > TCI). Note the port number (default is usually `50001`).
+2.  Open the `totw.html` file in your web browser. 
+3.  In the top navigation bar, ensure the WebSocket address matches your Thetis TCI server (e.g., `ws://127.0.0.1:50001` or `ws://<your-radio-ip>:50001`).
+4.  Click **CONNECT**.
+
+*Note: For microphone access during TX, modern browsers require the page to be served over `https://` or accessed via `localhost` / `127.0.0.1`.*
+
+### Configuration
+Click the gear icon (⚙) in the top bar to open the Settings modal. Here you can configure:
+* Your operator details (Callsign, Grid, Name) — *e.g., N9BC / EN54.*
+* Auto-connect on startup.
+* Spacebar PTT behavior (Momentary hold vs. Toggle).
+* UI Theme and panel visibility.
+* DX Cluster filtering rules.
+
+## ⌨️ Keyboard Shortcuts
+
+| Shortcut | Action |
+| :--- | :--- |
+| **Space** | PTT (momentary hold or toggle based on settings) |
+| **Up / Down** | VFO step up / down |
+| **Ctrl + Up/Down** | Large VFO step (×10) |
+| **Mouse Wheel** | Scroll over the spectrum or VFO digits to tune |
+| **Ctrl + Scroll** | Zoom in/out on the panadapter |
+| **Dbl-Click Spec** | Reset panadapter zoom |
+| **M** | Save current frequency to memory |
+| **F1 – F4** | Recall memories 1 through 4 |
+| **D** | Toggle digital mode markers |
+| **X** | Toggle DX cluster overlay |
+| **P** | Toggle peak hold on the spectrum |
+| **?** | Show keyboard shortcut help |
+| **Esc** | Close active modals |
+
+## 🛠️ Technical Details
+* **TCI Protocol:** Utilizes TCI v2.0 for all telemetry, control, and binary audio/IQ streams.
+* **Audio Pipeline:** Uses the Web Audio API (`AudioContext`). Float32 interleaved stereo streams are decoded directly from the WebSocket binary frames.
+* **IQ Processing:** Raw I/Q data is processed in the browser using a custom Radix-2 Cooley-Tukey FFT implementation with a Blackman-Harris window.
+
+## 📝 License
+*MIT
