@@ -104,6 +104,14 @@ body {
   user-select: none;
 }
 .vfo-freq .mhz { font-size: 18px; color: #388bfd; }
+.vfo-freq .vfo-digit {
+  cursor: pointer;
+  padding: 0 0.5px;
+  border-radius: 2px;
+  transition: background 0.1s, color 0.1s;
+}
+.vfo-freq .vfo-digit:hover { background: #388bfd33; color: #79c0ff; }
+.vfo-freq.secondary .vfo-digit:hover { background: #30363d; color: #e6edf3; }
 .vfo-freq.secondary { font-size: 20px; color: #7d8590; }
 .vfo-freq.secondary .mhz { font-size: 14px; color: #484f58; }
 
@@ -186,6 +194,22 @@ body {
   overflow-y: auto;
 }
 .side-panel.right { border-right: none; border-left: 1px solid #30363d; }
+
+/* ── CENTER-BOTTOM DOCK ZONE ── */
+.center-dock {
+  background: #161b22;
+  border-top: 1px solid #30363d;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  overflow-x: auto;
+  overflow-y: visible;
+  flex-shrink: 0;
+}
+.center-dock:empty { display: none; }
+.center-dock > .dock-panel { min-width: 200px; flex: 0 0 auto; }
 
 .sec-title {
   font-size: 9px;
@@ -320,6 +344,55 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
 .f-btn:hover { background: #30363d; color: #e6edf3; }
 .f-btn.active { background: #1f4a8a; border-color: #388bfd; color: #79c0ff; }
 
+/* ── S-METER ── */
+.smeter-canvas { width: 100%; height: 105px; display: block; border-radius: 4px; }
+.smeter-readout {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 4px;
+  padding: 3px 6px;
+  background: #0d1117;
+  border-radius: 4px;
+  font-family: 'SF Mono','Consolas',monospace;
+}
+.smeter-dbm { font-size: 13px; color: #e6edf3; font-weight: 600; }
+.smeter-sunit { font-size: 15px; color: #58a6ff; font-weight: 700; letter-spacing: 0.04em; }
+.smeter-src { font-size: 8px; color: #484f58; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* LED bar S-meter (CB style) */
+.led-meter-wrap {
+  background: #0a0a0a;
+  border: 2px solid #3a3428;
+  border-radius: 5px;
+  padding: 6px 8px 4px;
+  position: relative;
+}
+.led-meter-canvas { width: 100%; height: 32px; display: block; }
+.led-meter-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  font-family: 'SF Mono','Consolas',monospace;
+  margin-top: 2px;
+}
+.led-meter-label span { color: #3fb950; }
+.led-meter-label .led-red { color: #f85149; }
+
+/* Bandwidth display */
+.bw-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  font-family: 'SF Mono','Consolas',monospace;
+}
+.bw-label { font-size: 9px; color: #7d8590; letter-spacing: 0.06em; }
+.bw-value { font-size: 12px; color: #e3b341; font-weight: 600; }
+
 /* ── AGC ── */
 
 
@@ -328,12 +401,35 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
 
 /* spectrum */
 .spectrum-wrap {
-  flex: 1;
+  height: 300px;
+  flex-shrink: 0;
   position: relative;
   background: #010409;
   border-bottom: 1px solid #30363d;
-  min-height: 120px;
+  min-height: 80px;
   overflow: hidden;
+}
+
+/* spectrum resize handle */
+.spec-resize-handle {
+  height: 6px;
+  background: #161b22;
+  border-top: 1px solid #30363d;
+  border-bottom: 1px solid #30363d;
+  cursor: ns-resize;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.spec-resize-handle:hover { background: #21262d; }
+.spec-resize-handle::after {
+  content: '— — —';
+  font-size: 7px;
+  letter-spacing: 3px;
+  color: #484f58;
+  pointer-events: none;
 }
 canvas.spec { position: absolute; inset: 0; width: 100%; height: 100%; }
 
@@ -384,17 +480,41 @@ canvas.spec { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 /* waterfall */
 .wf-wrap {
-  height: 110px;
+  height: 200px;
   position: relative;
   background: #010409;
   border-bottom: 1px solid #30363d;
   overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* spectrum/waterfall resize handle */
+.wf-resize-handle {
+  height: 6px;
+  background: #161b22;
+  border-top: 1px solid #30363d;
+  border-bottom: 1px solid #30363d;
+  cursor: ns-resize;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.wf-resize-handle:hover { background: #21262d; }
+.wf-resize-handle::after {
+  content: '— — —';
+  font-size: 7px;
+  letter-spacing: 3px;
+  color: #484f58;
+  pointer-events: none;
 }
 canvas.wf { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 /* TCI log */
 .tci-log {
-  height: 90px;
+  flex: 1;
+  min-height: 40px;
   overflow-y: auto;
   padding: 6px 10px;
   font-family: 'SF Mono','Consolas',monospace;
@@ -408,6 +528,22 @@ canvas.wf { position: absolute; inset: 0; width: 100%; height: 100%; }
 .log-rx  { color: #3fb950; }
 .log-err { color: #f85149; }
 .log-sys { color: #484f58; }
+
+/* waterfall theme + peak hold buttons */
+.wf-theme-btn {
+  font-size: 8px;
+  padding: 2px 6px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 3px;
+  color: #8b949e;
+  cursor: pointer;
+  font-family: 'SF Mono', monospace;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.wf-theme-btn:hover { background: #30363d; color: #e6edf3; }
+.wf-theme-btn.active { background: #1f4a8a; border-color: #388bfd; color: #79c0ff; }
 
 /* audio vis */
 .audio-wrap {
@@ -507,6 +643,69 @@ canvas.audio-cv { width: 100%; height: 100%; }
   .spectrum-wrap { min-height: 180px; }
 }
 
+/* ── UTC CLOCK ── */
+.utc-clock { font-family:'SF Mono','Consolas',monospace; font-size:15px; color:#58a6ff; background:#21262d; border:1px solid #30363d; padding:3px 10px; border-radius:4px; white-space:nowrap; letter-spacing:0.06em; font-weight:600; }
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(1,4,9,0.88); z-index:10000; display:flex; align-items:center; justify-content:center; }
+.modal-overlay.hidden { display:none; }
+.modal-box { background:#161b22; border:1px solid #30363d; border-radius:10px; padding:20px 24px; min-width:340px; max-width:520px; max-height:82vh; overflow-y:auto; box-shadow:0 16px 48px rgba(0,0,0,0.8); position:relative; }
+.modal-title { font-size:14px; font-weight:600; color:#e6edf3; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; }
+.modal-close { font-size:18px; color:#7d8590; cursor:pointer; background:none; border:none; line-height:1; }
+.modal-close:hover { color:#e6edf3; }
+.modal-sep { height:1px; background:#21262d; margin:10px 0; }
+.modal-lbl { font-size:10px; color:#7d8590; letter-spacing:0.08em; text-transform:uppercase; font-family:'SF Mono','Consolas',monospace; display:block; margin-bottom:4px; }
+.modal-in { width:100%; background:#21262d; border:1px solid #30363d; color:#e6edf3; padding:5px 9px; border-radius:4px; font-family:'SF Mono','Consolas',monospace; font-size:12px; outline:none; margin-bottom:8px; }
+.modal-in:focus { border-color:#388bfd; }
+.modal-row { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+.modal-row label { flex:1; font-size:11px; color:#8b949e; }
+.mbtn { font-size:11px; padding:5px 12px; background:#21262d; border:1px solid #30363d; color:#e6edf3; border-radius:5px; cursor:pointer; font-family:'SF Mono','Consolas',monospace; }
+.mbtn:hover { background:#30363d; }
+.mbtn.pri { background:#1f4a8a; border-color:#388bfd; color:#79c0ff; }
+.mbtn.pri:hover { background:#2a5ba0; }
+.mbtn.danger { border-color:#da3633; color:#f85149; }
+.mbtn.danger:hover { background:#3d0d0d; }
+
+/* ── RIT ── */
+.rit-display { font-family:'SF Mono','Consolas',monospace; font-size:12px; color:#e3b341; min-width:58px; text-align:right; }
+.rit-btn { font-size:11px; padding:2px 7px; background:#21262d; border:1px solid #30363d; color:#8b949e; border-radius:3px; cursor:pointer; font-family:'SF Mono','Consolas',monospace; }
+.rit-btn:hover { background:#30363d; color:#e6edf3; }
+.rit-btn.on { background:#2a1f0d; border-color:#e3b341; color:#e3b341; }
+
+/* ── DX TOOLTIP ── */
+#dxTooltip { position:fixed; background:#0d1117; border:1px solid #388bfd; border-radius:5px; padding:6px 10px; font-family:'SF Mono','Consolas',monospace; font-size:11px; color:#e6edf3; pointer-events:none; z-index:9999; display:none; box-shadow:0 4px 16px rgba(0,0,0,0.7); line-height:1.7; }
+
+/* ── MEMORIES ── */
+.mem-row td { padding:2px 4px; font-family:'SF Mono','Consolas',monospace; font-size:10px; }
+.mem-row:hover td { background:#21262d; cursor:pointer; }
+.mem-freq { color:#58a6ff; }
+.mem-mode { color:#3fb950; }
+.mem-name { color:#8b949e; max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mem-del { color:#484f58; }
+.mem-del:hover { color:#f85149; }
+.mem-table { width:100%; border-collapse:collapse; }
+
+/* ── PROPAGATION ── */
+.prop-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.prop-cell { background:#0d1117; border:1px solid #21262d; border-radius:3px; padding:3px 5px; text-align:center; }
+.prop-val { font-size:15px; font-weight:700; font-family:'SF Mono','Consolas',monospace; color:#e6edf3; display:block; }
+.prop-key { font-size:8px; color:#484f58; letter-spacing:0.06em; }
+.prop-cond { font-size:9px; font-weight:600; font-family:'SF Mono','Consolas',monospace; padding:2px 5px; border-radius:3px; }
+.cond-good { background:#0d2a0d; color:#3fb950; }
+.cond-fair { background:#2a1f0d; color:#e3b341; }
+.cond-poor { background:#3d0d0d; color:#f85149; }
+
+/* ── RECORDER ── */
+.rec-btn { font-size:11px; padding:3px 9px; background:#21262d; border:1px solid #30363d; color:#8b949e; border-radius:4px; cursor:pointer; font-family:'SF Mono','Consolas',monospace; display:flex; align-items:center; gap:5px; }
+.rec-btn:hover { background:#30363d; color:#e6edf3; }
+.rec-btn.on { background:#3d0d0d; border-color:#f85149; color:#f85149; }
+.rec-dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+
+/* ── KEYBOARD OVERLAY ── */
+.keys-grid { display:grid; grid-template-columns:auto 1fr; gap:4px 14px; align-items:center; }
+.kbd { font-family:'SF Mono','Consolas',monospace; font-size:11px; background:#21262d; border:1px solid #30363d; border-radius:4px; padding:2px 7px; color:#e6edf3; text-align:center; white-space:nowrap; }
+.kdesc { font-size:11px; color:#8b949e; }
+
 /* ── DOCK PANELS ── */
 .dock-panel {
   background: #161b22;
@@ -572,6 +771,88 @@ canvas.audio-cv { width: 100%; height: 100%; }
   min-width: 170px;
   max-width: 220px;
 }
+
+/* ── TUNING SLIDER ── */
+.tuning-knob-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  align-self: center;
+  width: 100%;
+  max-width: 280px;
+}
+.tuning-knob-container.hidden { display: none; }
+.tuning-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 40px;
+  background: #30363d;
+  border-radius: 20px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+.tuning-slider:hover { background: #40464d; }
+.tuning-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #388bfd;
+  border: 3px solid #0d1117;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: background 0.15s, transform 0.15s;
+}
+.tuning-slider::-webkit-slider-thumb:hover { background: #4a9eff; transform: scale(1.05); }
+.tuning-slider::-webkit-slider-thumb:active { transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.tuning-slider::-moz-range-thumb {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: #388bfd; border: 3px solid #0d1117;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.tuning-slider::-moz-range-thumb:hover { background: #4a9eff; }
+.tuning-slider::-moz-range-thumb:active { box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.tuning-knob-label {
+  font-size: 11px; color: #7d8590;
+  font-family: 'SF Mono','Consolas',monospace;
+  letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;
+}
+@media (max-width: 860px) {
+  .tuning-knob-container { max-width: 100%; gap: 12px; }
+  .tuning-slider { height: 50px; }
+  .tuning-slider::-webkit-slider-thumb { width: 70px; height: 70px; }
+  .tuning-slider::-moz-range-thumb { width: 70px; height: 70px; }
+  .tuning-knob-label { font-size: 14px; }
+}
+@media (max-width: 480px) {
+  .tuning-slider { height: 60px; }
+  .tuning-slider::-webkit-slider-thumb { width: 80px; height: 80px; }
+  .tuning-slider::-moz-range-thumb { width: 80px; height: 80px; }
+  .tuning-knob-label { font-size: 16px; }
+}
+
+/* ── FREQ DOCK ZONE ── */
+.freq-dock {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.freq-dock > .dock-panel { flex: 0 0 auto; }
+.freq-dock .dock-body { padding: 5px 8px; }
+.freq-dock .dock-handle { padding: 3px 8px; }
+/* Hidden panels (visibility controlled via settings) */
+.dock-panel.dp-hidden { display: none !important; }
 </style>
 </head>
 <body style="touch-action: manipulation;">
@@ -582,23 +863,15 @@ canvas.audio-cv { width: 100%; height: 100%; }
   <span class="status-label" id="sLabel">OFFLINE</span>
   <span class="callsign">Thetis On The Web</span>
   <div class="spacer"></div>
+  <span class="utc-clock" id="utcClock">00:00:00 UTC</span>
 
-  <!-- Band buttons -->
-  <button class="band-btn" data-band="160m" data-freq="1900000">160m</button>
-  <button class="band-btn" data-band="80m"  data-freq="3700000">80m</button>
-  <button class="band-btn" data-band="60m"  data-freq="5330500">60m</button>
-  <button class="band-btn" data-band="40m"  data-freq="7200000">40m</button>
-  <button class="band-btn" data-band="30m"  data-freq="10130000">30m</button>
-  <button class="band-btn active" data-band="20m" data-freq="14225000">20m</button>
-  <button class="band-btn" data-band="17m"  data-freq="18130000">17m</button>
-  <button class="band-btn" data-band="15m"  data-freq="21300000">15m</button>
-  <button class="band-btn" data-band="12m"  data-freq="24940000">12m</button>
-  <button class="band-btn" data-band="10m"  data-freq="28500000">10m</button>
-  <button class="band-btn" data-band="6m"   data-freq="50200000">6m</button>
-
-  <div class="spacer"></div>
   <input type="text" class="conn-input" id="hostInput" value="ws://127.0.0.1:50001" />
   <button class="btn-connect" id="connBtn" onclick="toggleConn()">CONNECT</button>
+
+  <!-- Settings gear -->
+  <button class="band-btn" onclick="openModal('settingsModal')" title="Settings" style="font-size:14px;padding:3px 9px;">⚙</button>
+  <!-- Keyboard shortcut help -->
+  <button class="band-btn" onclick="openModal('keysModal')" title="Keyboard shortcuts" style="font-size:13px;padding:3px 9px;">?</button>
 
   <!-- TX/RX pill -->
   <div style="display:flex;align-items:center;gap:6px;padding:3px 10px;background:#21262d;border:1px solid #30363d;border-radius:20px;">
@@ -607,61 +880,97 @@ canvas.audio-cv { width: 100%; height: 100%; }
   </div>
 </div>
 
-<!-- ── VFO / FREQ ROW ── -->
-<div class="freq-row">
+<!-- ── FREQ DOCK ── -->
+<div class="freq-dock" id="freqDock">
 
-  <!-- VFO A -->
-  <div class="vfo-block">
-    <div class="vfo-label">VFO A</div>
-    <div class="vfo-freq" id="vfoADisp" onclick="editFreq('A')">14.225<span class="mhz"> MHz</span></div>
-    <input class="vfo-freq-input" id="vfoAIn" onblur="commitFreq('A')" onkeydown="freqKey(event,'A')" />
+  <!-- Bands -->
+  <div class="dock-panel" id="dpBands">
+    <div class="dock-handle"><span class="dock-title">Bands</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+    <div class="dock-body">
+      <div style="display:flex;flex-wrap:wrap;gap:3px;">
+        <button class="band-btn" data-band="160m" data-freq="1900000">160m</button>
+        <button class="band-btn" data-band="80m"  data-freq="3700000">80m</button>
+        <button class="band-btn" data-band="60m"  data-freq="5330500">60m</button>
+        <button class="band-btn" data-band="40m"  data-freq="7200000">40m</button>
+        <button class="band-btn" data-band="30m"  data-freq="10130000">30m</button>
+        <button class="band-btn active" data-band="20m" data-freq="14225000">20m</button>
+        <button class="band-btn" data-band="17m"  data-freq="18130000">17m</button>
+        <button class="band-btn" data-band="15m"  data-freq="21300000">15m</button>
+        <button class="band-btn" data-band="12m"  data-freq="24940000">12m</button>
+        <button class="band-btn" data-band="10m"  data-freq="28500000">10m</button>
+        <button class="band-btn" data-band="6m"   data-freq="50200000">6m</button>
+      </div>
+    </div>
   </div>
 
-  <!-- Swap controls -->
-  <div class="vfo-swap-row">
-    <button class="vbtn" onclick="vfoSwap('A2B')">A→B</button>
-    <button class="vbtn" onclick="vfoSwap('B2A')">B→A</button>
-    <button class="vbtn" onclick="vfoSwap('SWAP')">A⇌B</button>
+  <!-- VFO -->
+  <div class="dock-panel" id="dpVFO">
+    <div class="dock-handle"><span class="dock-title">VFO</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+    <div class="dock-body">
+      <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+        <div class="vfo-block">
+          <div class="vfo-label">VFO A</div>
+          <div class="vfo-freq" id="vfoADisp" ondblclick="editFreq('A')">14.225<span class="mhz"> MHz</span></div>
+          <input class="vfo-freq-input" id="vfoAIn" onblur="commitFreq('A')" onkeydown="freqKey(event,'A')" />
+        </div>
+        <div class="vfo-swap-row">
+          <button class="vbtn" onclick="vfoSwap('A2B')">A→B</button>
+          <button class="vbtn" onclick="vfoSwap('B2A')">B→A</button>
+          <button class="vbtn" onclick="vfoSwap('SWAP')">A⇌B</button>
+        </div>
+        <div class="vfo-block">
+          <div class="vfo-label">VFO B</div>
+          <div class="vfo-freq secondary" id="vfoBDisp" ondblclick="editFreq('B')">14.196<span class="mhz"> MHz</span></div>
+          <input class="vfo-freq-input" id="vfoBIn" onblur="commitFreq('B')" onkeydown="freqKey(event,'B')" style="font-size:20px;width:180px;color:#7d8590;" />
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="vfo-divider"></div>
-
-  <!-- VFO B -->
-  <div class="vfo-block">
-    <div class="vfo-label">VFO B</div>
-    <div class="vfo-freq secondary" id="vfoBDisp" onclick="editFreq('B')">14.196<span class="mhz"> MHz</span></div>
-    <input class="vfo-freq-input" id="vfoBIn" onblur="commitFreq('B')" onkeydown="freqKey(event,'B')" style="font-size:20px;width:180px;color:#7d8590;" />
+  <!-- Tune Step -->
+  <div class="dock-panel" id="dpStep">
+    <div class="dock-handle"><span class="dock-title">Tune Step</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+    <div class="dock-body">
+      <div class="step-row" id="stepRow">
+        <button class="sbtn" data-hz="1" onclick="setStep(this,1)">1Hz</button>
+        <button class="sbtn" data-hz="10" onclick="setStep(this,10)">10</button>
+        <button class="sbtn" data-hz="100" onclick="setStep(this,100)">100</button>
+        <button class="sbtn active" data-hz="500" onclick="setStep(this,500)">500</button>
+        <button class="sbtn" data-hz="1000" onclick="setStep(this,1000)">1k</button>
+        <button class="sbtn" data-hz="5000" onclick="setStep(this,5000)">5k</button>
+        <button class="sbtn" data-hz="9000" onclick="setStep(this,9000)">9k</button>
+      </div>
+    </div>
   </div>
 
-  <div class="vfo-divider"></div>
-
-  <!-- Tune step -->
-  <div class="step-row" id="stepRow">
-    <button class="sbtn" data-hz="1" onclick="setStep(this,1)">1Hz</button>
-    <button class="sbtn" data-hz="10" onclick="setStep(this,10)">10</button>
-    <button class="sbtn" data-hz="100" onclick="setStep(this,100)">100</button>
-    <button class="sbtn active" data-hz="500" onclick="setStep(this,500)">500</button>
-    <button class="sbtn" data-hz="1000" onclick="setStep(this,1000)">1k</button>
-    <button class="sbtn" data-hz="5000" onclick="setStep(this,5000)">5k</button>
-    <button class="sbtn" data-hz="9000" onclick="setStep(this,9000)">9k</button>
+  <!-- Mode -->
+  <div class="dock-panel" id="dpMode">
+    <div class="dock-handle"><span class="dock-title">Mode</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+    <div class="dock-body">
+      <div class="mode-grid" id="modeBtns">
+        <button class="mode-btn" data-m="LSB" onclick="setMode('LSB')">LSB</button>
+        <button class="mode-btn active" data-m="USB" onclick="setMode('USB')">USB</button>
+        <button class="mode-btn" data-m="CWL" onclick="setMode('CWL')">CWL</button>
+        <button class="mode-btn" data-m="CWU" onclick="setMode('CWU')">CWU</button>
+        <button class="mode-btn" data-m="AM" onclick="setMode('AM')">AM</button>
+        <button class="mode-btn" data-m="SAM" onclick="setMode('SAM')">SAM</button>
+        <button class="mode-btn" data-m="NFM" onclick="setMode('NFM')">FM</button>
+        <button class="mode-btn" data-m="DIGU" onclick="setMode('DIGU')">DIGU</button>
+        <button class="mode-btn" data-m="DIGL" onclick="setMode('DIGL')">DIGL</button>
+        <button class="mode-btn" data-m="DSB" onclick="setMode('DSB')">DSB</button>
+      </div>
+    </div>
   </div>
 
-  <div class="vfo-divider"></div>
-
-  <!-- Modes -->
-  <div style="display:flex;flex-direction:column;gap:4px;">
-    <div class="vfo-label">MODE</div>
-    <div class="mode-grid" id="modeBtns">
-      <button class="mode-btn" data-m="LSB" onclick="setMode('LSB')">LSB</button>
-      <button class="mode-btn active" data-m="USB" onclick="setMode('USB')">USB</button>
-      <button class="mode-btn" data-m="CWL" onclick="setMode('CWL')">CWL</button>
-      <button class="mode-btn" data-m="CWU" onclick="setMode('CWU')">CWU</button>
-      <button class="mode-btn" data-m="AM" onclick="setMode('AM')">AM</button>
-      <button class="mode-btn" data-m="SAM" onclick="setMode('SAM')">SAM</button>
-      <button class="mode-btn" data-m="NFM" onclick="setMode('NFM')">FM</button>
-      <button class="mode-btn" data-m="DIGU" onclick="setMode('DIGU')">DIGU</button>
-      <button class="mode-btn" data-m="DIGL" onclick="setMode('DIGL')">DIGL</button>
-      <button class="mode-btn" data-m="DSB" onclick="setMode('DSB')">DSB</button>
+  <!-- Tuning Slider (hidden by default, enable in Settings → Panel Visibility) -->
+  <div class="dock-panel dp-hidden" id="dpTuning">
+    <div class="dock-handle"><span class="dock-title">Tuning Slider</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+    <div class="dock-body">
+      <div class="tuning-knob-container">
+        <input type="range" class="tuning-slider" id="tuningSlider" min="-50" max="50" value="0" step="1"
+          oninput="adjustFrequency(this.value)" onmouseup="resetSlider()" ontouchend="resetSlider()">
+        <span class="tuning-knob-label" id="tuningStepLabel">TUNE (500Hz)</span>
+      </div>
     </div>
   </div>
 
@@ -673,31 +982,89 @@ canvas.audio-cv { width: 100%; height: 100%; }
   <!-- ══ LEFT — RECEIVE ══ -->
   <div class="side-panel" id="leftPanel">
 
+    <div class="dock-panel" id="dpSMeter">
+      <div class="dock-handle"><span class="dock-title">S-Meter</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <canvas class="smeter-canvas" id="smeterC"></canvas>
+        <div class="smeter-readout">
+          <span class="smeter-dbm" id="smDbm">–––  dBm</span>
+          <span class="smeter-sunit" id="smSunit">– – –</span>
+        </div>
+        <div style="text-align:center;margin-top:2px;"><span class="smeter-src" id="smSrc">waiting for tci</span></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
+          <span class="ctrl-lbl">CAL</span>
+          <input type="range" min="-30" max="60" value="20" step="1" id="smCalSlider" style="flex:1;height:3px;cursor:pointer;"
+            oninput="smCal=parseInt(this.value);el('smCalV').textContent=(smCal>=0?'+':'')+smCal+'dB';saveState()">
+          <span id="smCalV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:36px;text-align:right;">+20dB</span>
+        </div>
+      </div>
+    </div>
 
-    <div class="dock-panel">
+    <div class="dock-panel" id="dpSigBar">
+      <div class="dock-handle"><span class="dock-title">Signal Bar</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="led-meter-wrap">
+          <canvas class="led-meter-canvas" id="ledMeterC"></canvas>
+          <div class="led-meter-label">
+            <span>SIG</span><span>1</span><span>3</span><span>5</span><span>7</span><span>9</span>
+            <span class="led-red">+30dB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dock-panel" id="dpNetwork">
+      <div class="dock-handle"><span class="dock-title">Network</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="bw-display">
+          <span class="bw-label">▼ RX</span>
+          <span class="bw-value" id="netRx">0 kB/s</span>
+        </div>
+        <div class="bw-display" style="margin-top:3px;">
+          <span class="bw-label">▲ TX</span>
+          <span class="bw-value" id="netTx" style="color:#388bfd;">0 kB/s</span>
+        </div>
+        <div class="bw-display" style="margin-top:3px;">
+          <span class="bw-label">TOTAL</span>
+          <span class="bw-value" id="netTotal" style="font-size:10px;color:#7d8590;">0 MB</span>
+          <span class="bw-label">PKTS</span>
+          <span class="bw-value" id="netPkts" style="font-size:10px;color:#7d8590;">0</span>
+        </div>
+        <div style="margin-top:4px;background:#0d1117;border-radius:3px;height:4px;overflow:hidden;">
+          <div id="netBar" style="height:100%;width:0%;background:linear-gradient(90deg,#3fb950,#e3b341,#f85149);border-radius:3px;transition:width 0.3s;"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="dock-panel" id="dpAFGain">
       <div class="dock-handle"><span class="dock-title">AF Gain</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
       <div class="dock-body">
         <div class="ctrl-head" style="display:flex;justify-content:space-between;margin-bottom:4px;">
           <span class="ctrl-lbl">AF GAIN</span><span class="ctrl-val" id="afV">-10 dB</span>
         </div>
-        <input type="range" min="-60" max="0" value="-10" step="1" oninput="sl('af',this.value)" style="width:100%">
+        <input type="range" min="-60" max="0" value="-10" step="1" id="afSlider" oninput="sl('af',this.value)" style="width:100%">
       </div>
     </div>
 
 
 
 
-    <div class="dock-panel">
+    <div class="dock-panel" id="dpNR">
       <div class="dock-handle"><span class="dock-title">Noise Reduction</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
       <div class="dock-body">
-        <div class="chip-grid">
-          <button class="chip" id="nrC"  onclick="tog('nr')">NR</button>
+        <div class="chip-grid" style="grid-template-columns:repeat(5,1fr);gap:4px;">
+          <button class="chip" id="nr1C" onclick="setNR(1)">NR</button>
+          <button class="chip" id="nr2C" onclick="setNR(2)">NR2</button>
+          <button class="chip" id="nr3C" onclick="setNR(3)">NR3</button>
+          <button class="chip" id="nr4C" onclick="setNR(4)">NR4</button>
+          <button class="chip" id="anfC" onclick="togANF()">ANF</button>
         </div>
       </div>
     </div>
 
 
-    <div class="dock-panel">
+    <div class="dock-panel" id="dpFilter">
       <div class="dock-handle"><span class="dock-title">Filter Width</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
       <div class="dock-body">
         <div class="filter-grid" id="filtG">
@@ -723,6 +1090,20 @@ canvas.audio-cv { width: 100%; height: 100%; }
 
 
 
+    <div class="dock-panel" id="dpTCILog">
+      <div class="dock-handle">
+        <span class="dock-title">TCI Log</span>
+        <span class="dock-collapse" title="Collapse/expand">▾</span>
+      </div>
+      <div class="dock-body" style="padding:4px 4px 4px;">
+        <div class="tci-log" id="tciLog" style="flex:none;height:160px;border-top:none;"></div>
+        <div style="display:flex;justify-content:flex-end;gap:4px;padding-top:3px;">
+          <button onclick="copyTciLog()" style="font-size:8px;padding:1px 7px;background:#21262d;border:1px solid #30363d;border-radius:3px;color:#484f58;cursor:pointer;" id="logCopyBtn">COPY</button>
+          <button onclick="el('tciLog').innerHTML='';logN=0;" style="font-size:8px;padding:1px 7px;background:#21262d;border:1px solid #30363d;border-radius:3px;color:#484f58;cursor:pointer;">CLEAR</button>
+        </div>
+      </div>
+    </div>
+
   </div><!-- end left -->
 
   <!-- ══ CENTER ══ -->
@@ -732,47 +1113,50 @@ canvas.audio-cv { width: 100%; height: 100%; }
     <div class="spectrum-wrap" id="specWrap">
       <canvas class="spec" id="specC"></canvas>
       <div class="db-labels">
-        <span>-60</span><span>-80</span><span>-100</span><span>-120</span>
+        <span>-40</span><span>-70</span><span>-100</span><span>-130</span>
       </div>
       <div class="vfo-cursor" id="vfoCursor" data-f="14.225 MHz"></div>
       <div class="spec-overlay" id="specMsg">
         <div class="spec-msg">
-          <strong>Panadapter</strong>
+          <strong>IQ Panadapter</strong>
           Connect to Thetis to activate.<br>
-          All controls are live over TCI.<br>
-          <span style="font-size:9px;color:#3d444d;">Spectrum streaming pending Thetis TCI update.</span>
+          192 kHz wideband IQ spectrum over TCI.<br>
+          Click on spectrum to tune VFO.<br>
         </div>
       </div>
     </div>
 
+    <!-- Spectrum resize handle -->
+    <div class="spec-resize-handle" id="specResizeHandle" title="Drag to resize spectrum"></div>
+
     <!-- Spectrum gain + waterfall speed sliders -->
     <div style="display:flex;align-items:center;gap:12px;padding:3px 8px;background:#0d1117;border-bottom:1px solid #30363d;">
       <span style="font-size:9px;color:#7d8590;font-family:'SF Mono',monospace;white-space:nowrap;">SPEC GAIN</span>
-      <input type="range" min="-60" max="120" value="45" step="1" style="flex:1;height:4px;cursor:pointer;"
-        oninput="specGain=parseInt(this.value);document.getElementById('specGainV').textContent=(specGain>=0?'+':'')+specGain+'dB'">
-      <span id="specGainV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:42px;text-align:right;">+45dB</span>
+      <input type="range" min="-60" max="120" value="20" step="1" id="specGainSlider" style="flex:1;height:4px;cursor:pointer;"
+        oninput="specGain=parseInt(this.value);document.getElementById('specGainV').textContent=(specGain>=0?'+':'')+specGain+'dB';saveState()">
+      <span id="specGainV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:42px;text-align:right;">+20dB</span>
       <span style="font-size:9px;color:#7d8590;font-family:'SF Mono',monospace;white-space:nowrap;margin-left:8px;">WF SPEED</span>
-      <input type="range" min="1" max="60" value="3" step="1" style="width:80px;height:4px;cursor:pointer;"
-        oninput="wfSpeed=parseInt(this.value);document.getElementById('wfSpeedV').textContent=this.value">
-      <span id="wfSpeedV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:16px;text-align:right;">3</span>
-      <span style="font-size:9px;color:#7d8590;font-family:'SF Mono',monospace;white-space:nowrap;margin-left:8px;">FFT SPEED</span>
-      <input type="range" min="80" max="99" value="89" step="1" style="width:80px;height:4px;cursor:pointer;"
-        oninput="if(S.analyser){S.analyser.smoothingTimeConstant=parseInt(this.value)/100;document.getElementById('fftSpeedV').textContent=(100-parseInt(this.value))+'%'}">
-      <span id="fftSpeedV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:28px;text-align:right;">11%</span>
+      <input type="range" min="1" max="60" value="17" step="1" id="wfSpeedSlider" style="width:80px;height:4px;cursor:pointer;"
+        oninput="wfSpeed=parseInt(this.value);document.getElementById('wfSpeedV').textContent=this.value;saveState()">
+      <span id="wfSpeedV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:16px;text-align:right;">17</span>
+      <span style="font-size:9px;color:#7d8590;font-family:'SF Mono',monospace;white-space:nowrap;margin-left:8px;">FFT SMOOTH</span>
+      <input type="range" min="0" max="95" value="90" step="5" id="fftSmoothSlider" style="width:80px;height:4px;cursor:pointer;"
+        oninput="IQ.smooth=parseInt(this.value)/100;if(S.analyser){S.analyser.smoothingTimeConstant=parseInt(this.value)/100;}document.getElementById('fftSpeedV').textContent=this.value+'%';saveState()">
+      <span id="fftSpeedV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:28px;text-align:right;">90%</span>
+      <div style="width:1px;height:16px;background:#30363d;margin:0 6px;flex-shrink:0;"></div>
+      <button id="peakHoldBtn" onclick="togglePeakHold()" class="wf-theme-btn" style="padding:2px 8px;">PEAK</button>
     </div>
 
+    <!-- Waterfall resize handle -->
+    <div class="wf-resize-handle" id="wfResizeHandle" title="Drag to resize waterfall"></div>
+
     <!-- Waterfall -->
-    <div class="wf-wrap">
+    <div class="wf-wrap" id="wfWrap">
       <canvas class="wf" id="wfC"></canvas>
     </div>
 
-    <!-- TCI Log -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 8px;background:#0d1117;border-top:1px solid #30363d;">
-      <span style="font-size:9px;color:#484f58;font-family:'SF Mono',monospace;">── TCI message log ──</span>
-      <button onclick="toggleLog()" id="logTogBtn" style="font-size:9px;padding:1px 7px;background:#21262d;border:1px solid #30363d;border-radius:3px;color:#8b949e;cursor:pointer;">HIDE</button>
-    </div>
-    <div class="tci-log" id="tciLog">
-    </div>
+    <!-- Center-bottom dock zone (panels can be dragged here) -->
+    <div class="center-dock" id="centerDock"></div>
 
   </div><!-- end center -->
 
@@ -780,7 +1164,7 @@ canvas.audio-cv { width: 100%; height: 100%; }
   <div class="side-panel right" id="rightPanel">
 
 
-    <div class="dock-panel">
+    <div class="dock-panel" id="dpTransmit">
       <div class="dock-handle"><span class="dock-title">Transmit</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
       <div class="dock-body">
         <div class="meter-card" style="margin-bottom:6px;">
@@ -802,7 +1186,7 @@ canvas.audio-cv { width: 100%; height: 100%; }
 
 
 
-    <div class="dock-panel">
+    <div class="dock-panel" id="dpOptions">
       <div class="dock-handle"><span class="dock-title">Options</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
       <div class="dock-body">
         <div class="chip-grid">
@@ -814,7 +1198,7 @@ canvas.audio-cv { width: 100%; height: 100%; }
     </div>
 
 
-    <div class="dock-panel">
+    <div class="dock-panel" id="dpTCIAudio">
       <div class="dock-handle"><span class="dock-title">TCI Audio</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
       <div class="dock-body">
         <div class="chip-grid" style="margin-bottom:6px;">
@@ -823,12 +1207,15 @@ canvas.audio-cv { width: 100%; height: 100%; }
         </div>
         <span class="ctrl-lbl" style="display:block;margin-bottom:3px;">RX LEVEL</span>
         <div class="audio-wrap"><canvas class="audio-cv" id="auMtr"></canvas></div>
-
+        <div id="micLvlWrap" style="display:none;margin-top:5px;">
+          <span class="ctrl-lbl" style="display:block;margin-bottom:3px;">MIC LEVEL</span>
+          <div class="meter-bg"><div class="meter-fill" id="micLvlBar" style="width:0%;background:linear-gradient(90deg,#3fb950 0%,#e3b341 70%,#f85149 100%);"></div></div>
+        </div>
       </div>
     </div>
 
 
-    <div class="dock-panel">
+    <div class="dock-panel" id="dpAntenna">
       <div class="dock-handle"><span class="dock-title">Antenna</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
       <div class="dock-body">
         <div class="chip-grid">
@@ -841,7 +1228,7 @@ canvas.audio-cv { width: 100%; height: 100%; }
     </div>
 
 
-    <div class="dock-panel">
+    <div class="dock-panel" id="dpRX2">
       <div class="dock-handle"><span class="dock-title">Second Receiver</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
       <div class="dock-body">
         <button class="chip" id="rx2C" onclick="togRX2()" style="margin-bottom:6px;">RX2 ON</button>
@@ -853,9 +1240,254 @@ canvas.audio-cv { width: 100%; height: 100%; }
     </div>
 
 
+    <div class="dock-panel" id="dpDXCluster">
+      <div class="dock-handle"><span class="dock-title">DX Cluster</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">
+          <button class="chip" id="dxEnableC" onclick="togDXCluster()" style="font-size:9px;padding:3px 8px;">ENABLE</button>
+          <label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#8b949e;font-family:'SF Mono',monospace;cursor:pointer;">
+            <input type="checkbox" id="dxTrackBand" onchange="dxApplyFilter()" style="cursor:pointer;"> Track Band
+          </label>
+          <label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#8b949e;font-family:'SF Mono',monospace;cursor:pointer;">
+            <input type="checkbox" id="dxTrackMode" onchange="dxApplyFilter()" style="cursor:pointer;"> Track Mode
+          </label>
+        </div>
+        <div id="dxList" style="max-height:130px;overflow-y:auto;font-family:'SF Mono',monospace;font-size:9px;line-height:1.8;"></div>
+        <div style="margin-top:3px;font-size:8px;color:#484f58;font-family:'SF Mono',monospace;text-align:right;" id="dxAge"></div>
+      </div>
+    </div>
+
+    <div class="dock-panel" id="dpMemories">
+      <div class="dock-handle"><span class="dock-title">Memories</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div style="display:flex;gap:4px;margin-bottom:5px;flex-wrap:wrap;">
+          <button class="mbtn pri" onclick="memSave()" style="font-size:9px;padding:3px 8px;">SAVE</button>
+          <button class="mbtn" onclick="openModal('memModal')" style="font-size:9px;padding:3px 8px;">ALL</button>
+          <button class="mbtn" onclick="memExport()" style="font-size:9px;padding:3px 8px;">EXPORT</button>
+          <button class="mbtn" onclick="memImportClick()" style="font-size:9px;padding:3px 8px;">IMPORT</button>
+          <input type="file" id="memImportFile" accept=".json" style="display:none" onchange="memImportLoad(this)">
+        </div>
+        <div id="memListShort" style="max-height:120px;overflow-y:auto;"></div>
+      </div>
+    </div>
+
   </div><!-- end right -->
 
 </div><!-- end body-grid -->
+
+<!-- DX hover tooltip -->
+<div id="dxTooltip"></div>
+
+<!-- ── SETTINGS MODAL ── -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box" style="min-width:400px;">
+    <div class="modal-title">
+      <span>⚙ Settings</span>
+      <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+    </div>
+    <label class="modal-lbl">Callsign / Operator</label>
+    <input class="modal-in" id="cfgCall" placeholder="W1AW" maxlength="12">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div><label class="modal-lbl">Grid Square</label>
+      <input class="modal-in" id="cfgGrid" placeholder="FN31" maxlength="8"></div>
+      <div><label class="modal-lbl">Name</label>
+      <input class="modal-in" id="cfgName" placeholder="Operator name" maxlength="24"></div>
+    </div>
+    <div class="modal-sep"></div>
+    <div class="modal-row">
+      <label>Auto-connect on startup</label>
+      <input type="checkbox" id="cfgAutoConn">
+    </div>
+    <div class="modal-row">
+      <label>Show digital mode markers on panadapter</label>
+      <input type="checkbox" id="cfgDigMarkers" checked>
+    </div>
+    <div class="modal-row">
+      <label>Spacebar PTT mode</label>
+      <select id="cfgPttMode" style="background:#21262d;border:1px solid #30363d;color:#e6edf3;border-radius:4px;padding:3px 6px;font-family:'SF Mono',monospace;font-size:11px;">
+        <option value="momentary">Momentary (hold)</option>
+        <option value="toggle">Toggle (click)</option>
+      </select>
+    </div>
+    <div class="modal-row">
+      <label>PTT watchdog timeout (minutes)</label>
+      <input type="number" id="cfgPttTimeout" min="1" max="30" value="3" style="width:60px;" class="modal-in" style="margin-bottom:0;">
+    </div>
+    <div class="modal-sep"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div><label class="modal-lbl">dB Floor</label>
+      <input type="number" class="modal-in" id="cfgDbFloor" value="-140" min="-200" max="-50"></div>
+      <div><label class="modal-lbl">dB Ceiling</label>
+      <input type="number" class="modal-in" id="cfgDbCeil" value="-30" min="-100" max="0"></div>
+    </div>
+    <label class="modal-lbl">Color Theme — Spectrum &amp; Waterfall</label>
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;" id="colorThemeBtns">
+      <button class="mbtn pri" data-theme="classic" onclick="setColorTheme(this)">Classic</button>
+      <button class="mbtn" data-theme="heat" onclick="setColorTheme(this)">Heat</button>
+      <button class="mbtn" data-theme="gray" onclick="setColorTheme(this)">Gray</button>
+      <button class="mbtn" data-theme="night" onclick="setColorTheme(this)">Night</button>
+      <button class="mbtn" data-theme="amber" onclick="setColorTheme(this)">Amber</button>
+    </div>
+    <div class="modal-sep"></div>
+
+    <!-- DX Cluster Filters -->
+    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:10px;letter-spacing:0.04em;">DX Cluster Filters</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="modal-lbl">My Continent</label>
+        <select class="modal-in" id="cfgMyContinent" style="margin-bottom:0;">
+          <option value="">— not set —</option>
+          <option value="NA">NA — North America</option>
+          <option value="SA">SA — South America</option>
+          <option value="EU">EU — Europe</option>
+          <option value="AF">AF — Africa</option>
+          <option value="AS">AS — Asia</option>
+          <option value="OC">OC — Oceania</option>
+        </select>
+      </div>
+      <div>
+        <label class="modal-lbl">My CQ Zone (1–40)</label>
+        <input type="number" class="modal-in" id="cfgMyZone" min="1" max="40" placeholder="e.g. 5" style="margin-bottom:0;">
+      </div>
+    </div>
+
+    <div class="modal-row">
+      <label>Only show spots where DX is in my CQ zone</label>
+      <input type="checkbox" id="cfgDxOnlyMyZone">
+    </div>
+    <div class="modal-row">
+      <label>Hide DX on my continent (true DX only)</label>
+      <input type="checkbox" id="cfgDxHideMyContinent">
+    </div>
+    <div class="modal-row">
+      <label>Only spots from my continent (local spotters)</label>
+      <input type="checkbox" id="cfgDxLocalSpotters">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="modal-lbl">Max spot age</label>
+        <select class="modal-in" id="cfgDxMaxAge" style="margin-bottom:0;">
+          <option value="0">All time</option>
+          <option value="15">15 minutes</option>
+          <option value="30" selected>30 minutes</option>
+          <option value="60">1 hour</option>
+          <option value="120">2 hours</option>
+        </select>
+      </div>
+      <div>
+        <label class="modal-lbl">DX continent</label>
+        <select class="modal-in" id="cfgDxContinent" style="margin-bottom:0;">
+          <option value="">All continents</option>
+          <option value="NA">NA — North America</option>
+          <option value="SA">SA — South America</option>
+          <option value="EU">EU — Europe</option>
+          <option value="AF">AF — Africa</option>
+          <option value="AS">AS — Asia</option>
+          <option value="OC">OC — Oceania</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-sep"></div>
+
+    <!-- Panel Visibility -->
+    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:10px;letter-spacing:0.04em;">Panel Visibility</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:10px;font-size:11px;">
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Bands</label><input type="checkbox" id="vis_dpBands" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>VFO</label><input type="checkbox" id="vis_dpVFO" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Tune Step</label><input type="checkbox" id="vis_dpStep" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Mode</label><input type="checkbox" id="vis_dpMode" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Tuning Slider</label><input type="checkbox" id="vis_dpTuning"></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>S-Meter</label><input type="checkbox" id="vis_dpSMeter" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Signal Bar</label><input type="checkbox" id="vis_dpSigBar" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Network</label><input type="checkbox" id="vis_dpNetwork" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>AF Gain</label><input type="checkbox" id="vis_dpAFGain" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Noise Reduction</label><input type="checkbox" id="vis_dpNR" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Filter Width</label><input type="checkbox" id="vis_dpFilter" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>TCI Log</label><input type="checkbox" id="vis_dpTCILog" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Transmit</label><input type="checkbox" id="vis_dpTransmit" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Options</label><input type="checkbox" id="vis_dpOptions" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>TCI Audio</label><input type="checkbox" id="vis_dpTCIAudio" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Antenna</label><input type="checkbox" id="vis_dpAntenna" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Second Receiver</label><input type="checkbox" id="vis_dpRX2"></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>DX Cluster</label><input type="checkbox" id="vis_dpDXCluster" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Memories</label><input type="checkbox" id="vis_dpMemories" checked></div>
+    </div>
+    <div class="modal-sep"></div>
+
+    <!-- Greyline Map -->
+    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:10px;letter-spacing:0.04em;">Greyline Propagation Map</div>
+    <div class="modal-row">
+      <label>Show greyline map overlay on panadapter</label>
+      <input type="checkbox" id="cfgGreyline">
+    </div>
+    <div style="margin-bottom:8px;">
+      <label class="modal-lbl">Greyline image URL (refreshed every 5 min)</label>
+      <input class="modal-in" id="cfgGreylineUrl" placeholder="https://pure-editions.com/on7off/greyline.jpg" style="font-size:11px;">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="modal-lbl">Opacity (0–100%)</label>
+        <input type="number" class="modal-in" id="cfgGreylineOpacity" min="10" max="100" value="80" style="margin-bottom:0;">
+      </div>
+    </div>
+
+    <div class="modal-sep"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="mbtn" onclick="closeModal('settingsModal')">Cancel</button>
+      <button class="mbtn pri" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── KEYBOARD SHORTCUTS MODAL ── -->
+<div class="modal-overlay hidden" id="keysModal">
+  <div class="modal-box" style="min-width:360px;">
+    <div class="modal-title">
+      <span>⌨ Keyboard Shortcuts</span>
+      <button class="modal-close" onclick="closeModal('keysModal')">✕</button>
+    </div>
+    <div class="keys-grid">
+      <span class="kbd">Space</span><span class="kdesc">PTT (momentary hold)</span>
+      <span class="kbd">F1–F4</span><span class="kdesc">Recall memories 1–4</span>
+      <span class="kbd">↑ / ↓</span><span class="kdesc">VFO step up / down</span>
+      <span class="kbd">Ctrl+↑/↓</span><span class="kdesc">Large step (×10)</span>
+      <span class="kbd">M</span><span class="kdesc">Save current freq to memory</span>
+      <span class="kbd">Ctrl+scroll</span><span class="kdesc">Zoom in/out on panadapter</span>
+      <span class="kbd">Dbl-click spec</span><span class="kdesc">Reset zoom</span>
+      <span class="kbd">D</span><span class="kdesc">Toggle digital mode markers</span>
+      <span class="kbd">X</span><span class="kdesc">Toggle DX cluster overlay</span>
+      <span class="kbd">P</span><span class="kdesc">Toggle peak hold</span>
+      <span class="kbd">?</span><span class="kdesc">This help overlay</span>
+      <span class="kbd">Esc</span><span class="kdesc">Close modals / cancel</span>
+    </div>
+    <div style="text-align:right;margin-top:14px;">
+      <button class="mbtn pri" onclick="closeModal('keysModal')">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MEMORIES MODAL ── -->
+<div class="modal-overlay hidden" id="memModal">
+  <div class="modal-box" style="min-width:420px;">
+    <div class="modal-title">
+      <span>♦ Frequency Memories</span>
+      <button class="modal-close" onclick="closeModal('memModal')">✕</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+      <button class="mbtn pri" onclick="memSave()">Save current freq</button>
+      <button class="mbtn" onclick="memExport()">Export JSON</button>
+      <button class="mbtn" onclick="memImportClick()">Import JSON</button>
+      <button class="mbtn danger" onclick="memClearAll()">Clear all</button>
+    </div>
+    <div id="memModalList"></div>
+    <div style="text-align:right;margin-top:10px;">
+      <button class="mbtn pri" onclick="closeModal('memModal')">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- ════════════════════ JS ════════════════════ -->
 <script>
@@ -864,12 +1496,22 @@ const S = {
   ws: null, connected: false,
   vfoA: 14225000, vfoB: 14196000,
   mode: 'USB', mox: false, tune: false,
-  step: 500,
+  step: 500, _pttWatchdog: null,
   audioCtx: null, rxOn: false, txMicOn: false, micStream: null, micCtx: null, micStreaming: false, txAnalyser: null,
+  // IQ panadapter
+  iqOn: false, iqSR: 192000, iqCentre: 14225000,
 };
 
 // noise / toggle states
 const TG = {};
+
+// ── BANDPASS DRAG / PREVIEW STATE ──
+let bpDragHzOffset = 0;          // Hz offset during drag (read by drawSpec for preview)
+let bpDraggingInProgress = false; // suppress incoming VFO updates while dragging
+let bpIgnoreVfoUpdateUntil = 0;  // timestamp — ignore radio VFO echoes until this time
+let sliderLastValue = 0;         // tuning slider last position
+let _wheelCommitTimer = null;    // debounce timer for wheel tuning
+let _wheelBaseVfo = 0;           // VFO baseline when wheel scrolling starts
 
 // ── WEBSOCKET ──
 function toggleConn() {
@@ -891,9 +1533,35 @@ function connect() {
       S._autoStartRx = true;
 
       document.getElementById('specMsg').style.display = 'none';
+      startSmeterPoll();
+      startNetMonitor();
+      // Start IQ panadapter stream
+      setTimeout(() => {
+        if (S.ws && S.ws.readyState === 1) {
+          S.ws.send('iq_samplerate:192000;'); netTx(22);
+          S.ws.send('iq_start:0;'); netTx(12);
+          S.iqOn = true;
+          log('sys', 'IQ panadapter stream started (192 kHz)');
+        }
+      }, 500);
+
+      // Auto-start RX audio — fires after 'ready' message OR after 1.5s fallback
+      setTimeout(() => {
+        if (S.connected && !S.rxOn) {
+          log('sys', 'Auto-starting RX audio…');
+          togAudio('rx');
+        }
+      }, 1500);
     };
     S.ws.onmessage = onMsg;
-    S.ws.onclose   = () => { S.connected = false; setUI(false); log('sys','Disconnected'); stopRx(); };
+    S.ws.onclose   = () => {
+      S.connected = false; S.iqOn = false;
+      if (S.mox)  { S.mox = false;  stopMicStream(); updTXRX(); log('err','⚠ PTT auto-released — connection lost'); }
+      if (S.tune) { S.tune = false; updTune(); }
+      if (S._pttWatchdog) { clearTimeout(S._pttWatchdog); S._pttWatchdog = null; }
+      setUI(false); log('sys','Disconnected'); stopRx(); stopSmeterPoll(); stopNetMonitor();
+      SM.dbm = null; SM.smoothDbm = -130; SM.peakDbm = -130;
+    };
     S.ws.onerror   = () => { log('err','Connection error — is Thetis TCI Server running?'); setUI(false); };
   } catch(e) { log('err', 'Bad URL: ' + e.message); setUI(false); }
 }
@@ -902,26 +1570,28 @@ function disconnect() { if (S.ws) S.ws.close(); }
 
 function onMsg(evt) {
   if (evt.data instanceof ArrayBuffer) {
-    // All binary frames are TCI data (audio or IQ) — route by header type
+    netRx(evt.data.byteLength);
     rxAudio(evt.data);
     return;
   }
-  // Text frames are TCI command messages
+  // Text frames
+  netRx(evt.data.length);
   evt.data.trim().split(';').map(s=>s.trim()).filter(Boolean).forEach(parseTCI);
 }
 
 // Commands that fire many times/sec — suppress from log to avoid flood
 const _logSilence = new Set([
-  'vfo','if',
+  'vfo','if','rx_smeter','s_meter','smeter',
   // Known Thetis startup broadcast messages — informational only, no action needed
   'protocol','device','receive_only','trx_count','channels_count',
   'vfo_limits','if_limits','modulations_list','dds',
   'tx_frequency','tx_frequency_thetis',
-  'rx_enable','rx_nr_enable','rx_nr_enable_ex','rx_anf_enable',
+  'rx_enable','rx_nr_enable','rx_nr_enable_ex',
+  'tx_power','swr',
   'rx_volume','rx_ctun_ex','rx_mute',
   'tx_profiles_ex','tx_profile_ex','calibration_ex',
   'rx_channel_enable','tx_enable',
-  'iq_stop','iq_samplerate',
+  'iq_stop','iq_samplerate','iq_start',
   'audio_stream_sample_type','audio_stream_channels',
   'audio_stream_samples','tx_stream_audio_buffering',
   'mon_enable','mon_volume',
@@ -946,9 +1616,20 @@ function parseTCI(msg) {
     case 'vfo':
       if (args.length >= 3) {
         const v = parseInt(args[2]);
-        if (args[0]==='0' && args[1]==='0') setVfoDisp('A', v);
+        // Ignore radio echo-backs while user is dragging/scrolling to prevent display jitter
+        if (args[0]==='0' && args[1]==='0') {
+          if (Date.now() >= bpIgnoreVfoUpdateUntil) setVfoDisp('A', v);
+        }
         if (args[0]==='0' && args[1]==='1') setVfoDisp('B', v);
       }
+      break;
+    case 'dds':
+      if (args.length >= 2 && args[0] === '0') {
+        S.iqCentre = parseInt(args[1]) || S.iqCentre;
+      }
+      break;
+    case 'iq_samplerate':
+      S.iqSR = parseInt(args[0]) || 192000;
       break;
     case 'modulation':
       if (args.length >= 2 && args[0] === '0') {
@@ -993,6 +1674,53 @@ function parseTCI(msg) {
       TG.mute = args[0]==='true'; el('muteC').classList.toggle('on', TG.mute);
       break;
 
+    // S-meter: Thetis sends rx_smeter:receiver,vfo,dBm
+    case 'rx_smeter':
+    case 's_meter':
+    case 'smeter':
+      {
+        const val = parseFloat(args[args.length - 1]);
+        if (!isNaN(val)) { smTciLastTime = Date.now(); updateSmeter(val, 'tci'); }
+      }
+      break;
+
+    // NR state from Thetis — rx_nr_enable_ex has 3rd arg with NR type (1-4)
+    case 'rx_nr_enable':
+      // Just the master on/off — we rely on rx_nr_enable_ex for the NR type
+      break;
+    case 'rx_nr_enable_ex':
+      if (args.length >= 2 && args[0] === '0') {
+        if (args[1] === 'true' && args.length >= 3) {
+          activeNR = parseInt(args[2]) || 1;  // 3rd arg = NR type (1,2,3,4)
+        } else if (args[1] === 'false') {
+          activeNR = 0;
+        }
+        ['nr1C','nr2C','nr3C','nr4C'].forEach((id, i) => {
+          const b = el(id); if (b) b.classList.toggle('on', activeNR === i + 1);
+        });
+      }
+      break;
+
+
+    case 'tx_power':
+      if (args.length >= 2 && args[0] === '0') {
+        SM.txWatts = parseFloat(args[1]) || 0;
+        const pct = Math.min(100, SM.txWatts);
+        if (el('txPBar')) el('txPBar').style.width = pct + '%';
+        if (el('txPV'))  el('txPV').textContent = SM.txWatts.toFixed(1) + ' W';
+      }
+      break;
+    case 'swr':
+      if (args.length >= 2 && args[0] === '0') {
+        SM.swr = Math.max(1.0, parseFloat(args[1]) || 1.0);
+      }
+      break;
+    case 'rx_anf_enable':
+      if (args.length >= 2 && args[0] === '0') {
+        anfOn = args[1] === 'true';
+        const ab2 = el('anfC'); if (ab2) ab2.classList.toggle('on', anfOn);
+      }
+      break;
 
     default:
       // Log truly unknown commands (not in silence list) — useful for discovering new TCI commands
@@ -1004,7 +1732,7 @@ function parseTCI(msg) {
 }
 
 function send(msg) {
-  if (S.ws && S.ws.readyState === 1) { S.ws.send(msg); log('tx', msg); }
+  if (S.ws && S.ws.readyState === 1) { S.ws.send(msg); netTx(msg.length); log('tx', msg); }
 }
 
 // ── UI helpers ──
@@ -1067,12 +1795,58 @@ function updBandButtons(hz) {
 function setVfoDisp(vfo, hz) {
   if (vfo==='A') S.vfoA=hz; else S.vfoB=hz;
   const mhz = hz / 1e6;
-  const whole = Math.floor(mhz);
-  const dec = mhz.toFixed(4).split('.')[1];
+  const whole = Math.floor(mhz).toString();
+  const dec = mhz.toFixed(4).split('.')[1]; // 4 decimal digits
   const disp = el('vfo' + vfo + 'Disp');
-  disp.innerHTML = whole + '.' + dec + '<span class="mhz"> MHz</span>';
-  if (vfo==='A') updBandButtons(hz);  // keep band bar in sync with VFO A
+
+  // Build digit spans: each digit gets a data-hz attribute for its positional value
+  // Whole part: e.g. "14" → positions 10MHz, 1MHz
+  // Decimal part: "2250" → 100kHz, 10kHz, 1kHz, 100Hz
+  const decValues = [100000, 10000, 1000, 100];
+  let html = '';
+
+  // Whole MHz digits
+  const wholeValues = [];
+  for (let i = 0; i < whole.length; i++) {
+    wholeValues.push(Math.pow(10, whole.length - 1 - i) * 1000000);
+  }
+  for (let i = 0; i < whole.length; i++) {
+    html += '<span class="vfo-digit" data-hz="' + wholeValues[i] + '" data-vfo="' + vfo + '">' + whole[i] + '</span>';
+  }
+  html += '.';
+  // Decimal digits
+  for (let i = 0; i < 4; i++) {
+    html += '<span class="vfo-digit" data-hz="' + decValues[i] + '" data-vfo="' + vfo + '">' + dec[i] + '</span>';
+  }
+  html += '<span class="mhz"> MHz</span>';
+  disp.innerHTML = html;
+  if (vfo==='A') {
+    updBandButtons(hz);
+    if (specZoom > 1) specZoomCentre = hz; // keep zoomed view tracking VFO A
+  }
+  saveState();
 }
+
+// Handle digit clicks: left-click = increment, right-click = decrement
+document.addEventListener('click', function(e) {
+  const d = e.target.closest('.vfo-digit');
+  if (!d) return;
+  const vfo = d.dataset.vfo;
+  const step = parseInt(d.dataset.hz);
+  const hz = Math.max(0, (vfo==='A' ? S.vfoA : S.vfoB) + step);
+  setVfoDisp(vfo, hz);
+  send('vfo:0,' + (vfo==='A'?'0':'1') + ',' + hz + ';');
+});
+document.addEventListener('contextmenu', function(e) {
+  const d = e.target.closest('.vfo-digit');
+  if (!d) return;
+  e.preventDefault();
+  const vfo = d.dataset.vfo;
+  const step = parseInt(d.dataset.hz);
+  const hz = Math.max(0, (vfo==='A' ? S.vfoA : S.vfoB) - step);
+  setVfoDisp(vfo, hz);
+  send('vfo:0,' + (vfo==='A'?'0':'1') + ',' + hz + ';');
+});
 
 function editFreq(vfo) {
   const disp = el('vfo' + vfo + 'Disp');
@@ -1133,6 +1907,10 @@ function setStep(btn, hz) {
   S.step = hz;
   document.querySelectorAll('#stepRow .sbtn').forEach(b =>
     b.classList.toggle('active', parseInt(b.dataset.hz)===hz));
+  // Update tuning slider label to reflect new step size
+  const lbl = el('tuningStepLabel');
+  if (lbl) lbl.textContent = 'TUNE (' + (hz >= 1000 ? (hz/1000)+'kHz' : hz+'Hz') + ')';
+  saveState();
 }
 
 // ── BAND ──
@@ -1160,6 +1938,15 @@ function setMode(m) {
     el('flo').value = lo; el('fhi').value = hi;
     send('rx_filter_band:0,' + lo + ',' + hi + ';');
   }
+  saveState();
+}
+
+// ── ANF ──
+let anfOn = false;
+function togANF() {
+  anfOn = !anfOn;
+  send('rx_anf_enable:0,' + anfOn + ';');
+  const b = el('anfC'); if (b) b.classList.toggle('on', anfOn);
 }
 
 // ── FILTER ──
@@ -1184,18 +1971,45 @@ function setFilt(btn) {
   el('flo').value = lo;
   el('fhi').value = hi;
   send('rx_filter_band:0,' + lo + ',' + hi + ';');
+  saveState();
 }
 function customFilt() {
   document.querySelectorAll('#filtG .f-btn').forEach(b => b.classList.remove('active'));
   send('rx_filter_band:0,'+el('flo').value+','+el('fhi').value+';');
+  saveState();
 }
 
 // ── AGC ──
 
-// ── NOISE TOGGLES ──
-const noiseCmd = {
-  nr:'rx_nr_enable:0,'
-};
+// ── NOISE REDUCTION — mutually exclusive NR1/2/3/4 ──
+// Reverse-engineered from TCI sniffer:
+//   NR off:  rx_nr_enable:0,false;  +  rx_nr_enable_ex:0,false,0;
+//   NR1 on:  rx_nr_enable:0,true;   +  rx_nr_enable_ex:0,true,1;
+//   NR2 on:  rx_nr_enable:0,true;   +  rx_nr_enable_ex:0,true,2;
+//   NR3 on:  rx_nr_enable:0,true;   +  rx_nr_enable_ex:0,true,3;
+//   NR4 on:  rx_nr_enable:0,true;   +  rx_nr_enable_ex:0,true,4;
+let activeNR = 0;  // 0=off, 1=NR, 2=NR2, 3=NR3, 4=NR4
+
+function setNR(n) {
+  if (activeNR === n) {
+    // Clicking active NR → turn it off
+    send('rx_nr_enable:0,false;');
+    send('rx_nr_enable_ex:0,false,0;');
+    activeNR = 0;
+  } else {
+    // Turn on selected NR type
+    send('rx_nr_enable:0,true;');
+    send('rx_nr_enable_ex:0,true,' + n + ';');
+    activeNR = n;
+  }
+  // Update button visuals
+  ['nr1C','nr2C','nr3C','nr4C'].forEach((id, i) => {
+    const btn = el(id);
+    if (btn) btn.classList.toggle('on', activeNR === i + 1);
+  });
+}
+
+const noiseCmd = {};
 const noiseSpecial = {};
 function tog(k) {
   TG[k] = !TG[k];
@@ -1214,12 +2028,19 @@ function tog(k) {
 // ── PTT / TUNE ──
 function setPTT(on) {
   if (S.mox === on) return; // ignore duplicate events
+  if (S._pttWatchdog) { clearTimeout(S._pttWatchdog); S._pttWatchdog = null; }
   S.mox = on;
   updTXRX();
   send('trx:0,' + on + (on ? ',tci' : '') + ';');
   if (on) {
+    // 3-minute auto-release safety watchdog
+    S._pttWatchdog = setTimeout(() => {
+      log('err', '⚠ PTT auto-released — 3 min timeout');
+      setPTT(false);
+    }, 180000);
     if (!S.txMicOn) {
-      log('err', 'TX MIC not armed — click TX MIC button first, then PTT');
+      // Auto-arm mic on first PTT press
+      startTxMic().then(() => { if (S.mox) startMicStream(); });
     } else {
       startMicStream();
     }
@@ -1239,7 +2060,7 @@ function sl(k, v) {
 
     rx2:   () => { el('rx2V').textContent=v;          send('rx_volume:1,'+(v-100)+';'); },
   };
-  if (map[k]) map[k]();
+  if (map[k]) { map[k](); saveState(); }
 }
 
 
@@ -1334,7 +2155,7 @@ async function startRx() {
     audioSeq.forEach((cmd, i) => {
       setTimeout(() => {
         if (S.ws && S.ws.readyState === 1) {
-          S.ws.send(cmd);
+          S.ws.send(cmd); netTx(cmd.length);
           log('tx', cmd);
         }
       }, i * 20); // 20ms between each command
@@ -1388,11 +2209,16 @@ function rxAudio(buf) {
   audioDiag.binaryFrames++;
   audioDiag.lastSize = buf.byteLength;
 
-  // Watch for TX_CHRONO even when RX audio is off
+  // Route by TCI 2.0 64-byte header type field at offset 24
+  // IQ frames: sr=192000 at offset 4, type=0 at offset 24, 2112 bytes total
+  // Audio frames: 8-byte non-standard header, different size
   if (buf.byteLength >= 64) {
     const dv = new DataView(buf);
+    const srAt4 = dv.getUint32(4, true);
     const typeAt24 = dv.getUint32(24, true);
-    if (typeAt24 === 3) { handleTxChrono(dv); return; }
+    if (typeAt24 === 3) { handleTxChrono(dv); return; }  // TX_CHRONO
+    // IQ detection: sample rate > 48000 and type=0, or frame is exactly IQ-sized
+    if (typeAt24 === 0 && srAt4 > 48000 && srAt4 <= 1000000) { handleIQFrame(buf); return; }
   }
 
   if (!S.audioCtx || !S.rxOn) return;
@@ -1554,6 +2380,7 @@ async function startTxMic() {
 
       if (S.ws && S.ws.readyState === 1) {
         S.ws.send(buf);
+        netTx(buf.byteLength);
         txFrameCount++;
         if (txFrameCount === 1) {
           log('sys', 'TX frame 1: 64-byte header + '+stereoCount+' floats = '+buf.byteLength+'b total');
@@ -1577,7 +2404,15 @@ async function startTxMic() {
     S.micStreaming = false; // streaming starts only when Thetis sends line_in:0,true
     el('txMcC').classList.add('on');
     log('sys', 'TX mic armed — press PTT to transmit');
-  } catch(e) { log('err', 'Mic error: '+e.message); }
+  } catch(e) {
+    const msg = e.name === 'NotAllowedError'
+      ? 'Mic access DENIED — open browser site settings and allow microphone, then reload'
+      : e.name === 'NotFoundError'
+      ? 'No microphone found — check device connections'
+      : 'Mic error: ' + e.message;
+    log('err', msg);
+    alert(msg);
+  }
 }
 
 function stopTxMic() {
@@ -1660,11 +2495,821 @@ function drawAuMeter(smp) {
   }
 }
 
+// ── S-METER ──
+let smCal = 20;  // IQ S-meter calibration offset in dB (tune so S9 ≈ -73 dBm)
+const SM = {
+  dbm: null,          // current dBm reading (null = no data)
+  smoothDbm: -130,    // smoothed for needle
+  peakDbm: -130,      // peak hold
+  peakTime: 0,
+  source: 'tci',      // 'tci' or 'audio'
+  pollId: null,
+  txWatts: 0,         // TX forward power (watts) from tx_power TCI
+  swr: 1.0,           // SWR from swr TCI
+};
+
+// S-unit dBm thresholds (50-ohm convention)
+const S_UNITS = [
+  { label:'S1', dbm:-121 }, { label:'S2', dbm:-115 }, { label:'S3', dbm:-109 },
+  { label:'S4', dbm:-103 }, { label:'S5', dbm:-97  }, { label:'S6', dbm:-91  },
+  { label:'S7', dbm:-85  }, { label:'S8', dbm:-79  }, { label:'S9', dbm:-73  },
+  { label:'+10',dbm:-63  }, { label:'+20',dbm:-53  }, { label:'+30',dbm:-43  },
+  { label:'+40',dbm:-33  }, { label:'+60',dbm:-13  },
+];
+
+function dbmToSunit(dbm) {
+  if (dbm == null) return '– – –';
+  for (let i = S_UNITS.length - 1; i >= 0; i--) {
+    if (dbm >= S_UNITS[i].dbm) {
+      if (i >= 8) return 'S9 ' + S_UNITS[i].label;  // S9+xx
+      return S_UNITS[i].label;
+    }
+  }
+  return 'S0';
+}
+
+// Normalise dBm to 0..1 for meter arc
+function dbmToNorm(dbm) {
+  // S1 (-121) = 0, S9+60 (-13) = 1
+  return Math.max(0, Math.min(1, (dbm - (-127)) / ((-13) - (-127))));
+}
+
+// Start polling Thetis for S-meter data
+let smTciLastTime = 0;
+function startSmeterPoll() {
+  if (SM.pollId) return;
+  SM.pollId = setInterval(() => {
+    if (!S.connected || S.mox) return;
+    // Request TCI S-meter (silent send — don't flood log)
+    if (S.ws && S.ws.readyState === 1) { S.ws.send('rx_smeter:0,0;'); netTx(16); }
+    // Priority: TCI > IQ passband > audio
+    if (Date.now() - smTciLastTime > 2000) {
+      if (S.iqOn && IQ.fftReady) {
+        smeterFromIQ();
+      } else if (S.analyser && S.rxOn) {
+        smeterFromAudio();
+      }
+    }
+  }, 100);  // 10 Hz
+}
+function stopSmeterPoll() {
+  if (SM.pollId) { clearInterval(SM.pollId); SM.pollId = null; }
+}
+
+// ── IQ-based S-meter: measure real RF power in the filter passband ──
+function smeterFromIQ() {
+  if (!IQ.fftReady) return;
+  const N = IQ.FFT_SIZE;
+  const SR = S.iqSR || 192000;
+  const loHz = S.iqCentre - SR / 2;
+
+  // Get filter passband in absolute Hz
+  const flo = parseInt(el('flo').value) || 100;
+  const fhi = parseInt(el('fhi').value) || 2900;
+  const filterLoHz = S.vfoA + Math.min(flo, fhi);
+  const filterHiHz = S.vfoA + Math.max(flo, fhi);
+
+  // Map to FFT bins
+  const binLo = Math.max(0, Math.floor(((filterLoHz - loHz) / SR) * N));
+  const binHi = Math.min(N - 1, Math.ceil(((filterHiHz - loHz) / SR) * N));
+  if (binHi <= binLo) return;
+
+  // Sum linear power across passband bins (use RAW fft data, not specGain-adjusted)
+  let powerSum = 0;
+  const binCount = binHi - binLo + 1;
+  for (let i = binLo; i <= binHi; i++) {
+    const db = IQ.fftResult[i]; // raw dB from FFT (includes -70 calibration from runIQFFT)
+    powerSum += Math.pow(10, db / 10);
+  }
+
+  // Average power per bin, then to dBm
+  const avgDb = 10 * Math.log10((powerSum / binCount) + 1e-20);
+  const dbm = Math.max(-140, Math.min(0, avgDb + smCal));
+
+  updateSmeter(dbm, 'iq');
+}
+
+// Fallback: derive signal level from audio RMS energy
+function smeterFromAudio() {
+  if (!S.analyser || !S.rxOn || S.mox) return;
+  const bufLen = S.analyser.fftSize;
+  const data = new Float32Array(bufLen);
+  S.analyser.getFloatTimeDomainData(data);
+
+  let sumSq = 0;
+  for (let i = 0; i < bufLen; i++) sumSq += data[i] * data[i];
+  const rms = Math.sqrt(sumSq / bufLen);
+  const dbfs = rms > 1e-10 ? 20 * Math.log10(rms) : -100;
+  const approxDbm = Math.max(-130, Math.min(-13, 1.3 * dbfs - 43));
+  updateSmeter(approxDbm, 'audio');
+}
+
+function updateSmeter(dbm, source) {
+  SM.dbm = dbm;
+  SM.source = source || 'tci';
+
+  // Smooth: fast attack, slow decay
+  if (dbm > SM.smoothDbm) {
+    SM.smoothDbm = dbm * 0.6 + SM.smoothDbm * 0.4;
+  } else {
+    SM.smoothDbm = dbm * 0.08 + SM.smoothDbm * 0.92;
+  }
+
+  // Peak hold (1.5s then decay)
+  const now = Date.now();
+  if (dbm > SM.peakDbm) {
+    SM.peakDbm = dbm;
+    SM.peakTime = now;
+  } else if (now - SM.peakTime > 1500) {
+    SM.peakDbm = SM.peakDbm * 0.97 + SM.smoothDbm * 0.03;
+  }
+
+  // Digital readout
+  el('smDbm').textContent = dbm.toFixed(1) + ' dBm';
+  el('smSunit').textContent = dbmToSunit(dbm);
+  const srcLabels = { tci: 'tci signal', iq: 'iq passband', audio: 'audio estimate' };
+  el('smSrc').textContent = srcLabels[source] || source;
+
+  // Also update LED bar meter
+  drawLedMeter(SM.smoothDbm);
+}
+
+// ── LED BAR METER (vintage CB style) ──
+function drawLedMeter(dbm) {
+  const cv = el('ledMeterC');
+  if (!cv) return;
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = cv.offsetWidth || 200;
+  const cssH = cv.offsetHeight || 32;
+  if (cv.width !== cssW * dpr || cv.height !== cssH * dpr) {
+    cv.width = cssW * dpr; cv.height = cssH * dpr;
+  }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = cssW, H = cssH;
+
+  // Background
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Total segments: 14 green (S1-S9) + 6 orange/red (+10 to +60)
+  const totalSegs = 20;
+  const gap = 2;
+  const segW = (W - (totalSegs - 1) * gap) / totalSegs;
+
+  // Map dBm to number of lit segments (0-20)
+  // S1=-121 → seg 0, S9=-73 → seg 13, S9+60=-13 → seg 19
+  const norm = dbmToNorm(dbm);
+  const litSegs = Math.round(norm * totalSegs);
+
+  for (let i = 0; i < totalSegs; i++) {
+    const x = i * (segW + gap);
+    const isLit = i < litSegs;
+    const isRed = i >= 14;     // +10dB and above
+    const isOrange = i >= 12 && i < 14;  // S8-S9 area
+
+    // Top bar (taller)
+    const topH = H * 0.55;
+    if (isLit) {
+      ctx.fillStyle = isRed ? '#f85149' : isOrange ? '#e3b341' : '#3fb950';
+      ctx.shadowColor = isRed ? '#f8514966' : isOrange ? '#e3b34144' : '#3fb95044';
+      ctx.shadowBlur = 4;
+    } else {
+      ctx.fillStyle = isRed ? '#3d1010' : isOrange ? '#2a1f0d' : '#0d2a0d';
+      ctx.shadowBlur = 0;
+    }
+    ctx.fillRect(x, 2, segW, topH);
+    ctx.shadowBlur = 0;
+
+    // Bottom bar (shorter, slightly dimmer)
+    const botH = H * 0.30;
+    const botY = topH + 4;
+    if (isLit) {
+      ctx.fillStyle = isRed ? '#f8514999' : isOrange ? '#e3b34188' : '#3fb95088';
+    } else {
+      ctx.fillStyle = isRed ? '#2a0808' : isOrange ? '#1a1508' : '#081a08';
+    }
+    ctx.fillRect(x, botY, segW, botH);
+  }
+}
+
+// ── NETWORK THROUGHPUT ──
+const NET = {
+  rxBytes: 0, txBytes: 0,     // bytes this interval
+  totalRx: 0, totalTx: 0,     // total since connect
+  packets: 0,                  // total packets
+  lastRxRate: 0, lastTxRate: 0,
+  peakRate: 500000,            // auto-scaling max for bar (bytes/s)
+  intervalId: null,
+};
+
+function startNetMonitor() {
+  if (NET.intervalId) return;
+  NET.totalRx = 0; NET.totalTx = 0; NET.packets = 0;
+  NET.intervalId = setInterval(() => {
+    NET.lastRxRate = NET.rxBytes;
+    NET.lastTxRate = NET.txBytes;
+    // Format rates
+    const rxEl = el('netRx'), txEl = el('netTx');
+    const totEl = el('netTotal'), pktEl = el('netPkts');
+    const barEl = el('netBar');
+    if (rxEl) rxEl.textContent = fmtRate(NET.lastRxRate);
+    if (txEl) txEl.textContent = fmtRate(NET.lastTxRate);
+    if (totEl) totEl.textContent = fmtBytes(NET.totalRx + NET.totalTx);
+    if (pktEl) pktEl.textContent = NET.packets.toLocaleString();
+    // Usage bar (auto-scaling)
+    const total = NET.lastRxRate + NET.lastTxRate;
+    if (total > NET.peakRate * 0.8) NET.peakRate = total * 1.5;
+    if (barEl) barEl.style.width = Math.min(100, (total / NET.peakRate) * 100).toFixed(1) + '%';
+    NET.rxBytes = 0;
+    NET.txBytes = 0;
+  }, 1000);
+}
+
+function stopNetMonitor() {
+  if (NET.intervalId) { clearInterval(NET.intervalId); NET.intervalId = null; }
+}
+
+function netRx(bytes) { NET.rxBytes += bytes; NET.totalRx += bytes; NET.packets++; }
+function netTx(bytes) { NET.txBytes += bytes; NET.totalTx += bytes; }
+
+function fmtRate(bps) {
+  if (bps > 1048576) return (bps / 1048576).toFixed(1) + ' MB/s';
+  if (bps > 1024) return (bps / 1024).toFixed(0) + ' kB/s';
+  return bps + ' B/s';
+}
+function fmtBytes(b) {
+  if (b > 1073741824) return (b / 1073741824).toFixed(2) + ' GB';
+  if (b > 1048576) return (b / 1048576).toFixed(1) + ' MB';
+  if (b > 1024) return (b / 1024).toFixed(0) + ' kB';
+  return b + ' B';
+}
+
+// ── S-Meter canvas drawing — classic analog style ──
+let smRAF;
+function drawSmeter() {
+  const cv = el('smeterC');
+  if (!cv) { smRAF = requestAnimationFrame(drawSmeter); return; }
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = cv.offsetWidth || 200;
+  const cssH = cv.offsetHeight || 105;
+  if (cv.width !== cssW * dpr || cv.height !== cssH * dpr) {
+    cv.width = cssW * dpr;
+    cv.height = cssH * dpr;
+  }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = cssW, H = cssH;
+
+  // ── Meter face — warm cream with rounded bezel ──
+  // Outer bezel
+  ctx.fillStyle = '#1c2128';
+  ctx.fillRect(0, 0, W, H);
+
+  // Inner cream face with rounded corners
+  const bz = 3; // bezel width
+  const rr = 6; // corner radius
+  const faceGrad = ctx.createLinearGradient(0, 0, 0, H);
+  faceGrad.addColorStop(0,   '#f2e8d5');
+  faceGrad.addColorStop(0.3, '#f7efde');
+  faceGrad.addColorStop(0.7, '#efe5d0');
+  faceGrad.addColorStop(1,   '#e2d6c0');
+  ctx.fillStyle = faceGrad;
+  ctx.beginPath();
+  ctx.moveTo(bz + rr, bz);
+  ctx.lineTo(W - bz - rr, bz); ctx.arcTo(W - bz, bz, W - bz, bz + rr, rr);
+  ctx.lineTo(W - bz, H - bz - rr); ctx.arcTo(W - bz, H - bz, W - bz - rr, H - bz, rr);
+  ctx.lineTo(bz + rr, H - bz); ctx.arcTo(bz, H - bz, bz, H - bz - rr, rr);
+  ctx.lineTo(bz, bz + rr); ctx.arcTo(bz, bz, bz + rr, bz, rr);
+  ctx.closePath();
+  ctx.fill();
+
+  // Subtle inner highlight (top edge shine)
+  ctx.strokeStyle = '#faf4e8';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(bz + rr, bz + 1);
+  ctx.lineTo(W - bz - rr, bz + 1);
+  ctx.stroke();
+
+  // ── Compute arc geometry — very wide flat arc ──
+  const sweepDeg = 53;
+  const sweepRad = sweepDeg * Math.PI / 180;
+  const pad = 28;       // more padding for full label visibility
+  const cx = W / 2;
+  const R = (cx - pad) / Math.sin(sweepRad);
+  const arcTopY = 34;   // top margin
+  const cy = arcTopY + R;
+  const arcStart = Math.PI * 1.5 - sweepRad;
+  const arcEnd   = Math.PI * 1.5 + sweepRad;
+  const arcRange = arcEnd - arcStart;
+
+  // S9 sits at fraction 8/12 of the full sweep
+  const s9frac = 8 / 12;
+  const s9angle = arcStart + s9frac * arcRange;
+
+  // ── Scale arcs ──
+  // Main arc — black up to S9
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, arcStart, s9angle);
+  ctx.strokeStyle = '#1a1208';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Main arc — red above S9
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, s9angle, arcEnd);
+  ctx.strokeStyle = '#cc2020';
+  ctx.lineWidth = 1.8;
+  ctx.stroke();
+
+  // ── Tick marks ──
+  // S-scale: major ticks at S1–S9, minor ticks between
+  for (let i = 0; i < 12; i++) {
+    const frac = i / 12;
+    const a = arcStart + frac * arcRange;
+    const isMajor = true; // every S-unit is a major tick
+    const isRed = i >= 9;
+
+    // Major tick
+    const outerTick = R + 2;
+    const innerTick = R - (i <= 8 ? 11 : 10);
+    const ox = cx + outerTick * Math.cos(a);
+    const oy = cy + outerTick * Math.sin(a);
+    const ix = cx + innerTick * Math.cos(a);
+    const iy = cy + innerTick * Math.sin(a);
+    ctx.beginPath();
+    ctx.moveTo(ox, oy);
+    ctx.lineTo(ix, iy);
+    ctx.strokeStyle = isRed ? '#cc2020' : '#1a1208';
+    ctx.lineWidth = isRed ? 1.8 : 1.5;
+    ctx.stroke();
+
+    // Minor ticks (halfway between majors)
+    if (i < 11) {
+      const mFrac = (i + 0.5) / 12;
+      const mA = arcStart + mFrac * arcRange;
+      const mIsRed = mFrac > s9frac;
+      const mOuter = R + 1;
+      const mInner = R - 6;
+      ctx.beginPath();
+      ctx.moveTo(cx + mOuter * Math.cos(mA), cy + mOuter * Math.sin(mA));
+      ctx.lineTo(cx + mInner * Math.cos(mA), cy + mInner * Math.sin(mA));
+      ctx.strokeStyle = mIsRed ? '#cc202088' : '#1a1208aa';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      // Quarter ticks for finer graduation
+      for (const q of [0.25, 0.75]) {
+        const qFrac = (i + q) / 12;
+        const qA = arcStart + qFrac * arcRange;
+        const qIsRed = qFrac > s9frac;
+        ctx.beginPath();
+        ctx.moveTo(cx + (R + 0.5) * Math.cos(qA), cy + (R + 0.5) * Math.sin(qA));
+        ctx.lineTo(cx + (R - 4) * Math.cos(qA),   cy + (R - 4) * Math.sin(qA));
+        ctx.strokeStyle = qIsRed ? '#cc202055' : '#1a120855';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // ── Labels ──
+  // S-unit numbers: 1 through 9
+  const labelR = R + 15;
+  for (let i = 1; i <= 9; i++) {
+    const frac = (i - 1) / 12;
+    const a = arcStart + frac * arcRange;
+    const lx = cx + labelR * Math.cos(a);
+    const ly = cy + labelR * Math.sin(a);
+    ctx.font = 'bold 13px Georgia, "Times New Roman", serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#1a1208';
+    ctx.fillText(String(i), lx, ly);
+  }
+
+  // dB labels: +20, +40, +60
+  const dbLabels = [
+    { frac: 9/12,  label: '+20' },
+    { frac: 10/12, label: '+40' },
+    { frac: 11/12, label: '+60' },
+  ];
+  dbLabels.forEach(d => {
+    const a = arcStart + d.frac * arcRange;
+    const lx = cx + (labelR + 2) * Math.cos(a);
+    const ly = cy + (labelR + 2) * Math.sin(a);
+    ctx.font = 'bold 11px Georgia, "Times New Roman", serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#cc2020';
+    ctx.fillText(d.label, lx, ly);
+  });
+
+  // "S" label — left of scale
+  const sLabelA = arcStart - 0.065;
+  ctx.font = 'bold 16px Georgia, "Times New Roman", serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#1a1208';
+  ctx.fillText('S', cx + (labelR + 2) * Math.cos(sLabelA), cy + (labelR + 2) * Math.sin(sLabelA));
+
+  // "dB" label — right of scale
+  const dbA = arcEnd + 0.06;
+  ctx.font = 'bold 11px Georgia, "Times New Roman", serif';
+  ctx.fillStyle = '#cc2020';
+  ctx.fillText('dB', cx + (labelR + 2) * Math.cos(dbA), cy + (labelR + 2) * Math.sin(dbA));
+
+  // ── Decorative PO (Power Output) scale ──
+  const poR = R - 18;
+  // PO arc line
+  ctx.beginPath();
+  ctx.arc(cx, cy, poR, arcStart, arcEnd);
+  ctx.strokeStyle = '#5a7a4a';
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+
+  // PO scale: non-linear watts (0 → 25W mapped across the full arc)
+  const poMarks = [
+    { frac: 0,     label: '0' },
+    { frac: 0.15,  label: '0.8' },
+    { frac: 0.25,  label: '1.5' },
+    { frac: 0.42,  label: '5' },
+    { frac: 0.53,  label: '7.5' },
+    { frac: 0.70,  label: '15' },
+    { frac: 0.85,  label: '25W' },
+  ];
+  poMarks.forEach(p => {
+    const a = arcStart + p.frac * arcRange;
+    ctx.beginPath();
+    ctx.moveTo(cx + (poR + 1) * Math.cos(a), cy + (poR + 1) * Math.sin(a));
+    ctx.lineTo(cx + (poR - 5) * Math.cos(a), cy + (poR - 5) * Math.sin(a));
+    ctx.strokeStyle = '#5a7a4a';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    const lr = poR - 8;
+    ctx.font = '7px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#5a7a4a';
+    ctx.fillText(p.label, cx + lr * Math.cos(a), cy + lr * Math.sin(a));
+  });
+  // "PO" label
+  const poLabelA = arcStart - 0.06;
+  ctx.font = 'bold 8px Georgia, serif';
+  ctx.fillStyle = '#5a7a4a';
+  ctx.fillText('PO', cx + (poR - 8) * Math.cos(poLabelA), cy + (poR - 8) * Math.sin(poLabelA));
+
+  // ── Decorative SWR scale ──
+  const swrR = R - 34;
+  // SWR arc line
+  ctx.beginPath();
+  ctx.arc(cx, cy, swrR, arcStart, arcEnd);
+  ctx.strokeStyle = '#cc2020aa';
+  ctx.lineWidth = 0.7;
+  ctx.stroke();
+
+  // SWR scale: non-linear (1 → ∞ mapped across the arc)
+  const swrMarks = [
+    { frac: 0,    label: '1' },
+    { frac: 0.25, label: '1.5' },
+    { frac: 0.42, label: '2' },
+    { frac: 0.60, label: '3' },
+    { frac: 0.78, label: '5' },
+    { frac: 1.0,  label: '∞' },
+  ];
+  swrMarks.forEach(p => {
+    const a = arcStart + p.frac * arcRange;
+    ctx.beginPath();
+    ctx.moveTo(cx + (swrR + 1) * Math.cos(a), cy + (swrR + 1) * Math.sin(a));
+    ctx.lineTo(cx + (swrR - 4) * Math.cos(a), cy + (swrR - 4) * Math.sin(a));
+    ctx.strokeStyle = '#cc2020aa';
+    ctx.lineWidth = 0.7;
+    ctx.stroke();
+    const lr = swrR - 7;
+    ctx.font = '7px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#cc2020';
+    ctx.fillText(p.label, cx + lr * Math.cos(a), cy + lr * Math.sin(a));
+  });
+  // "SWR" label
+  const swrLabelA = arcStart - 0.06;
+  ctx.font = 'bold 7px Georgia, serif';
+  ctx.fillStyle = '#cc2020';
+  ctx.fillText('SWR', cx + (swrR - 7) * Math.cos(swrLabelA), cy + (swrR - 7) * Math.sin(swrLabelA));
+
+  // ── Needle ──
+  // When transmitting: needle shows TX power on PO scale; else: RX signal strength
+  function txWattsToFrac(w) {
+    const po = [{w:0,f:0},{w:0.8,f:0.15},{w:1.5,f:0.25},{w:5,f:0.42},{w:7.5,f:0.53},{w:15,f:0.70},{w:25,f:0.85},{w:100,f:1.0}];
+    if (w <= 0) return 0;
+    for (let i = 1; i < po.length; i++) {
+      if (w <= po[i].w) { const t=(w-po[i-1].w)/(po[i].w-po[i-1].w); return po[i-1].f+t*(po[i].f-po[i-1].f); }
+    }
+    return 1.0;
+  }
+  function swrToFrac(s) {
+    const sw = [{s:1,f:0},{s:1.5,f:0.25},{s:2,f:0.42},{s:3,f:0.60},{s:5,f:0.78},{s:100,f:1.0}];
+    if (s <= 1) return 0;
+    for (let i = 1; i < sw.length; i++) {
+      if (s <= sw[i].s) { const t=(s-sw[i-1].s)/(sw[i].s-sw[i-1].s); return sw[i-1].f+t*(sw[i].f-sw[i-1].f); }
+    }
+    return 1.0;
+  }
+  const needleNorm = S.mox ? txWattsToFrac(SM.txWatts) : dbmToNorm(SM.smoothDbm);
+  const needleActive = S.mox ? true : SM.dbm !== null;
+  const needleAngle = arcStart + needleNorm * arcRange;
+  const needleTipR = R + 5;
+  const needleTailR = 20;
+
+  // ── SWR indicator (small triangle on SWR arc, TX only) ──
+  if (S.mox && SM.swr > 1.0) {
+    const sf = swrToFrac(SM.swr);
+    const sa = arcStart + sf * arcRange;
+    const sArrow = swrR - 2;
+    const stx = cx + sArrow * Math.cos(sa), sty = cy + sArrow * Math.sin(sa);
+    const sp = sa + Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(stx, sty);
+    ctx.lineTo(stx - 5*Math.cos(sa) + 2*Math.cos(sp), sty - 5*Math.sin(sa) + 2*Math.sin(sp));
+    ctx.lineTo(stx - 5*Math.cos(sa) - 2*Math.cos(sp), sty - 5*Math.sin(sa) - 2*Math.sin(sp));
+    ctx.closePath();
+    ctx.fillStyle = '#f85149';
+    ctx.fill();
+  }
+
+  if (needleActive) {
+    const tipX  = cx + needleTipR * Math.cos(needleAngle);
+    const tipY  = cy + needleTipR * Math.sin(needleAngle);
+    const tailX = cx - needleTailR * Math.cos(needleAngle);
+    const tailY = cy - needleTailR * Math.sin(needleAngle);
+
+    // Needle shadow
+    ctx.save();
+    ctx.translate(1, 2);
+    ctx.beginPath();
+    ctx.moveTo(tailX, tailY);
+    ctx.lineTo(tipX, tipY);
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.restore();
+
+    // Needle body — black
+    ctx.beginPath();
+    ctx.moveTo(tailX, tailY);
+    ctx.lineTo(tipX, tipY);
+    ctx.strokeStyle = '#1a1208';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+
+    // Red tip portion (last 40%)
+    const redR = needleTipR * 0.5;
+    const redX = cx + redR * Math.cos(needleAngle);
+    const redY = cy + redR * Math.sin(needleAngle);
+    ctx.beginPath();
+    ctx.moveTo(redX, redY);
+    ctx.lineTo(tipX, tipY);
+    ctx.strokeStyle = '#cc2020';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+
+    // Needle tip arrow/triangle
+    const triSize = 3;
+    const perpAngle = needleAngle + Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY);
+    ctx.lineTo(tipX - 8 * Math.cos(needleAngle) + triSize * Math.cos(perpAngle),
+               tipY - 8 * Math.sin(needleAngle) + triSize * Math.sin(perpAngle));
+    ctx.lineTo(tipX - 8 * Math.cos(needleAngle) - triSize * Math.cos(perpAngle),
+               tipY - 8 * Math.sin(needleAngle) - triSize * Math.sin(perpAngle));
+    ctx.closePath();
+    ctx.fillStyle = '#cc2020';
+    ctx.fill();
+  } else {
+    // Resting needle at far left
+    const restAngle = arcStart - 0.04;
+    const tipX = cx + needleTipR * Math.cos(restAngle);
+    const tipY = cy + needleTipR * Math.sin(restAngle);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(tipX, tipY);
+    ctx.strokeStyle = '#1a120844';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Pivot hub (drawn but mostly hidden below canvas)
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(bz, bz, W - bz*2, H - bz*2);
+  ctx.clip();
+  ctx.beginPath();
+  ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#2c2418';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+  ctx.fillStyle = '#d4c8b0';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, 1.5, 0, Math.PI * 2);
+  ctx.fillStyle = '#888070';
+  ctx.fill();
+  ctx.restore();
+
+  // ── Bottom label area ──
+  ctx.fillStyle = '#1c212899';
+  ctx.fillRect(bz, H - bz - 10, W - bz*2, 10);
+  ctx.font = '7px Georgia, serif';
+  ctx.fillStyle = '#8b949e';
+  ctx.textAlign = 'center';
+  ctx.fillText(S.mox ? 'TX  POWER' : 'THETIS  TCI', W / 2, H - bz - 2);
+
+  // ── Mic level bar ──
+  (function() {
+    const wrap = el('micLvlWrap'), bar = el('micLvlBar');
+    if (!wrap || !bar) return;
+    if (!S.txMicOn || !S.txAnalyser) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    const data = new Uint8Array(S.txAnalyser.frequencyBinCount);
+    S.txAnalyser.getByteTimeDomainData(data);
+    let peak = 0;
+    for (let i = 0; i < data.length; i++) { const v = Math.abs(data[i] - 128) / 128; if (v > peak) peak = v; }
+    bar.style.width = Math.min(100, peak * 100).toFixed(1) + '%';
+  })();
+
+  smRAF = requestAnimationFrame(drawSmeter);
+}
+
+// ── IQ PANADAPTER ENGINE ──
+const IQ = {
+  FFT_SIZE: 4096,
+  bufI: null, bufQ: null,  // accumulation buffers
+  pos: 0,                  // write position in buffer
+  fftResult: null,         // Float32Array of dB magnitudes, length FFT_SIZE
+  fftReady: false,
+  window: null,            // Blackman-Harris window
+  frameCount: 0,
+  smooth: 0.90,            // FFT smoothing (0=no smoothing, 0.99=very slow)
+};
+
+// Pre-compute Blackman-Harris window
+function initIQ() {
+  const N = IQ.FFT_SIZE;
+  IQ.bufI = new Float32Array(N);
+  IQ.bufQ = new Float32Array(N);
+  IQ.fftResult = new Float32Array(N);
+  IQ.window = new Float32Array(N);
+  const prev = new Float32Array(N); // for smoothing
+  IQ._prev = prev;
+  for (let i = 0; i < N; i++) {
+    const x = 2 * Math.PI * i / (N - 1);
+    IQ.window[i] = 0.35875 - 0.48829 * Math.cos(x) + 0.14128 * Math.cos(2*x) - 0.01168 * Math.cos(3*x);
+  }
+  IQ._prev.fill(-140);
+}
+initIQ();
+
+// ── Radix-2 in-place FFT (Cooley-Tukey) ──
+// re[], im[] are modified in place, length must be power of 2
+function fft(re, im) {
+  const N = re.length;
+  // Bit-reversal permutation
+  for (let i = 1, j = 0; i < N; i++) {
+    let bit = N >> 1;
+    while (j & bit) { j ^= bit; bit >>= 1; }
+    j ^= bit;
+    if (i < j) {
+      let t = re[i]; re[i] = re[j]; re[j] = t;
+      t = im[i]; im[i] = im[j]; im[j] = t;
+    }
+  }
+  // FFT butterfly
+  for (let len = 2; len <= N; len <<= 1) {
+    const halfLen = len >> 1;
+    const angle = -2 * Math.PI / len;
+    const wRe = Math.cos(angle), wIm = Math.sin(angle);
+    for (let i = 0; i < N; i += len) {
+      let curRe = 1, curIm = 0;
+      for (let j = 0; j < halfLen; j++) {
+        const a = i + j, b = a + halfLen;
+        const tRe = curRe * re[b] - curIm * im[b];
+        const tIm = curRe * im[b] + curIm * re[b];
+        re[b] = re[a] - tRe;  im[b] = im[a] - tIm;
+        re[a] += tRe;          im[a] += tIm;
+        const newRe = curRe * wRe - curIm * wIm;
+        curIm = curRe * wIm + curIm * wRe;
+        curRe = newRe;
+      }
+    }
+  }
+}
+
+// ── Handle incoming IQ frame (64-byte header + float32 I/Q pairs) ──
+function handleIQFrame(buf) {
+  const HEADER = 64;
+  if (buf.byteLength <= HEADER) return;
+
+  // Extract sample rate from header
+  const dv = new DataView(buf);
+  const sr = dv.getUint32(4, true);
+  if (sr > 0 && sr <= 1000000) S.iqSR = sr;
+
+  const payloadBytes = buf.byteLength - HEADER;
+  const floatCount = Math.floor(payloadBytes / 4);
+  const pairCount = Math.floor(floatCount / 2);  // I/Q pairs
+  if (pairCount < 1) return;
+
+  const floats = new Float32Array(buf, HEADER, floatCount);
+  const N = IQ.FFT_SIZE;
+
+  // Accumulate I/Q pairs into buffer
+  for (let i = 0; i < pairCount; i++) {
+    IQ.bufI[IQ.pos] = floats[i * 2];
+    IQ.bufQ[IQ.pos] = floats[i * 2 + 1];
+    IQ.pos++;
+    if (IQ.pos >= N) {
+      IQ.pos = 0;
+      runIQFFT();
+    }
+  }
+  IQ.frameCount++;
+}
+
+function runIQFFT() {
+  const N = IQ.FFT_SIZE;
+  // Copy and apply window
+  const re = new Float32Array(N);
+  const im = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    re[i] = IQ.bufI[i] * IQ.window[i];
+    im[i] = IQ.bufQ[i] * IQ.window[i];
+  }
+
+  // Run FFT
+  fft(re, im);
+
+  // Compute magnitude in dB and rearrange (FFT shift: move DC to center)
+  const half = N >> 1;
+  for (let i = 0; i < N; i++) {
+    const idx = (i + half) % N;  // FFT shift
+    const mag = re[idx] * re[idx] + im[idx] * im[idx];
+    const db = mag > 1e-20 ? 10 * Math.log10(mag) - 70 : -150;  // scale to ~dBm
+    // Smooth with previous frame
+    IQ.fftResult[i] = IQ._prev[i] * IQ.smooth + db * (1 - IQ.smooth);
+    IQ._prev[i] = IQ.fftResult[i];
+  }
+  IQ.fftReady = true;
+}
+
+// Start/stop IQ from UI
+function startIQ() {
+  if (S.iqOn) return;
+  send('iq_samplerate:192000;');
+  send('iq_start:0;');
+  S.iqOn = true;
+}
+function stopIQ() {
+  if (!S.iqOn) return;
+  send('iq_stop:0;');
+  S.iqOn = false;
+  IQ.fftReady = false;
+}
+
+// ── UTC CLOCK ──
+(function() {
+  function tick() {
+    const now = new Date();
+    const h = now.getUTCHours().toString().padStart(2,'0');
+    const m = now.getUTCMinutes().toString().padStart(2,'0');
+    const s = now.getUTCSeconds().toString().padStart(2,'0');
+    const clk = el('utcClock');
+    if (clk) clk.textContent = h + ':' + m + ':' + s + ' UTC';
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+
+// ── MODAL HELPERS ──
+function openModal(id) { const m = el(id); if (m) { m.classList.remove('hidden'); if (id === 'settingsModal') loadSettingsUI(); if (id === 'memModal') renderMemModalList(); } }
+function closeModal(id) { const m = el(id); if (m) m.classList.add('hidden'); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['settingsModal','keysModal','memModal'].forEach(id => closeModal(id));
+  }
+});
+
 // ── SPECTRUM CANVAS ──
 let specRAF;
-drawSpec.heldPeaks = [];
-const DB_MIN = -120, DB_MAX = -10; // dBFS range shown
-let specGain = 45; // dB boost applied visually — adjusted by slider
+let DB_MIN = -140, DB_MAX = -30; // dBm range — adjustable via settings
+let specGain = 20; // dB offset adjusted by slider
+let specZoom = 1;        // 1 = full IQ span, 2/4/8/16/32 = zoomed in
+let specZoomCentre = 0;  // Hz at centre of zoom view (0 = auto)
+let peakHoldEnabled = false;
+let peakHoldBuf = null;  // Float32Array per-pixel peak values
+let wfTheme = 0;         // 0=classic 1=heat 2=gray 3=night
 
 function drawSpec() {
   const cv = el('specC'); if (!cv) return;
@@ -1676,202 +3321,255 @@ function drawSpec() {
   ctx.fillStyle = '#010409';
   ctx.fillRect(0, 0, W, H);
 
-  // Use TX analyser during TX (shows mic audio), RX analyser otherwise
+  // Greyline propagation map overlay
+  if (window._greylineImg) {
+    const cfg = getSettings();
+    const opacity = Math.max(0.1, Math.min(1.0, (cfg.greylineOpacity || 80) / 100));
+    ctx.globalAlpha = opacity;
+    ctx.drawImage(window._greylineImg, 0, 0, W, H);
+    ctx.globalAlpha = 1.0;
+  }
+
+  const useIQ = S.iqOn && IQ.fftReady;
   const activeAnalyser = (S.mox && S.txAnalyser) ? S.txAnalyser : S.analyser;
 
-  if (!S.connected || !activeAnalyser || (!S.rxOn && !S.mox)) {
-    // Show placeholder text when not streaming
+  if (!S.connected || (!useIQ && !activeAnalyser) || (!useIQ && !S.rxOn && !S.mox)) {
     ctx.fillStyle = '#21262d';
     ctx.font = '11px SF Mono, Consolas, monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('Audio spectrum — enable RX AUDIO to activate', W/2, H/2);
+    ctx.fillText(S.connected ? 'Waiting for IQ data…' : 'Connect to Thetis to activate panadapter', W/2, H/2);
     specRAF = requestAnimationFrame(drawSpec);
     return;
   }
 
-  const analyser = activeAnalyser;
-  const bufLen = analyser.frequencyBinCount; // fftSize/2 = 1024
-  const freqData = new Float32Array(bufLen);
-  analyser.getFloatFrequencyData(freqData);
-
-  const sampleRate = 48000;
-  const hzPerBin = sampleRate / analyser.fftSize;
   const dbRange = DB_MAX - DB_MIN;
 
-  // Get current filter edges — fhi drives the display range
-  const flo = Math.abs(parseInt(el('flo').value) || 100);
-  const fhi = Math.abs(parseInt(el('fhi').value) || 2900);
-  const passBandLo = Math.min(flo, fhi);
-  const passBandHi = Math.max(flo, fhi);
+  if (useIQ) {
+    // ═══ IQ PANADAPTER MODE ═══
+    const N = IQ.FFT_SIZE;
+    const SR = S.iqSR || 192000;
+    const centreHz = S.iqCentre;
+    const loHz = centreHz - SR / 2;
+    const hiHz = centreHz + SR / 2;
 
-  // Display range: always show from 0 to fhi + 15% padding, min 4kHz
-  const displayMax = Math.max(4000, Math.ceil(passBandHi * 1.15 / 500) * 500);
-  const maxBin = Math.min(bufLen - 1, Math.floor(displayMax / hzPerBin));
+    // Map Hz to raw FFT bin (always full SR)
+    const hzToBin = (hz) => Math.round(((hz - loHz) / SR) * N);
 
-  // dB grid lines
-  ctx.strokeStyle = '#0d1820'; ctx.lineWidth = 0.5;
-  [-100, -80, -60, -40, -20].forEach(db => {
-    const y = H * (1 - (db - DB_MIN) / dbRange);
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-    ctx.fillStyle = '#3d444d';
+    // ── Zoom: compute visible Hz range ──
+    if (specZoom <= 1) { specZoom = 1; specZoomCentre = centreHz; }
+    else {
+      // Clamp zoom centre inside IQ window
+      const vSR2 = SR / specZoom;
+      specZoomCentre = Math.max(loHz + vSR2 / 2, Math.min(hiHz - vSR2 / 2, specZoomCentre || centreHz));
+    }
+    const visibleSR  = SR / specZoom;
+    const visLoHz    = specZoomCentre - visibleSR / 2;
+    const visHiHz    = specZoomCentre + visibleSR / 2;
+
+    // Map Hz to x pixel — always uses zoomed view
+    const hzToX = (hz) => ((hz - visLoHz) / visibleSR) * W;
+    // Map pixel column to FFT bin via zoomed frequency
+    const pxToBin = (px) => {
+      const hz = visLoHz + (px / W) * visibleSR;
+      return Math.max(0, Math.min(N - 1, Math.round(((hz - loHz) / SR) * N)));
+    };
+
+    // ── dB grid lines ──
+    ctx.strokeStyle = '#0d1820'; ctx.lineWidth = 0.5;
     ctx.font = '8px SF Mono, Consolas, monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(db + 'dB', 2, y - 2);
-  });
-
-  // Log scale helpers
-  const LOG_MIN = 50; // left edge Hz
-  const logMin = Math.log10(LOG_MIN);
-  const logMax = Math.log10(displayMax);
-  const hzToX = hz => hz <= 0 ? 0 : ((Math.log10(Math.max(LOG_MIN, hz)) - logMin) / (logMax - logMin)) * W;
-  const binToX = bin => hzToX(bin * hzPerBin);
-
-  // Log frequency grid lines
-  const gridFreqs = [50,100,200,300,500,700,1000,1500,2000,3000,4000,5000,6000,8000,10000]
-    .filter(f => f >= LOG_MIN && f <= displayMax);
-  ctx.strokeStyle = '#0d1820'; ctx.lineWidth = 0.5;
-  gridFreqs.forEach(f => {
-    const x = hzToX(f);
-    // Grid line — brighter for decade markers (100, 1k, 10k)
-    const decade = (f === 100 || f === 1000 || f === 10000);
-    ctx.strokeStyle = decade ? '#1a2a3a' : '#0d1820';
-    ctx.lineWidth = decade ? 1 : 0.5;
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-
-    // Label background pill for readability
-    const label = f >= 1000 ? (f/1000)+'k' : f+'Hz';
-    ctx.font = 'bold 10px SF Mono, Consolas, monospace';
-    ctx.textAlign = 'center';
-    const tw = ctx.measureText(label).width;
-    const lx = x, ly = H - 4;
-    // Pill background
-    ctx.fillStyle = '#010409ee';
-    ctx.fillRect(lx - tw/2 - 3, ly - 11, tw + 6, 13);
-    // Label text — brighter for decade markers
-    ctx.fillStyle = decade ? '#8b949e' : '#484f58';
-    ctx.fillText(label, lx, ly);
-  });
-
-  // Filter boundary pixel positions (log scale)
-  const xLo = hzToX(passBandLo);
-  const xHi = hzToX(passBandHi);
-
-  // Shade outside passband
-  ctx.fillStyle = 'rgba(0,0,0,0.5)';
-  ctx.fillRect(0,    0, xLo,     H); // below low edge
-  ctx.fillRect(xHi,  0, W - xHi, H); // above high edge
-
-  // TX passband highlight — red/orange fill when in TX mode
-  if (S.mox) {
-    ctx.fillStyle = 'rgba(255,80,0,0.13)';
-    ctx.fillRect(xLo, 0, xHi - xLo, H);
-  }
-
-  // Filter edge lines — amber in RX, red in TX
-  ctx.strokeStyle = S.mox ? '#ff5500cc' : '#e3b34199';
-  ctx.lineWidth = S.mox ? 1.5 : 1;
-  ctx.setLineDash([3, 3]);
-  [xLo, xHi].forEach(x => {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-  });
-  ctx.setLineDash([]);
-
-  // Spectrum fill (log scale)
-  ctx.beginPath();
-  for (let i = 0; i <= maxBin; i++) {
-    const x = binToX(i);
-    const db = Math.max(DB_MIN, Math.min(DB_MAX, freqData[i] + specGain));
-    const y = H * (1 - (db - DB_MIN) / dbRange);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  }
-  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, 'rgba(56,139,253,0.7)');
-  g.addColorStop(1, 'rgba(56,139,253,0.05)');
-  ctx.fillStyle = g;
-  ctx.fill();
-
-  // Spectrum line (log scale)
-  ctx.beginPath();
-  for (let i = 0; i <= maxBin; i++) {
-    const x = binToX(i);
-    const db = Math.max(DB_MIN, Math.min(DB_MAX, freqData[i] + specGain));
-    const y = H * (1 - (db - DB_MIN) / dbRange);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  }
-  ctx.strokeStyle = '#58a6ff'; ctx.lineWidth = 1.2; ctx.stroke();
-
-  // ── Peak hold detection ──
-  // Track peak bins — label stays visible as long as that frequency
-  // remains above the noise threshold (dot always follows current spectrum)
-  const peakMinDb = DB_MIN + (DB_MAX - DB_MIN) * 0.25;
-  const minBinGap = Math.max(3, Math.floor(maxBin / 60));
-  const now = Date.now();
-  const PEAK_HOLD_MS = 3000; // keep label for 3s after bin drops below threshold
-
-  // Find current local peaks
-  for (let i = 2; i < maxBin - 2; i++) {
-    const db = freqData[i] + specGain;
-    if (db < peakMinDb) continue;
-    if (db > freqData[i-1]+specGain && db > freqData[i-2]+specGain &&
-        db > freqData[i+1]+specGain && db > freqData[i+2]+specGain) {
-      let found = false;
-      for (const h of drawSpec.heldPeaks) {
-        if (Math.abs(h.bin - i) < minBinGap) {
-          // Update bin to strongest position, refresh timer
-          if (db >= h.db) h.bin = i;
-          h.db = db;
-          h.lastSeen = now;
-          found = true; break;
-        }
-      }
-      if (!found) drawSpec.heldPeaks.push({ bin: i, db, lastSeen: now });
+    for (let db = -130; db <= -30; db += 10) {
+      const y = H * (1 - (db - DB_MIN) / dbRange);
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      ctx.fillStyle = '#3d444d';
+      if (y > 22 && y < H - 20) ctx.fillText(db + ' dBm', 3, y - 2);
     }
-  }
 
-  // Remove peaks that have been gone longer than hold time
-  drawSpec.heldPeaks = drawSpec.heldPeaks.filter(h => (now - h.lastSeen) < PEAK_HOLD_MS);
+    // ── Ham band edges ──
+    for (const band of BAND_RANGES) {
+      const bx1 = hzToX(band.lo), bx2 = hzToX(band.hi);
+      if (bx2 < 0 || bx1 > W) continue;
+      const cx1 = Math.max(0, bx1), cx2 = Math.min(W, bx2);
+      // Subtle fill
+      ctx.fillStyle = 'rgba(63,185,80,0.06)';
+      ctx.fillRect(cx1, 20, cx2 - cx1, H - 40);
+      // Edge lines
+      ctx.setLineDash([3, 3]); ctx.lineWidth = 0.8;
+      if (bx1 >= 0 && bx1 <= W) {
+        ctx.strokeStyle = '#3fb95060';
+        ctx.beginPath(); ctx.moveTo(bx1, 20); ctx.lineTo(bx1, H - 20); ctx.stroke();
+      }
+      if (bx2 >= 0 && bx2 <= W) {
+        ctx.strokeStyle = '#3fb95060';
+        ctx.beginPath(); ctx.moveTo(bx2, 20); ctx.lineTo(bx2, H - 20); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      // Band name label near top
+      ctx.font = 'bold 9px SF Mono, Consolas, monospace';
+      ctx.fillStyle = '#3fb95099';
+      ctx.textAlign = 'center';
+      const labelX = Math.max(cx1 + 12, Math.min(cx2 - 12, (cx1 + cx2) / 2));
+      ctx.fillText(band.band, labelX, 28);
+    }
 
-  // Pick top 6 by last-seen db, enforcing min gap
-  const sorted = [...drawSpec.heldPeaks].sort((a,b) => b.db - a.db);
-  const shown = [];
-  for (const p of sorted) {
-    if (shown.length >= 8) break;
-    if (shown.every(s => Math.abs(s.bin - p.bin) >= minBinGap)) shown.push(p);
-  }
+    // ── Frequency grid + top & bottom labels ──
+    const stepHz = visibleSR > 100000 ? 20000 : visibleSR > 40000 ? 10000 : visibleSR > 10000 ? 2000 : visibleSR > 3000 ? 500 : 100;
+    const firstGrid = Math.ceil(visLoHz / stepHz) * stepHz;
+    // Background strips top and bottom
+    ctx.fillStyle = 'rgba(1,4,9,0.85)';
+    ctx.fillRect(0, 0, W, 20);
+    ctx.fillRect(0, H - 20, W, 20);
+    ctx.textAlign = 'center';
+    for (let f = firstGrid; f <= visHiHz; f += stepHz) {
+      const x = hzToX(f);
+      const isMajor = f % (stepHz * 5) === 0 || f % 100000 === 0;
+      ctx.strokeStyle = isMajor ? '#1a2a3a' : '#0d1820';
+      ctx.lineWidth = isMajor ? 0.8 : 0.5;
+      ctx.beginPath(); ctx.moveTo(x, 20); ctx.lineTo(x, H - 20); ctx.stroke();
+      const label = (f / 1e6).toFixed(stepHz < 1000 ? 4 : 3);
+      ctx.font = 'bold 14px SF Mono, Consolas, monospace';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(label, x, H - 5);   // bottom
+      ctx.fillText(label, x, 14);      // top
+    }
 
-  // Draw — dot always sits ON the current spectrum line at that bin
-  shown.forEach(p => {
-    const x = binToX(p.bin);
-    // Use CURRENT spectrum level for the dot position, not the held level
-    const curDb = Math.max(DB_MIN, Math.min(DB_MAX, freqData[p.bin] + specGain));
-    const y = H * (1 - (curDb - DB_MIN) / (DB_MAX - DB_MIN));
-    const hz = Math.round(p.bin * hzPerBin);
-    const label = hz >= 1000 ? (hz/1000).toFixed(2).replace(/\.?0+$/,'')+'k' : hz+'Hz';
-    // Fade label as hold expires
-    const age = now - p.lastSeen;
-    const alpha = age < 500 ? 1.0 : Math.max(0.3, 1.0 - (age - 500) / (PEAK_HOLD_MS - 500));
-    const col = `rgba(240,200,74,${alpha})`;
+    // ── Filter passband overlay ──
+    const flo = parseInt(el('flo').value) || 100;
+    const fhi = parseInt(el('fhi').value) || 2900;
+    const filterLoHz = S.vfoA + Math.min(flo, fhi);
+    const filterHiHz = S.vfoA + Math.max(flo, fhi);
+    const xFlo = hzToX(filterLoHz);
+    const xFhi = hzToX(filterHiHz);
 
+    // Shade outside passband
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(0, 0, xFlo, H);
+    ctx.fillRect(xFhi, 0, W - xFhi, H);
+
+    // Passband tint
+    ctx.fillStyle = S.mox ? 'rgba(255,80,0,0.08)' : 'rgba(56,139,253,0.05)';
+    ctx.fillRect(xFlo, 0, xFhi - xFlo, H);
+
+    // Filter edge lines
+    ctx.strokeStyle = S.mox ? '#ff5500cc' : '#e3b34199';
+    ctx.lineWidth = S.mox ? 1.5 : 1;
+    ctx.setLineDash([3, 3]);
+    [xFlo, xFhi].forEach(x => { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); });
+    ctx.setLineDash([]);
+
+    // ── Spectrum fill ──
     ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = col;
+    for (let px = 0; px < W; px++) {
+      const bin = pxToBin(px);
+      const db = Math.max(DB_MIN, Math.min(DB_MAX, IQ.fftResult[bin] + specGain));
+      const y = H * (1 - (db - DB_MIN) / dbRange);
+      px === 0 ? ctx.moveTo(px, y) : ctx.lineTo(px, y);
+    }
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, 'rgba(56,139,253,0.7)');
+    grad.addColorStop(0.5, 'rgba(56,139,253,0.3)');
+    grad.addColorStop(1, 'rgba(56,139,253,0.08)');
+    ctx.fillStyle = grad;
     ctx.fill();
 
+    // Spectrum line
     ctx.beginPath();
-    ctx.moveTo(x, y - 4);
-    ctx.lineTo(x, y - 18);
-    ctx.strokeStyle = `rgba(240,200,74,${alpha * 0.5})`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    for (let px = 0; px < W; px++) {
+      const bin = pxToBin(px);
+      const db = Math.max(DB_MIN, Math.min(DB_MAX, IQ.fftResult[bin] + specGain));
+      const y = H * (1 - (db - DB_MIN) / dbRange);
+      px === 0 ? ctx.moveTo(px, y) : ctx.lineTo(px, y);
+    }
+    ctx.strokeStyle = specLineColor || '#58a6ff'; ctx.lineWidth = 1; ctx.stroke();
 
-    const labelW = ctx.measureText(label).width;
-    const lx = x + (x > W - 40 ? -(labelW + 4) : 4);
-    ctx.fillStyle = col;
-    ctx.font = 'bold 12px SF Mono, Consolas, monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText(label, lx, y - 20);
-  });
+    // ── Peak hold trace ──
+    if (peakHoldEnabled) {
+      if (!peakHoldBuf || peakHoldBuf.length !== W) peakHoldBuf = new Float32Array(W).fill(DB_MIN);
+      ctx.beginPath();
+      for (let px = 0; px < W; px++) {
+        const bin = pxToBin(px);
+        const db = Math.max(DB_MIN, Math.min(DB_MAX, IQ.fftResult[bin] + specGain));
+        peakHoldBuf[px] = db >= peakHoldBuf[px] ? db : Math.max(DB_MIN, peakHoldBuf[px] - 0.06);
+        const y = H * (1 - (peakHoldBuf[px] - DB_MIN) / dbRange);
+        px === 0 ? ctx.moveTo(px, y) : ctx.lineTo(px, y);
+      }
+      ctx.strokeStyle = '#e3b341bb'; ctx.lineWidth = 1; ctx.stroke();
+    }
+
+    // ── Digital mode markers ──
+    drawDigMarkers(ctx, W, H, hzToX);
+
+    // ── DX cluster overlay ──
+    drawDXOverlay(ctx, W, H, hzToX);
+
+    // ── VFO A cursor ──
+    const vfoAx = hzToX(S.vfoA);
+    if (vfoAx >= 0 && vfoAx <= W) {
+      ctx.beginPath(); ctx.moveTo(vfoAx, 0); ctx.lineTo(vfoAx, H);
+      ctx.strokeStyle = '#58a6ff88'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.font = 'bold 10px SF Mono, Consolas, monospace';
+      ctx.fillStyle = '#58a6ff';
+      ctx.textAlign = 'left';
+      ctx.fillText((S.vfoA / 1e6).toFixed(4) + ' MHz', vfoAx + 4, 28);
+    }
+
+    // ── VFO B cursor ──
+    const vfoBx = hzToX(S.vfoB);
+    if (vfoBx >= 0 && vfoBx <= W) {
+      ctx.beginPath(); ctx.moveTo(vfoBx, 0); ctx.lineTo(vfoBx, H);
+      ctx.strokeStyle = '#7d859055'; ctx.lineWidth = 1; ctx.setLineDash([2,2]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font = '9px SF Mono, Consolas, monospace';
+      ctx.fillStyle = '#7d8590';
+      ctx.textAlign = 'left';
+      ctx.fillText('B ' + (S.vfoB / 1e6).toFixed(4), vfoBx + 3, 38);
+    }
+
+    // ── Bandwidth indicator ──
+    ctx.font = '9px SF Mono, Consolas, monospace';
+    ctx.fillStyle = '#484f58';
+    ctx.textAlign = 'right';
+    const zStr = specZoom > 1 ? '  |  ' + specZoom + '× ZOOM  [dbl-click to reset]' : '';
+    ctx.fillText('IQ ' + (SR/1000) + ' kHz  |  ' + N + '-pt FFT' + zStr, W - 6, 28);
+
+  } else {
+    // ═══ AUDIO FALLBACK (original behaviour) ═══
+    const analyser = activeAnalyser;
+    const bufLen = analyser.frequencyBinCount;
+    const freqData = new Float32Array(bufLen);
+    analyser.getFloatFrequencyData(freqData);
+    const hzPerBin = 48000 / analyser.fftSize;
+    const flo = Math.abs(parseInt(el('flo').value) || 100);
+    const fhi = Math.abs(parseInt(el('fhi').value) || 2900);
+    const passBandHi = Math.max(flo, fhi);
+    const displayMax = Math.max(4000, Math.ceil(passBandHi * 1.15 / 500) * 500);
+    const maxBin = Math.min(bufLen - 1, Math.floor(displayMax / hzPerBin));
+
+    // Simple audio spectrum line
+    ctx.beginPath();
+    for (let i = 0; i <= maxBin; i++) {
+      const x = (i / maxBin) * W;
+      const db = Math.max(DB_MIN, Math.min(DB_MAX, freqData[i] + specGain));
+      const y = H * (1 - (db - DB_MIN) / dbRange);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+    const g2 = ctx.createLinearGradient(0, 0, 0, H);
+    g2.addColorStop(0, 'rgba(56,139,253,0.5)');
+    g2.addColorStop(1, 'rgba(56,139,253,0.02)');
+    ctx.fillStyle = g2; ctx.fill();
+    ctx.beginPath();
+    for (let i = 0; i <= maxBin; i++) {
+      const x = (i / maxBin) * W;
+      const db = Math.max(DB_MIN, Math.min(DB_MAX, freqData[i] + specGain));
+      const y = H * (1 - (db - DB_MIN) / dbRange);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = '#58a6ff'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.font = '9px SF Mono, Consolas, monospace';
+    ctx.fillStyle = '#484f58'; ctx.textAlign = 'right';
+    ctx.fillText('Audio FFT (no IQ)', W - 6, 12);
+  }
 
   specRAF = requestAnimationFrame(drawSpec);
 }
@@ -1879,7 +3577,7 @@ function drawSpec() {
 // ── WATERFALL ──
 let wfRAF, wfImg=null;
 let wfFrameSkip = 0;
-let wfSpeed = 3; // frames to skip between rows — higher = slower
+let wfSpeed = 17;
 
 function drawWF() {
   const cv=el('wfC'); if (!cv) return;
@@ -1887,12 +3585,14 @@ function drawWF() {
   if (cv.width!==W||cv.height!==H) { cv.width=W; cv.height=H; wfImg=null; }
   const ctx=cv.getContext('2d');
 
-  if (!S.connected || (!S.analyser && !S.txAnalyser) || (!S.rxOn && !S.mox)) {
+  const useIQ = S.iqOn && IQ.fftReady;
+  const activeAnalyser = (S.mox && S.txAnalyser) ? S.txAnalyser : S.analyser;
+
+  if (!S.connected || (!useIQ && (!activeAnalyser || (!S.rxOn && !S.mox)))) {
     ctx.fillStyle='#010409'; ctx.fillRect(0,0,W,H);
     wfRAF=requestAnimationFrame(drawWF); return;
   }
 
-  // Only add a new row every 3 frames (~20 rows/sec) for readable scroll speed
   wfFrameSkip = (wfFrameSkip + 1) % wfSpeed;
   if (wfFrameSkip !== 0) { wfRAF=requestAnimationFrame(drawWF); return; }
 
@@ -1902,73 +3602,927 @@ function drawWF() {
     for (let i=0;i<d.length;i+=4){d[i]=1;d[i+1]=4;d[i+2]=9;d[i+3]=255;}
   }
 
-  // Get FFT data — use TX analyser during TX, RX analyser otherwise
-  const analyser = (S.mox && S.txAnalyser) ? S.txAnalyser : S.analyser;
-  const bufLen = analyser.frequencyBinCount;
-  const freqData = new Float32Array(bufLen);
-  analyser.getFloatFrequencyData(freqData);
-
-  const flo = Math.abs(parseInt(el('flo').value) || 100);
-  const fhi = Math.abs(parseInt(el('fhi').value) || 2900);
-  const passBandHi = Math.max(flo, fhi);
-  const displayMax = Math.max(4000, Math.ceil(passBandHi * 1.15 / 500) * 500);
-  const hzPerBin = 48000 / analyser.fftSize;
-  const maxBin = Math.min(bufLen - 1, Math.floor(displayMax / hzPerBin));
-
-  // Scroll existing image down by one row
+  // Scroll down
   const d = wfImg.data;
   d.copyWithin(W*4, 0, W*(H-1)*4);
 
-  // Write new top row from FFT data
-  // Waterfall row uses log scale matching spectrum
-  const wfLogMin = Math.log10(50);
-  const wfLogMax = Math.log10(displayMax);
-  for (let x=0; x<W; x++) {
-    const hz = Math.pow(10, wfLogMin + (x / W) * (wfLogMax - wfLogMin));
-    const bin = Math.min(maxBin, Math.round(hz / hzPerBin));
-    const db = Math.max(DB_MIN, Math.min(DB_MAX, freqData[bin] + specGain));
-    const t = (db - DB_MIN) / (DB_MAX - DB_MIN); // 0=noise floor, 1=loud
-    const [r,g,b] = wfCol(t);
-    const idx = x*4;
-    d[idx]=r; d[idx+1]=g; d[idx+2]=b; d[idx+3]=255;
-  }
-  ctx.putImageData(wfImg,0,0);
+  const dbRange = DB_MAX - DB_MIN;
 
-  // Overlay filter edge lines on waterfall — amber in RX, red in TX
-  const wfFlo = Math.abs(parseInt(el('flo').value) || 100);
-  const wfFhi = Math.abs(parseInt(el('fhi').value) || 2900);
-  const wfPlo = Math.min(wfFlo, wfFhi);
-  const wfPhi = Math.max(wfFlo, wfFhi);
-  const toWfX = hz => hz <= 0 ? 0 : ((Math.log10(Math.max(50,hz)) - wfLogMin) / (wfLogMax - wfLogMin)) * W;
-  const wxLo = toWfX(wfPlo);
-  const wxHi = toWfX(wfPhi);
-
-  if (S.mox) {
-    // TX: red tint between edges + red dashed lines
-    ctx.fillStyle = 'rgba(255,80,0,0.08)';
-    ctx.fillRect(wxLo, 0, wxHi - wxLo, H);
-    ctx.strokeStyle = '#ff5500cc';
-    ctx.lineWidth = 1.5;
+  if (useIQ) {
+    // IQ waterfall row
+    const N = IQ.FFT_SIZE;
+    for (let x = 0; x < W; x++) {
+      const bin = Math.round((x / W) * N);
+      const db = Math.max(DB_MIN, Math.min(DB_MAX, (bin >= 0 && bin < N ? IQ.fftResult[bin] : -150) + specGain));
+      const t = (db - DB_MIN) / dbRange;
+      const [r,g,b] = wfCol(t);
+      const idx = x * 4;
+      d[idx]=r; d[idx+1]=g; d[idx+2]=b; d[idx+3]=255;
+    }
   } else {
-    ctx.strokeStyle = '#e3b34166';
-    ctx.lineWidth = 1;
+    // Audio fallback waterfall row
+    const analyser = activeAnalyser;
+    const bufLen = analyser.frequencyBinCount;
+    const freqData = new Float32Array(bufLen);
+    analyser.getFloatFrequencyData(freqData);
+    const hzPerBin = 48000 / analyser.fftSize;
+    const fhi = Math.abs(parseInt(el('fhi').value) || 2900);
+    const displayMax = Math.max(4000, Math.ceil(fhi * 1.15 / 500) * 500);
+    const maxBin = Math.min(bufLen - 1, Math.floor(displayMax / hzPerBin));
+    for (let x = 0; x < W; x++) {
+      const bin = Math.min(maxBin, Math.round((x / W) * maxBin));
+      const db = Math.max(DB_MIN, Math.min(DB_MAX, freqData[bin] + specGain));
+      const t = (db - DB_MIN) / dbRange;
+      const [r,g,b] = wfCol(t);
+      const idx = x * 4;
+      d[idx]=r; d[idx+1]=g; d[idx+2]=b; d[idx+3]=255;
+    }
   }
-  ctx.setLineDash([3,3]);
-  [wxLo, wxHi].forEach(x => {
-    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
-  });
-  ctx.setLineDash([]);
+  ctx.putImageData(wfImg, 0, 0);
+
+  // VFO marker lines on waterfall
+  if (useIQ) {
+    const SR = S.iqSR || 192000;
+    const loHz = S.iqCentre - SR / 2;
+    const hzToX = (hz) => ((hz - loHz) / SR) * W;
+
+    // Filter edges
+    const flo = parseInt(el('flo').value) || 100;
+    const fhi2 = parseInt(el('fhi').value) || 2900;
+    const xFlo = hzToX(S.vfoA + Math.min(flo, fhi2));
+    const xFhi = hzToX(S.vfoA + Math.max(flo, fhi2));
+    ctx.strokeStyle = S.mox ? '#ff550066' : '#e3b34144';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+    [xFlo, xFhi].forEach(x => { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); });
+    ctx.setLineDash([]);
+
+    // VFO A line
+    const vx = hzToX(S.vfoA);
+    ctx.strokeStyle = '#58a6ff44'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(vx,0); ctx.lineTo(vx,H); ctx.stroke();
+  }
 
   wfRAF=requestAnimationFrame(drawWF);
 }
 
 function wfCol(t) {
-  // Black → deep blue → cyan → green → yellow → red
-  if (t < 0.2) { const s=t/0.2;       return [0, 0, Math.round(s*180)]; }
-  if (t < 0.4) { const s=(t-0.2)/0.2; return [0, Math.round(s*180), 180]; }
-  if (t < 0.6) { const s=(t-0.4)/0.2; return [0, Math.round(180+s*75), Math.round(180-s*180)]; }
-  if (t < 0.8) { const s=(t-0.6)/0.2; return [Math.round(s*255), 255, 0]; }
-  const s=(t-0.8)/0.2;                 return [255, Math.round(255-s*200), 0];
+  switch (wfTheme) {
+    case 1: // heat: black → dark red → red → orange → yellow → white
+      if (t < 0.25) { const s=t/0.25;       return [Math.round(s*180), 0, 0]; }
+      if (t < 0.5)  { const s=(t-0.25)/0.25; return [Math.round(180+s*75), Math.round(s*100), 0]; }
+      if (t < 0.75) { const s=(t-0.5)/0.25;  return [255, Math.round(100+s*155), 0]; }
+      { const s=(t-0.75)/0.25; return [255, 255, Math.round(s*255)]; }
+    case 2: // grayscale: black → white
+      { const v=Math.round(t*255); return [v, v, v]; }
+    case 3: // night: black → dark green → bright green → yellow-green
+      if (t < 0.4) { const s=t/0.4;         return [0, Math.round(s*210), 0]; }
+      if (t < 0.75) { const s=(t-0.4)/0.35;  return [Math.round(s*80), Math.round(210+s*45), 0]; }
+      { const s=(t-0.75)/0.25; return [Math.round(80+s*175), 255, Math.round(s*80)]; }
+    default: // classic: dark blue → cyan → green → yellow → red
+      if (t < 0.2) { const s=t/0.2;         return [0, 0, Math.round(s*180)]; }
+      if (t < 0.4) { const s=(t-0.2)/0.2;   return [0, Math.round(s*180), 180]; }
+      if (t < 0.6) { const s=(t-0.4)/0.2;   return [0, Math.round(180+s*75), Math.round(180-s*180)]; }
+      if (t < 0.8) { const s=(t-0.6)/0.2;   return [Math.round(s*255), 255, 0]; }
+      { const s=(t-0.8)/0.2;                 return [255, Math.round(255-s*200), 0]; }
+  }
+}
+
+function togglePeakHold() {
+  peakHoldEnabled = !peakHoldEnabled;
+  if (!peakHoldEnabled) peakHoldBuf = null;
+  const btn = el('peakHoldBtn');
+  if (btn) btn.classList.toggle('active', peakHoldEnabled);
+  saveState();
+}
+
+function setWfTheme(n) {
+  wfTheme = n;
+  document.querySelectorAll('.wf-theme-btn[data-theme]').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.theme) === n));
+  saveState();
+}
+
+// ── RIT (Receiver Incremental Tuning) ──
+let ritHz = 0;      // current RIT offset in Hz
+let ritOn = false;  // RIT enabled flag
+
+function togRIT() {
+  ritOn = !ritOn;
+  const btn = el('ritOnBtn');
+  if (btn) btn.classList.toggle('on', ritOn);
+  updRITDisp();
+}
+function nudgeRIT(delta) {
+  ritHz = Math.max(-9999, Math.min(9999, ritHz + delta));
+  updRITDisp();
+}
+function clearRIT() {
+  ritHz = 0;
+  updRITDisp();
+}
+function updRITDisp() {
+  const d = el('ritDisp');
+  if (d) d.textContent = (ritOn ? (ritHz >= 0 ? '+' : '') + ritHz : '0') + ' Hz';
+}
+// Effective receive frequency (VFO A + RIT if enabled)
+function vfoARit() { return ritOn ? S.vfoA + ritHz : S.vfoA; }
+
+// ── DIGITAL MODE MARKERS ──
+let showDigMarkers = true;
+const DIGITAL_MARKERS = [
+  // 160m
+  { name:'FT8',  hz:1840000,  color:'#ff8800' },
+  { name:'WSPR', hz:1836600,  color:'#00cc66' },
+  // 80m
+  { name:'FT8',  hz:3573000,  color:'#ff8800' },
+  { name:'WSPR', hz:3568600,  color:'#00cc66' },
+  { name:'JS8',  hz:3578000,  color:'#aa88ff' },
+  // 60m
+  { name:'FT8',  hz:5357000,  color:'#ff8800' },
+  // 40m
+  { name:'FT8',  hz:7074000,  color:'#ff8800' },
+  { name:'FT4',  hz:7047500,  color:'#ffaa00' },
+  { name:'WSPR', hz:7038600,  color:'#00cc66' },
+  { name:'JS8',  hz:7078000,  color:'#aa88ff' },
+  // 30m
+  { name:'FT8',  hz:10136000, color:'#ff8800' },
+  { name:'WSPR', hz:10138700, color:'#00cc66' },
+  { name:'JS8',  hz:10130000, color:'#aa88ff' },
+  // 20m
+  { name:'FT8',  hz:14074000, color:'#ff8800' },
+  { name:'FT4',  hz:14080000, color:'#ffaa00' },
+  { name:'WSPR', hz:14095600, color:'#00cc66' },
+  { name:'JS8',  hz:14078000, color:'#aa88ff' },
+  { name:'PSK31',hz:14070000, color:'#66ccff' },
+  // 17m
+  { name:'FT8',  hz:18100000, color:'#ff8800' },
+  { name:'WSPR', hz:18104600, color:'#00cc66' },
+  // 15m
+  { name:'FT8',  hz:21074000, color:'#ff8800' },
+  { name:'WSPR', hz:21094600, color:'#00cc66' },
+  { name:'JS8',  hz:21078000, color:'#aa88ff' },
+  // 12m
+  { name:'FT8',  hz:24915000, color:'#ff8800' },
+  { name:'WSPR', hz:24924600, color:'#00cc66' },
+  // 10m
+  { name:'FT8',  hz:28074000, color:'#ff8800' },
+  { name:'WSPR', hz:28124600, color:'#00cc66' },
+  { name:'JS8',  hz:28078000, color:'#aa88ff' },
+  // 6m
+  { name:'FT8',  hz:50313000, color:'#ff8800' },
+  { name:'WSPR', hz:50293000, color:'#00cc66' },
+];
+
+function drawDigMarkers(ctx, W, H, hzToX) {
+  if (!showDigMarkers) return;
+  ctx.font = 'bold 9px SF Mono, Consolas, monospace';
+  ctx.textAlign = 'center';
+  ctx.setLineDash([2, 3]);
+  ctx.lineWidth = 1;
+  const labelBuckets = {}; // avoid overlapping labels at same x
+  for (const m of DIGITAL_MARKERS) {
+    const x = hzToX(m.hz);
+    if (x < 0 || x > W) continue;
+    ctx.strokeStyle = m.color + 'aa';
+    ctx.fillStyle   = m.color + 'cc';
+    ctx.beginPath(); ctx.moveTo(x, 20); ctx.lineTo(x, H - 20); ctx.stroke();
+    // Bucket labels by 20px columns to avoid overlap
+    const bucket = Math.round(x / 20) * 20;
+    if (!labelBuckets[bucket]) {
+      labelBuckets[bucket] = true;
+      ctx.fillText(m.name, x, H - 24);
+    }
+  }
+  ctx.setLineDash([]);
+}
+
+// ── DX CLUSTER (Spothole API) ──
+let dxSpots = [];       // filtered spots for display
+let dxAllSpots = [];    // raw spots from API
+let dxEnabled = false;
+let dxPollId = null;
+let dxLastFetch = 0;
+const DX_POLL_INTERVAL = 60000; // 60s
+
+function togDXCluster() {
+  dxEnabled = !dxEnabled;
+  const btn = el('dxEnableC');
+  if (btn) btn.classList.toggle('on', dxEnabled);
+  if (dxEnabled) {
+    fetchDXSpots();
+    if (!dxPollId) dxPollId = setInterval(fetchDXSpots, DX_POLL_INTERVAL);
+  } else {
+    if (dxPollId) { clearInterval(dxPollId); dxPollId = null; }
+    dxSpots = []; dxAllSpots = [];
+    el('dxList').innerHTML = '';
+    el('dxAge').textContent = '';
+  }
+}
+
+function fetchDXSpots() {
+  fetch('https://spothole.app/api/v1/spots?limit=200')
+    .then(r => r.json())
+    .then(data => {
+      dxAllSpots = Array.isArray(data) ? data : [];
+      dxLastFetch = Date.now();
+      dxApplyFilter();
+    })
+    .catch(() => {});
+}
+
+// Map current mode to mode_type string
+function modeToModeType(m) {
+  m = (m || '').toUpperCase();
+  if (['CWL','CWU'].includes(m)) return 'CW';
+  if (['DIGU','DIGL'].includes(m)) return 'DATA';
+  return 'SSB';
+}
+
+function dxApplyFilter() {
+  const trackBand = (el('dxTrackBand') || {}).checked;
+  const trackMode = (el('dxTrackMode') || {}).checked;
+  const curBand = freqToBand(S.vfoA);
+  const curModeType = modeToModeType(S.mode);
+
+  // Pull settings-based filters
+  const cfg = getSettings();
+  const myContinent      = cfg.dxMyContinent || '';
+  const myZone           = cfg.dxMyZone || 0;
+  const onlyMyZone       = cfg.dxOnlyMyZone || false;
+  const hideMyContinent  = cfg.dxHideMyContinent || false;
+  const localSpottersOnly= cfg.dxLocalSpotters || false;
+  const maxAgeMins       = cfg.dxMaxAge != null ? cfg.dxMaxAge : 0;
+  const dxContinent      = cfg.dxContinent || '';
+
+  const now = Date.now();
+
+  dxSpots = dxAllSpots.filter(s => {
+    // Track band / track mode (from dock panel checkboxes)
+    if (trackBand && curBand && s.band !== curBand) return false;
+    if (trackMode && s.mode_type !== curModeType) return false;
+
+    // Max age
+    if (maxAgeMins > 0 && s.time_iso) {
+      const spotMs = new Date(s.time_iso).getTime();
+      if (!isNaN(spotMs) && (now - spotMs) > maxAgeMins * 60000) return false;
+    }
+
+    // Only DX on a specific continent
+    if (dxContinent && s.dx_continent !== dxContinent) return false;
+
+    // Hide DX on my own continent (show true DX only)
+    if (hideMyContinent && myContinent && s.dx_continent === myContinent) return false;
+
+    // Only spots from local spotters (de_continent matches mine)
+    if (localSpottersOnly && myContinent && s.de_continent !== myContinent) return false;
+
+    // Only my CQ zone — map zone to continent as best approximation
+    // (Spothole doesn't return CQ zone per spot; filter by country substring if zone set)
+    if (onlyMyZone && myZone > 0) {
+      // Best effort: keep spot if dx_call prefix roughly matches zone's typical countries
+      // For now, use the user-set continent as the zone boundary
+      if (myContinent && s.dx_continent !== myContinent) return false;
+    }
+
+    return true;
+  }).slice(0, 100);
+
+  renderDXList();
+}
+
+function renderDXList() {
+  const box = el('dxList');
+  if (!box) return;
+  if (!dxSpots.length) { box.innerHTML = '<span style="color:#484f58;">No spots</span>'; return; }
+  box.innerHTML = dxSpots.slice(0, 30).map(s => {
+    const modeColor = s.mode_type === 'DATA' ? '#ff8800' : s.mode_type === 'CW' ? '#3fb950' : '#58a6ff';
+    const mhz = s.freq ? (s.freq / 1e6).toFixed(3) : '?';
+    const time = s.time_iso ? s.time_iso.slice(11, 16) + 'Z' : '';
+    return `<div style="cursor:pointer;padding:1px 2px;border-radius:2px;" onclick="dxTuneTo(${s.freq})" title="${s.de_call||''} → ${s.dx_call} @ ${mhz} MHz ${s.mode}">
+      <span style="color:${modeColor};min-width:32px;display:inline-block;">${(s.mode||'?').slice(0,4)}</span>
+      <span style="color:#58a6ff;min-width:44px;display:inline-block;">${mhz}</span>
+      <span style="color:#e6edf3;min-width:58px;display:inline-block;">${s.dx_call||''}</span>
+      <span style="color:#484f58;">${s.dx_flag||''} ${s.dx_country||''}</span>
+    </div>`;
+  }).join('');
+  const age = dxLastFetch ? Math.round((Date.now() - dxLastFetch) / 1000) + 's ago' : '';
+  const ageEl = el('dxAge'); if (ageEl) ageEl.textContent = dxSpots.length + ' spots · ' + age;
+}
+
+function dxTuneTo(freqHz) {
+  if (!freqHz || freqHz <= 0) return;
+  setVfoDisp('A', freqHz);
+  send('vfo:0,0,' + freqHz + ';');
+}
+
+// Age display refresh + re-filter when tracking is on and band/mode changed
+let _dxLastBand = null, _dxLastMode = null;
+setInterval(() => {
+  if (!dxEnabled) return;
+  // Refresh age label
+  if (dxLastFetch) { const ageEl = el('dxAge'); if (ageEl) { const age = Math.round((Date.now()-dxLastFetch)/1000); ageEl.textContent = dxSpots.length + ' spots · ' + age + 's ago'; } }
+  // Re-filter if tracking and band/mode changed
+  const trackBand = (el('dxTrackBand') || {}).checked;
+  const trackMode = (el('dxTrackMode') || {}).checked;
+  if (trackBand || trackMode) {
+    const curBand = freqToBand(S.vfoA);
+    const curMode = S.mode;
+    if (curBand !== _dxLastBand || curMode !== _dxLastMode) {
+      _dxLastBand = curBand; _dxLastMode = curMode;
+      dxApplyFilter();
+    }
+  }
+}, 3000);
+
+// Draw DX spots on spectrum — horizontal stacked callsigns just below freq labels
+function drawDXOverlay(ctx, W, H, hzToX) {
+  if (!dxEnabled || !dxSpots.length) return;
+
+  ctx.font = 'bold 13px SF Mono, Consolas, monospace';
+  ctx.textAlign = 'left';
+
+  // Build visible spots
+  const items = [];
+  for (const s of dxSpots) {
+    if (!s.freq) continue;
+    const x = hzToX(s.freq);
+    if (x < 1 || x > W - 1) continue;
+    const mt = s.mode_type || 'SSB';
+    const col = mt === 'DATA' ? '#ff8800' : mt === 'CW' ? '#3fb950' : '#79c0ff';
+    items.push({ x, col, call: (s.dx_call || '?').slice(0, 10), spot: s });
+  }
+  if (!items.length) return;
+
+  // Sort left-to-right for greedy row assignment
+  items.sort((a, b) => a.x - b.x);
+
+  // Assign rows: each label sits in the first row where it won't overlap the previous label
+  const LABEL_ROW_H = 16;   // px per row (matches 13px font)
+  const TICK_Y      = 21;   // y where tick starts — just below the 20px freq strip
+  const MAX_ROWS    = 5;
+  const rowRight = new Float32Array(MAX_ROWS).fill(-Infinity);
+
+  for (const item of items) {
+    const tw = ctx.measureText(item.call).width + 6;
+    let row = MAX_ROWS - 1;
+    for (let r = 0; r < MAX_ROWS; r++) {
+      if (item.x - rowRight[r] > tw + 2) { row = r; break; }
+    }
+    item.row = row;
+    rowRight[row] = item.x + tw;
+  }
+
+  // Draw each spot
+  for (const item of items) {
+    const labelY = TICK_Y + item.row * LABEL_ROW_H + 13; // text baseline
+
+    // Downward-pointing triangle tick at exact frequency, sitting on the freq strip edge
+    ctx.fillStyle = item.col + 'dd';
+    ctx.beginPath();
+    ctx.moveTo(item.x - 5, TICK_Y);
+    ctx.lineTo(item.x + 5, TICK_Y);
+    ctx.lineTo(item.x,     TICK_Y + 8);
+    ctx.closePath();
+    ctx.fill();
+
+    // Short dashed connector from tick tip down to the label row (only when stacked)
+    if (item.row > 0) {
+      ctx.strokeStyle = item.col + '55';
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(item.x, TICK_Y + 8);
+      ctx.lineTo(item.x, labelY - 12);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Dark pill behind callsign text for readability
+    const tw = ctx.measureText(item.call).width;
+    ctx.fillStyle = 'rgba(1,4,9,0.82)';
+    ctx.fillRect(item.x + 1, labelY - 12, tw + 6, 15);
+
+    // Callsign — horizontal, readable
+    ctx.fillStyle = item.col;
+    ctx.fillText(item.call, item.x + 3, labelY);
+  }
+}
+
+// Hover tooltip on spectrum canvas for DX spots
+(function() {
+  function attachDXHover(canvasId) {
+    const cv = document.getElementById(canvasId);
+    if (!cv) return;
+    cv.addEventListener('mousemove', function(e) {
+      const tooltip = el('dxTooltip');
+      if (!dxEnabled || !dxSpots.length || !S.iqOn) { if (tooltip) tooltip.style.display = 'none'; return; }
+      const rect = cv.getBoundingClientRect();
+      const xFrac = (e.clientX - rect.left) / rect.width;
+      const SR = S.iqSR || 192000;
+      const vSR = SR / specZoom;
+      const vLo = (specZoomCentre || S.iqCentre) - vSR / 2;
+      const hoverHz = vLo + xFrac * vSR;
+      const threshold = vSR / rect.width * 10; // ±10px
+      let hit = null;
+      for (const s of dxSpots) {
+        if (s.freq && Math.abs(s.freq - hoverHz) < threshold) { hit = s; break; }
+      }
+      if (!tooltip) return;
+      if (hit) {
+        const mhz = (hit.freq / 1e6).toFixed(4);
+        const time = hit.time_iso ? hit.time_iso.slice(11, 16) + 'Z' : '';
+        tooltip.innerHTML = `<b style="color:#58a6ff;">${hit.dx_call || '?'}</b> ${hit.dx_flag || ''} <span style="color:#7d8590;">${hit.dx_country || ''}</span><br>
+          <span style="color:#3fb950;">${mhz} MHz</span> · <span style="color:#e3b341;">${hit.mode || '?'}</span> · ${time}<br>
+          <span style="color:#484f58;">Spotter: ${hit.de_call || '?'} (${hit.de_country || ''})</span>
+          ${hit.comment ? '<br><span style="color:#7d8590;">' + hit.comment + '</span>' : ''}`;
+        tooltip.style.display = 'block';
+        tooltip.style.left = (e.clientX + 14) + 'px';
+        tooltip.style.top  = (e.clientY - 10) + 'px';
+      } else {
+        tooltip.style.display = 'none';
+      }
+    });
+    cv.addEventListener('mouseleave', () => { const t = el('dxTooltip'); if (t) t.style.display = 'none'; });
+  }
+  // Attach after DOM is ready
+  window.addEventListener('load', () => { attachDXHover('specC'); });
+})();
+
+// ── PROPAGATION WIDGET ──
+let propData = null;
+let propFetching = false;
+
+function fetchPropagation() {
+  if (propFetching) return;
+  propFetching = true;
+  // Use a CORS-friendly proxy approach — hamqsl.com supports direct XML fetch
+  fetch('https://www.hamqsl.com/solarxml.php')
+    .then(r => r.text())
+    .then(txt => {
+      propFetching = false;
+      propData = parseSolarXML(txt);
+      renderProp();
+    })
+    .catch(() => { propFetching = false; });
+}
+
+function parseSolarXML(txt) {
+  try {
+    const p = new DOMParser();
+    const doc = p.parseFromString(txt, 'text/xml');
+    const g = t => { const n = doc.querySelector(t); return n ? n.textContent.trim() : '--'; };
+    return {
+      sfi: g('solarflux'),
+      aindex: g('aindex'),
+      kindex: g('kindex'),
+      xray: g('xray'),
+      updated: g('updated'),
+      bands: {
+        '80m-40m': { day: g('band[name="80m-40m"] condition[time="day"]'), night: g('band[name="80m-40m"] condition[time="night"]') },
+        '30m-20m': { day: g('band[name="30m-20m"] condition[time="day"]'), night: g('band[name="30m-20m"] condition[time="night"]') },
+        '17m-15m': { day: g('band[name="17m-15m"] condition[time="day"]'), night: g('band[name="17m-15m"] condition[time="night"]') },
+        '10m-6m':  { day: g('band[name="10m-6m"] condition[time="day"]'),  night: g('band[name="10m-6m"] condition[time="night"]') },
+      }
+    };
+  } catch(e) { return null; }
+}
+
+function condClass(c) {
+  if (!c) return '';
+  c = c.toLowerCase();
+  if (c.includes('good') || c.includes('excel')) return 'cond-good';
+  if (c.includes('fair')) return 'cond-fair';
+  return 'cond-poor';
+}
+
+function renderProp() {
+  if (!propData) return;
+  const d = propData;
+  const sv = (id, v) => { const e = el(id); if (e) e.textContent = v; };
+  sv('pSFI', d.sfi);
+  sv('pA', d.aindex);
+  sv('pK', d.kindex);
+  sv('pXray', d.xray);
+  const bandsEl = el('propBands');
+  if (bandsEl) {
+    const hr = new Date().getUTCHours();
+    const isDay = hr >= 6 && hr < 20;
+    bandsEl.innerHTML = Object.entries(d.bands).map(([band, cond]) => {
+      const c = isDay ? cond.day : cond.night;
+      return `<span class="prop-cond ${condClass(c)}" title="${band} (${isDay?'day':'night'})">${band} ${c||'?'}</span>`;
+    }).join('');
+  }
+  const ageEl = el('propAge');
+  if (ageEl) ageEl.textContent = d.updated ? 'Updated: ' + d.updated : '';
+}
+
+
+// ── AUDIO RECORDER ──
+let recorder = null;
+let recChunks = [];
+let recOn = false;
+
+function toggleRecord() {
+  recOn ? stopRecord() : startRecord();
+}
+
+function startRecord() {
+  if (!S.audioCtx || !S.rxOn) {
+    log('err', 'Recorder: start RX audio first');
+    return;
+  }
+  try {
+    // Create a MediaStreamDestination from the audio context
+    const dest = S.audioCtx.createMediaStreamDestination();
+    if (S.analyser) S.analyser.connect(dest);
+    // MediaRecorder prefers audio/webm
+    const opts = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? { mimeType: 'audio/webm;codecs=opus' }
+      : {};
+    recorder = new MediaRecorder(dest.stream, opts);
+    recChunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) recChunks.push(e.data); };
+    recorder.onstop = () => {
+      const blob = new Blob(recChunks, { type: recorder.mimeType || 'audio/webm' });
+      const a = document.createElement('a');
+      const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+      a.download = 'totw-' + ts + '.webm';
+      a.href = URL.createObjectURL(blob);
+      a.click();
+      URL.revokeObjectURL(a.href);
+      log('sys', 'Recording saved: ' + a.download + ' (' + (blob.size/1024).toFixed(1) + ' kB)');
+    };
+    recorder.start(1000); // 1s chunks
+    recOn = true;
+    const btn = el('recBtn'); if (btn) btn.classList.add('on');
+    const lbl = el('recLabel'); if (lbl) lbl.textContent = 'STOP';
+    log('sys', 'Recording started');
+  } catch(e) {
+    log('err', 'Recorder error: ' + e.message);
+  }
+}
+
+function stopRecord() {
+  if (recorder && recorder.state !== 'inactive') recorder.stop();
+  recorder = null;
+  recOn = false;
+  const btn = el('recBtn'); if (btn) btn.classList.remove('on');
+  const lbl = el('recLabel'); if (lbl) lbl.textContent = 'REC';
+}
+
+// ── FREQUENCY MEMORIES ──
+const MEM_KEY = 'totw_mem_v1';
+let memories = [];
+
+function loadMemories() {
+  try { memories = JSON.parse(localStorage.getItem(MEM_KEY)) || []; } catch(e) { memories = []; }
+}
+
+function saveMemories() {
+  try { localStorage.setItem(MEM_KEY, JSON.stringify(memories)); } catch(e) {}
+}
+
+function memSave() {
+  const name = prompt('Memory name (leave blank for auto):', (S.vfoA / 1e6).toFixed(4) + ' MHz') ;
+  if (name === null) return; // cancelled
+  memories.push({
+    name: name || (S.vfoA / 1e6).toFixed(4) + ' ' + S.mode,
+    freq: S.vfoA,
+    mode: S.mode,
+    ts: Date.now()
+  });
+  saveMemories();
+  renderMemShort();
+  renderMemModalList();
+}
+
+function memRecall(idx) {
+  const m = memories[idx];
+  if (!m) return;
+  setVfoDisp('A', m.freq);
+  send('vfo:0,0,' + m.freq + ';');
+  if (m.mode) { S.mode = m.mode; updMode(); send('modulation:0,' + m.mode + ';'); }
+}
+
+function memDelete(idx) {
+  memories.splice(idx, 1);
+  saveMemories();
+  renderMemShort();
+  renderMemModalList();
+}
+
+function memClearAll() {
+  if (!confirm('Clear all memories?')) return;
+  memories = [];
+  saveMemories();
+  renderMemShort();
+  renderMemModalList();
+}
+
+function memExport() {
+  const blob = new Blob([JSON.stringify(memories, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.download = 'totw-memories.json';
+  a.href = URL.createObjectURL(blob);
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function memImportClick() { const f = el('memImportFile'); if (f) f.click(); }
+
+function memImportLoad(inp) {
+  if (!inp.files || !inp.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (Array.isArray(imported)) {
+        memories = memories.concat(imported);
+        saveMemories();
+        renderMemShort();
+        renderMemModalList();
+        log('sys', 'Imported ' + imported.length + ' memories');
+      }
+    } catch(err) { log('err', 'Memory import failed: ' + err.message); }
+    inp.value = '';
+  };
+  reader.readAsText(inp.files[0]);
+}
+
+function renderMemShort() {
+  const box = el('memListShort');
+  if (!box) return;
+  if (!memories.length) { box.innerHTML = '<span style="font-size:9px;color:#484f58;font-family:\'SF Mono\',monospace;">No memories saved</span>'; return; }
+  box.innerHTML = '<table class="mem-table">' + memories.slice(0, 20).map((m, i) => {
+    const mhz = (m.freq / 1e6).toFixed(4);
+    return `<tr class="mem-row" onclick="memRecall(${i})">
+      <td class="mem-freq">${mhz}</td>
+      <td class="mem-mode">${m.mode||''}</td>
+      <td class="mem-name" title="${m.name||''}">${(m.name||'').slice(0,14)}</td>
+      <td class="mem-del" onclick="event.stopPropagation();memDelete(${i})" title="Delete">✕</td>
+    </tr>`;
+  }).join('') + '</table>';
+}
+
+function renderMemModalList() {
+  const box = el('memModalList');
+  if (!box) return;
+  if (!memories.length) { box.innerHTML = '<span style="font-size:11px;color:#484f58;">No memories saved.</span>'; return; }
+  box.innerHTML = '<table class="mem-table" style="font-size:11px;">' +
+    '<tr><td style="color:#484f58;padding:2px 4px;">#</td><td style="color:#484f58;">Freq</td><td style="color:#484f58;">Mode</td><td style="color:#484f58;">Name</td><td></td></tr>' +
+    memories.map((m, i) => {
+      const mhz = (m.freq / 1e6).toFixed(4);
+      return `<tr class="mem-row" onclick="memRecall(${i});closeModal('memModal');">
+        <td style="color:#484f58;">${i+1}</td>
+        <td class="mem-freq">${mhz}</td>
+        <td class="mem-mode">${m.mode||''}</td>
+        <td class="mem-name" title="${m.name||''}">${(m.name||'').slice(0,24)}</td>
+        <td class="mem-del" onclick="event.stopPropagation();memDelete(${i})" title="Delete">✕</td>
+      </tr>`;
+    }).join('') + '</table>';
+}
+
+// ── COLOR THEMES — unified spectrum line + waterfall ──
+// Each theme defines: specLine color + wfTheme index
+const COLOR_THEMES = {
+  classic: { specLine: '#58a6ff', wf: 0 },
+  heat:    { specLine: '#ff8800', wf: 1 },
+  gray:    { specLine: '#aaaaaa', wf: 2 },
+  night:   { specLine: '#3fb950', wf: 3 },
+  amber:   { specLine: '#e3b341', wf: 0 },
+};
+let activeColorTheme = 'classic';
+
+function setColorTheme(btn) {
+  activeColorTheme = btn.dataset.theme;
+  document.querySelectorAll('#colorThemeBtns .mbtn').forEach(b =>
+    b.classList.toggle('pri', b.dataset.theme === activeColorTheme));
+  applyColorTheme(activeColorTheme);
+}
+
+function applyColorTheme(name) {
+  const t = COLOR_THEMES[name] || COLOR_THEMES.classic;
+  specLineColor = t.specLine;
+  wfTheme = t.wf;
+  // Sync the hidden wf-theme-btn active states (for saveState compat)
+  document.querySelectorAll('.wf-theme-btn[data-theme]').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.theme) === wfTheme));
+}
+
+// ── SETTINGS ──
+let specLineColor = '#58a6ff';
+
+function loadSettingsUI() {
+  const cfg = getSettings();
+  const v = (id, val) => { const e = el(id); if (e) e.value = val; };
+  const c = (id, val) => { const e = el(id); if (e) e.checked = val; };
+  v('cfgCall', cfg.callsign || '');
+  v('cfgGrid', cfg.grid || '');
+  v('cfgName', cfg.opname || '');
+  c('cfgAutoConn', cfg.autoConn || false);
+  c('cfgDigMarkers', cfg.digMarkers !== false);
+  v('cfgPttMode', cfg.pttMode || 'momentary');
+  v('cfgPttTimeout', cfg.pttTimeout || 3);
+  v('cfgDbFloor', cfg.dbFloor || -140);
+  v('cfgDbCeil', cfg.dbCeil || -30);
+  activeColorTheme = cfg.colorTheme || 'classic';
+  document.querySelectorAll('#colorThemeBtns .mbtn').forEach(b =>
+    b.classList.toggle('pri', b.dataset.theme === activeColorTheme));
+  // DX cluster filters
+  v('cfgMyContinent',       cfg.dxMyContinent || '');
+  v('cfgMyZone',            cfg.dxMyZone || '');
+  c('cfgDxOnlyMyZone',      cfg.dxOnlyMyZone || false);
+  c('cfgDxHideMyContinent', cfg.dxHideMyContinent || false);
+  c('cfgDxLocalSpotters',   cfg.dxLocalSpotters || false);
+  v('cfgDxMaxAge',          cfg.dxMaxAge != null ? cfg.dxMaxAge : 30);
+  v('cfgDxContinent',       cfg.dxContinent || '');
+  // Greyline
+  c('cfgGreyline',     cfg.greyline || false);
+  v('cfgGreylineUrl',  cfg.greylineUrl || '');
+  v('cfgGreylineOpacity', cfg.greylineOpacity != null ? cfg.greylineOpacity : 80);
+  // Panel visibility
+  const vis = cfg.panelVis || {};
+  PANELS.forEach(p => {
+    const cb = el('vis_' + p.id);
+    if (cb) cb.checked = vis[p.id] !== undefined ? vis[p.id] : p.def;
+  });
+}
+
+function saveSettings() {
+  const gv = id => { const e = el(id); return e ? e.value : ''; };
+  const gc = id => { const e = el(id); return e ? e.checked : false; };
+  const cfg = {
+    callsign:           gv('cfgCall').toUpperCase().trim(),
+    grid:               gv('cfgGrid').toUpperCase().trim(),
+    opname:             gv('cfgName').trim(),
+    autoConn:           gc('cfgAutoConn'),
+    digMarkers:         gc('cfgDigMarkers'),
+    pttMode:            gv('cfgPttMode'),
+    pttTimeout:         parseInt(gv('cfgPttTimeout')) || 3,
+    dbFloor:            parseInt(gv('cfgDbFloor')) || -140,
+    dbCeil:             parseInt(gv('cfgDbCeil')) || -30,
+    colorTheme:         activeColorTheme,
+    // DX cluster filters
+    dxMyContinent:      gv('cfgMyContinent'),
+    dxMyZone:           parseInt(gv('cfgMyZone')) || 0,
+    dxOnlyMyZone:       gc('cfgDxOnlyMyZone'),
+    dxHideMyContinent:  gc('cfgDxHideMyContinent'),
+    dxLocalSpotters:    gc('cfgDxLocalSpotters'),
+    dxMaxAge:           parseInt(gv('cfgDxMaxAge')) || 0,
+    dxContinent:        gv('cfgDxContinent'),
+    // Greyline
+    greyline:           gc('cfgGreyline'),
+    greylineUrl:        gv('cfgGreylineUrl').trim(),
+    greylineOpacity:    parseInt(gv('cfgGreylineOpacity')) || 80,
+    // Panel visibility
+    panelVis:           Object.fromEntries(PANELS.map(p => {
+      const cb = el('vis_' + p.id); return [p.id, cb ? cb.checked : p.def];
+    })),
+  };
+  try { localStorage.setItem('totw_cfg_v1', JSON.stringify(cfg)); } catch(e) {}
+  showDigMarkers = cfg.digMarkers;
+  DB_MIN = cfg.dbFloor;
+  DB_MAX = cfg.dbCeil;
+  applyColorTheme(cfg.colorTheme);
+  const csEl = document.querySelector('.callsign');
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web';
+  // Apply panel visibility
+  applyPanelVisibility();
+  // Apply greyline
+  if (cfg.greyline) startGreyline(); else stopGreyline();
+  closeModal('settingsModal');
+  log('sys', 'Settings saved' + (cfg.callsign ? ' · ' + cfg.callsign : ''));
+}
+
+function getSettings() {
+  try { return JSON.parse(localStorage.getItem('totw_cfg_v1')) || {}; } catch(e) { return {}; }
+}
+
+function applySettings() {
+  const cfg = getSettings();
+  showDigMarkers = cfg.digMarkers !== false;
+  if (cfg.dbFloor) DB_MIN = cfg.dbFloor;
+  if (cfg.dbCeil)  DB_MAX = cfg.dbCeil;
+  activeColorTheme = cfg.colorTheme || 'classic';
+  applyColorTheme(activeColorTheme);
+  if (cfg.callsign) {
+    const csEl = document.querySelector('.callsign');
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web';
+  }
+  // Panel visibility
+  applyPanelVisibility();
+  initTuningSlider();
+  // Greyline map
+  if (cfg.greyline) startGreyline();
+}
+
+// ── PANEL VISIBILITY ──
+const PANELS = [
+  { id: 'dpBands',    label: 'Bands',           def: true  },
+  { id: 'dpVFO',      label: 'VFO',             def: true  },
+  { id: 'dpStep',     label: 'Tune Step',       def: true  },
+  { id: 'dpMode',     label: 'Mode',            def: true  },
+  { id: 'dpTuning',   label: 'Tuning Slider',   def: false },
+  { id: 'dpSMeter',   label: 'S-Meter',         def: true  },
+  { id: 'dpSigBar',   label: 'Signal Bar',      def: true  },
+  { id: 'dpNetwork',  label: 'Network',         def: true  },
+  { id: 'dpAFGain',   label: 'AF Gain',         def: true  },
+  { id: 'dpNR',       label: 'Noise Reduction', def: true  },
+  { id: 'dpFilter',   label: 'Filter Width',    def: true  },
+  { id: 'dpTCILog',   label: 'TCI Log',         def: true  },
+  { id: 'dpTransmit', label: 'Transmit',        def: true  },
+  { id: 'dpOptions',  label: 'Options',         def: true  },
+  { id: 'dpTCIAudio', label: 'TCI Audio',       def: true  },
+  { id: 'dpAntenna',  label: 'Antenna',         def: true  },
+  { id: 'dpRX2',      label: 'Second Receiver', def: false },
+  { id: 'dpDXCluster',label: 'DX Cluster',      def: true  },
+  { id: 'dpMemories', label: 'Memories',        def: true  },
+];
+
+function applyPanelVisibility() {
+  const cfg = getSettings();
+  const vis = cfg.panelVis || {};
+  PANELS.forEach(p => {
+    const panel = el(p.id);
+    if (!panel) return;
+    const show = vis[p.id] !== undefined ? vis[p.id] : p.def;
+    panel.classList.toggle('dp-hidden', !show);
+  });
+}
+
+// ── SNAP TO STEP ──
+function snapToStep(hz, step) {
+  if (!step || step <= 1) return Math.round(hz);
+  return Math.round(hz / step) * step;
+}
+
+// ── PREVIEW VFO DISPLAY (no state change — used during drag/scroll) ──
+function previewVfoDisp(vfo, hz) {
+  hz = Math.max(0, hz);
+  window['_previewHz' + vfo] = hz;
+  const mhz = hz / 1e6;
+  const whole = Math.floor(mhz).toString();
+  const decAll = mhz.toFixed(6).split('.')[1];
+  const decKhz = decAll.slice(0, 3);
+  const decHz  = decAll.slice(3, 6);
+  const disp = el('vfo' + vfo + 'Disp');
+  if (!disp) return;
+  disp.innerHTML = whole + '.' + decKhz +
+    '<span class="hz-small"> ' + decHz + '</span>' +
+    '<span class="mhz"> MHz</span>';
+}
+
+// ── TUNING SLIDER ──
+function adjustFrequency(value) {
+  const delta = parseInt(value) - sliderLastValue;
+  if (delta === 0) return;
+  const raw = S.vfoA + delta * S.step;
+  const hz = Math.max(0, snapToStep(raw, S.step));
+  bpIgnoreVfoUpdateUntil = Date.now() + 1000;
+  setVfoDisp('A', hz);
+  send('vfo:0,0,' + hz + ';');
+  sliderLastValue = parseInt(value);
+}
+
+function resetSlider() {
+  const slider = el('tuningSlider');
+  if (slider) { slider.value = 0; sliderLastValue = 0; }
+}
+
+function initTuningSlider() {
+  const lbl = el('tuningStepLabel');
+  if (lbl) lbl.textContent = 'TUNE (' + (S.step >= 1000 ? (S.step/1000)+'kHz' : S.step+'Hz') + ')';
+}
+
+// ── GREYLINE MAP ──
+let _greylineTimer = null;
+window._greylineImg = null;
+
+function loadGreyline() {
+  const cfg = getSettings();
+  if (!cfg.greyline) return;
+  const url = (cfg.greylineUrl || 'https://pure-editions.com/on7off/greyline.jpg').trim();
+  const img = new Image();
+  img.onload = () => {
+    window._greylineImg = img;
+    log('sys', 'Greyline map loaded (' + img.naturalWidth + 'x' + img.naturalHeight + ')');
+  };
+  img.onerror = () => {
+    log('sys', 'Greyline: failed to load image');
+  };
+  img.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+}
+
+function startGreyline() {
+  stopGreyline();
+  loadGreyline();
+  _greylineTimer = setInterval(loadGreyline, 5 * 60 * 1000);
+}
+
+function stopGreyline() {
+  if (_greylineTimer) { clearInterval(_greylineTimer); _greylineTimer = null; }
+  window._greylineImg = null;
 }
 
 // ── LOG ──
@@ -1984,6 +4538,25 @@ function log(type, msg) {
   if (++logN>120) { box.removeChild(box.firstChild); logN--; }
 }
 
+function copyTciLog() {
+  const lines = Array.from(el('tciLog').children).map(d => d.textContent).join('\n');
+  navigator.clipboard.writeText(lines).then(() => {
+    const btn = el('logCopyBtn');
+    if (btn) { btn.textContent = 'COPIED'; setTimeout(() => { btn.textContent = 'COPY'; }, 1500); }
+  }).catch(() => {
+    // Fallback for browsers without clipboard API
+    const ta = document.createElement('textarea');
+    ta.value = lines;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = el('logCopyBtn');
+    if (btn) { btn.textContent = 'COPIED'; setTimeout(() => { btn.textContent = 'COPY'; }, 1500); }
+  });
+}
+
 function toggleLog() {
   const log = el('tciLog');
   const btn = el('logTogBtn');
@@ -1994,12 +4567,122 @@ function toggleLog() {
 
 // ── KEYBOARD ──
 document.addEventListener('keydown', e => {
-  if (e.target.tagName==='INPUT') return;
-  if (e.code==='Space') { e.preventDefault(); setPTT(true); }
+  if (e.target.tagName==='INPUT' || e.target.tagName==='SELECT' || e.target.tagName==='TEXTAREA') return;
+  // Modals open — Esc handled by modal listener above
+  const cfg = getSettings();
+  const pttMode = cfg.pttMode || 'momentary';
+
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (pttMode === 'toggle') { if (!e.repeat) setPTT(!S.mox); }
+    else setPTT(true);
+    return;
+  }
+
+  if (e.key === '?') { e.preventDefault(); openModal('keysModal'); return; }
+
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    const dir = e.key === 'ArrowUp' ? 1 : -1;
+    const multiplier = e.ctrlKey ? 10 : 1;
+    const hz = Math.max(0, S.vfoA + dir * S.step * multiplier);
+    setVfoDisp('A', hz);
+    send('vfo:0,0,' + hz + ';');
+    return;
+  }
+
+  if (!e.ctrlKey && !e.altKey) {
+    if (e.key === 'm' || e.key === 'M') { memSave(); return; }
+    if (e.key === 'd' || e.key === 'D') {
+      showDigMarkers = !showDigMarkers;
+      const cfgEl = el('cfgDigMarkers'); if (cfgEl) cfgEl.checked = showDigMarkers;
+      return;
+    }
+    if (e.key === 'x' || e.key === 'X') { togDXCluster(); return; }
+    if (e.key === 'p' || e.key === 'P') { togglePeakHold(); return; }
+    if (e.key === 'F1') { e.preventDefault(); memRecall(0); return; }
+    if (e.key === 'F2') { e.preventDefault(); memRecall(1); return; }
+    if (e.key === 'F3') { e.preventDefault(); memRecall(2); return; }
+    if (e.key === 'F4') { e.preventDefault(); memRecall(3); return; }
+  }
 });
 document.addEventListener('keyup', e => {
-  if (e.code==='Space') setPTT(false);
+  if (e.target.tagName==='INPUT' || e.target.tagName==='SELECT') return;
+  const cfg = getSettings();
+  if (e.code === 'Space' && (cfg.pttMode || 'momentary') === 'momentary') setPTT(false);
 });
+
+// ── STATE PERSISTENCE ──
+const STORE_KEY = 'totw_v1';
+let _saveTimer = 0;
+
+function saveState() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(function() {
+    const ab = document.querySelector('#filtG .f-btn.active');
+    const afEl = el('afSlider'), sgEl = el('specGainSlider');
+    const wsEl = el('wfSpeedSlider'), fsEl = el('fftSmoothSlider');
+    try {
+      const scEl = el('smCalSlider');
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        vfoA: S.vfoA,
+        vfoB: S.vfoB,
+        mode: S.mode,
+        step: S.step,
+        filterBw: ab ? parseInt(ab.dataset.bw) : null,
+        filterLo: parseInt(el('flo').value) || 100,
+        filterHi: parseInt(el('fhi').value) || 2900,
+        afGain: afEl ? parseInt(afEl.value) : -10,
+        specGain: sgEl ? parseInt(sgEl.value) : 20,
+        wfSpeed: wsEl ? parseInt(wsEl.value) : 17,
+        fftSmooth: fsEl ? parseInt(fsEl.value) : 90,
+        smCal: scEl ? parseInt(scEl.value) : 20,
+        peakHold: peakHoldEnabled,
+        wfTheme: wfTheme,
+        specHeight: document.getElementById('specWrap') ? document.getElementById('specWrap').offsetHeight : 300,
+        wfHeight: document.getElementById('wfWrap') ? document.getElementById('wfWrap').offsetHeight : 200,
+        wsUrl: el('hostInput').value,
+      }));
+    } catch(e) {}
+  }, 400);
+}
+
+function loadState() {
+  let p;
+  try { p = JSON.parse(localStorage.getItem(STORE_KEY)); } catch(e) {}
+  if (!p) return;
+  if (p.vfoA) { S.vfoA = p.vfoA; setVfoDisp('A', p.vfoA); }
+  if (p.vfoB) { S.vfoB = p.vfoB; setVfoDisp('B', p.vfoB); }
+  if (p.mode) { S.mode = p.mode; updMode(); }
+  if (p.step) {
+    S.step = p.step;
+    document.querySelectorAll('#stepRow .sbtn').forEach(b =>
+      b.classList.toggle('active', parseInt(b.dataset.hz) === p.step));
+  }
+  if (p.filterBw != null) {
+    document.querySelectorAll('#filtG .f-btn').forEach(b =>
+      b.classList.toggle('active', parseInt(b.dataset.bw) === p.filterBw));
+  }
+  if (p.filterLo != null) el('flo').value = p.filterLo;
+  if (p.filterHi != null) el('fhi').value = p.filterHi;
+  const afEl = el('afSlider');
+  if (afEl && p.afGain != null) { afEl.value = p.afGain; el('afV').textContent = p.afGain + ' dB'; }
+  const sgEl = el('specGainSlider');
+  if (sgEl && p.specGain != null) { specGain = p.specGain; sgEl.value = p.specGain; el('specGainV').textContent = (p.specGain >= 0 ? '+' : '') + p.specGain + 'dB'; }
+  const wsEl = el('wfSpeedSlider');
+  if (wsEl && p.wfSpeed != null) { wfSpeed = p.wfSpeed; wsEl.value = p.wfSpeed; el('wfSpeedV').textContent = p.wfSpeed; }
+  const fsEl = el('fftSmoothSlider');
+  if (fsEl && p.fftSmooth != null) { IQ.smooth = p.fftSmooth / 100; fsEl.value = p.fftSmooth; el('fftSpeedV').textContent = p.fftSmooth + '%'; }
+  const scEl = el('smCalSlider');
+  if (scEl && p.smCal != null) { smCal = p.smCal; scEl.value = p.smCal; el('smCalV').textContent = (p.smCal >= 0 ? '+' : '') + p.smCal + 'dB'; }
+  if (p.peakHold != null) { peakHoldEnabled = p.peakHold; const btn = el('peakHoldBtn'); if (btn) btn.classList.toggle('active', peakHoldEnabled); }
+  if (p.wfTheme != null) setWfTheme(p.wfTheme);
+  const specWrapEl = document.getElementById('specWrap');
+  if (specWrapEl && p.specHeight) specWrapEl.style.height = Math.max(80, Math.min(800, p.specHeight)) + 'px';
+  const wfWrapEl = document.getElementById('wfWrap');
+  if (wfWrapEl && p.wfHeight) wfWrapEl.style.height = Math.max(40, Math.min(500, p.wfHeight)) + 'px';
+  if (p.wsUrl) el('hostInput').value = p.wsUrl;
+}
 
 // ── INIT ──
 window.addEventListener('load', () => {
@@ -2017,9 +4700,259 @@ window.addEventListener('load', () => {
     new ResizeObserver(resizeCanvases).observe(document.querySelector('.body-grid') || document.body);
   }
 
-  drawSpec(); drawWF();
+  loadState();
+
+  drawSpec(); drawWF(); drawSmeter();
+
+  // ── Spectrum canvas interaction (drag-to-tune, click-to-tune, touch, zoom) ──
+  (function() {
+    const cv = el('specC');
+    let dragging = false, dragStartX = 0, dragStartY = 0, dragMoved = false;
+    let lastSendTime = 0;
+    let touchStartTime = 0;
+    let isVerticalSwipe = false;
+
+    function visRangeAtClientX(clientX) {
+      const rect = cv.getBoundingClientRect();
+      const xFrac = (clientX - rect.left) / rect.width;
+      const SR = S.iqSR || 192000;
+      const vSR = SR / specZoom;
+      const vLo = (specZoomCentre || S.iqCentre) - vSR / 2;
+      return vLo + xFrac * vSR;
+    }
+
+    function isInPassband(clientX) {
+      if (!S.iqOn || !IQ.fftReady) return false;
+      const clickHz = visRangeAtClientX(clientX);
+      const flo = parseInt(el('flo').value) || 100;
+      const fhi = parseInt(el('fhi').value) || 2900;
+      const filterLoHz = S.vfoA + Math.min(flo, fhi);
+      const filterHiHz = S.vfoA + Math.max(flo, fhi);
+      return clickHz >= filterLoHz && clickHz <= filterHiHz;
+    }
+
+    // ── Mouse: drag inside passband = tune; click outside = tune ──
+    cv.addEventListener('mousedown', function(e) {
+      if (!S.iqOn || !IQ.fftReady) return;
+      if (!isInPassband(e.clientX)) return;
+      dragging = true;
+      dragMoved = false;
+      dragStartX = e.clientX;
+      bpDragHzOffset = 0;
+      bpDraggingInProgress = true;
+      cv.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      const rect = cv.getBoundingClientRect();
+      const dx = e.clientX - dragStartX;
+      if (Math.abs(dx) > 3) dragMoved = true;
+      if (!dragMoved) return;
+      const SR = S.iqSR || 192000;
+      const hzPerPx = (SR / specZoom) / rect.width;
+      bpDragHzOffset = Math.round(dx * hzPerPx);
+      const previewHz = snapToStep(S.vfoA + bpDragHzOffset, S.step);
+      previewVfoDisp('A', Math.max(0, previewHz));
+      // Rate-limit sends (max 20/sec)
+      const now = Date.now();
+      if (now - lastSendTime > 50) {
+        send('vfo:0,0,' + Math.max(0, previewHz) + ';');
+        lastSendTime = now;
+      }
+      // Auto-recenter IQ stream if VFO drifts near edges
+      const loHz = S.iqCentre - SR / 2;
+      const hiHz = S.iqCentre + SR / 2;
+      const margin = SR * 0.15;
+      if (previewHz < loHz + margin || previewHz > hiHz - margin) {
+        send('dds:0,' + previewHz + ';');
+        S.iqCentre = previewHz;
+      }
+    });
+
+    document.addEventListener('mouseup', function(e) {
+      if (!dragging) return;
+      dragging = false;
+      bpDraggingInProgress = false;
+      cv.style.cursor = 'crosshair';
+      if (dragMoved && bpDragHzOffset !== 0) {
+        const newVfo = window._previewHzA || Math.max(0, snapToStep(S.vfoA + bpDragHzOffset, S.step));
+        S.vfoA = newVfo;
+        setVfoDisp('A', newVfo);
+        send('vfo:0,0,' + newVfo + ';');
+        bpIgnoreVfoUpdateUntil = Date.now() + 1000;
+      } else if (!dragMoved && S.iqOn && IQ.fftReady) {
+        const hz = Math.round(visRangeAtClientX(e.clientX));
+        if (hz > 0) { S.vfoA = hz; setVfoDisp('A', hz); send('vfo:0,0,' + hz + ';'); bpIgnoreVfoUpdateUntil = Date.now() + 1000; }
+      }
+      bpDragHzOffset = 0;
+      window._previewHzA = null;
+      setTimeout(() => { dragMoved = false; }, 50);
+    });
+
+    // Click outside passband = click-to-tune
+    cv.addEventListener('click', function(e) {
+      if (dragMoved) return;
+      if (!S.iqOn || !IQ.fftReady) return;
+      if (isInPassband(e.clientX)) return;
+      const hz = Math.round(visRangeAtClientX(e.clientX));
+      if (hz > 0) { S.vfoA = hz; setVfoDisp('A', hz); send('vfo:0,0,' + hz + ';'); bpIgnoreVfoUpdateUntil = Date.now() + 1000; }
+    });
+
+    cv.style.cursor = 'crosshair';
+    cv.addEventListener('mousemove', function(e) {
+      if (dragging) return;
+      if (!S.iqOn || !IQ.fftReady) return;
+      cv.style.cursor = isInPassband(e.clientX) ? 'grab' : 'crosshair';
+    });
+
+    // ── Touch: vertical swipe = step tune; horizontal swipe = drag tune; quick tap = click-to-tune ──
+    cv.addEventListener('touchstart', function(e) {
+      if (!S.iqOn) return;
+      const touch = e.touches[0];
+      dragStartX = touch.clientX;
+      dragStartY = touch.clientY;
+      dragMoved = false;
+      bpDragHzOffset = 0;
+      bpDraggingInProgress = true;
+      isVerticalSwipe = false;
+      touchStartTime = Date.now();
+      e.preventDefault();
+    }, { passive: false });
+
+    cv.addEventListener('touchmove', function(e) {
+      if (!bpDraggingInProgress) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const dx = touch.clientX - dragStartX;
+      const dy = touch.clientY - dragStartY;
+      const absDx = Math.abs(dx), absDy = Math.abs(dy);
+
+      if (!dragMoved) {
+        if (absDy > absDx && absDy > 10) { dragMoved = true; isVerticalSwipe = true; }
+        else if (absDx > 3) { dragMoved = true; isVerticalSwipe = false; }
+      }
+      if (!dragMoved) return;
+
+      if (isVerticalSwipe) {
+        // Swipe up = frequency up, swipe down = frequency down
+        const dir = dy > 0 ? -1 : 1;
+        bpDragHzOffset += dir * S.step;
+        bpDragHzOffset = snapToStep(bpDragHzOffset, S.step);
+        previewVfoDisp('A', Math.max(0, snapToStep(S.vfoA + bpDragHzOffset, S.step)));
+      } else {
+        // Horizontal drag = continuous tune
+        const SR = S.iqSR || 192000;
+        const hzPerPx = (SR / specZoom) / cv.getBoundingClientRect().width;
+        bpDragHzOffset = Math.round(dx * hzPerPx);
+        previewVfoDisp('A', Math.max(0, snapToStep(S.vfoA + bpDragHzOffset, S.step)));
+      }
+    }, { passive: false });
+
+    cv.addEventListener('touchend', function(e) {
+      if (!bpDraggingInProgress) return;
+      bpDraggingInProgress = false;
+
+      if (dragMoved && bpDragHzOffset !== 0) {
+        const newVfo = window._previewHzA || Math.max(0, snapToStep(S.vfoA + bpDragHzOffset, S.step));
+        S.vfoA = newVfo;
+        setVfoDisp('A', newVfo);
+        send('vfo:0,0,' + newVfo + ';');
+        bpIgnoreVfoUpdateUntil = Date.now() + 1000;
+      } else if (!dragMoved && Date.now() - touchStartTime < 300) {
+        // Quick tap = click-to-tune (outside passband only)
+        const touch = e.changedTouches[0];
+        if (!isInPassband(touch.clientX)) {
+          const hz = Math.round(visRangeAtClientX(touch.clientX));
+          if (hz > 0) { S.vfoA = hz; setVfoDisp('A', hz); send('vfo:0,0,' + hz + ';'); bpIgnoreVfoUpdateUntil = Date.now() + 1000; }
+        }
+      }
+
+      bpDragHzOffset = 0;
+      window._previewHzA = null;
+      isVerticalSwipe = false;
+      setTimeout(() => { dragMoved = false; }, 50);
+    });
+  })();
+
+  // Click-to-tune on waterfall canvas
+  el('wfC').addEventListener('click', function(e) {
+    if (!S.iqOn || !IQ.fftReady) return;
+    const rect = this.getBoundingClientRect();
+    const xFrac = (e.clientX - rect.left) / rect.width;
+    const SR = S.iqSR || 192000;
+    const hz = Math.round(S.iqCentre - SR / 2 + xFrac * SR);
+    if (hz > 0) { S.vfoA = hz; setVfoDisp('A', hz); send('vfo:0,0,' + hz + ';'); bpIgnoreVfoUpdateUntil = Date.now() + 1000; }
+  });
+  el('wfC').style.cursor = 'crosshair';
+
+  // ── Scroll-to-tune (with debounce) / Ctrl+scroll-to-zoom on spectrum ──
+  el('specC').addEventListener('wheel', function(e) {
+    e.preventDefault();
+    if (!S.iqOn || !IQ.fftReady) return;
+    if (e.ctrlKey) {
+      // Ctrl+wheel = zoom in/out centred on cursor
+      const rect = this.getBoundingClientRect();
+      const xFrac = (e.clientX - rect.left) / rect.width;
+      const SR = S.iqSR || 192000;
+      const vSR = SR / specZoom;
+      const vLo = (specZoomCentre || S.iqCentre) - vSR / 2;
+      const mouseHz = vLo + xFrac * vSR;
+      const factor = e.deltaY < 0 ? 2 : 0.5;
+      specZoom = Math.max(1, Math.min(32, specZoom * factor));
+      specZoom = Math.pow(2, Math.round(Math.log2(specZoom)));
+      if (specZoom > 1) specZoomCentre = mouseHz;
+      else specZoomCentre = S.iqCentre;
+    } else {
+      // Plain wheel = step tune with debounced commit and auto-recentering
+      if (bpDragHzOffset === 0) _wheelBaseVfo = S.vfoA;
+      const dir = e.deltaY < 0 ? 1 : -1;
+      bpDragHzOffset += dir * S.step;
+      bpDragHzOffset = snapToStep(bpDragHzOffset, S.step);
+      previewVfoDisp('A', _wheelBaseVfo + bpDragHzOffset);
+
+      // Auto-recenter if VFO drifts near IQ window edges
+      const SR = S.iqSR || 192000;
+      const newVfo = _wheelBaseVfo + bpDragHzOffset;
+      const margin = SR * 0.15;
+      if (newVfo < S.iqCentre - SR / 2 + margin || newVfo > S.iqCentre + SR / 2 - margin) {
+        const hz = Math.max(0, snapToStep(newVfo, S.step));
+        S.vfoA = hz; setVfoDisp('A', hz); send('vfo:0,0,' + hz + ';');
+        bpIgnoreVfoUpdateUntil = Date.now() + 1000;
+        S.iqCentre = hz; bpDragHzOffset = 0; _wheelBaseVfo = hz;
+        if (_wheelCommitTimer) { clearTimeout(_wheelCommitTimer); _wheelCommitTimer = null; }
+        if (specZoom > 1) specZoomCentre = hz;
+        return;
+      }
+
+      if (_wheelCommitTimer) clearTimeout(_wheelCommitTimer);
+      _wheelCommitTimer = setTimeout(() => {
+        const hz = window._previewHzA || Math.max(0, snapToStep(_wheelBaseVfo + bpDragHzOffset, S.step));
+        S.vfoA = hz; setVfoDisp('A', hz); send('vfo:0,0,' + hz + ';');
+        bpIgnoreVfoUpdateUntil = Date.now() + 1000;
+        bpDragHzOffset = 0; window._previewHzA = null; _wheelCommitTimer = null;
+        if (specZoom > 1) specZoomCentre = hz;
+      }, 500);
+    }
+  }, { passive: false });
+
+  // Double-click spectrum to reset zoom
+  el('specC').addEventListener('dblclick', function(e) {
+    if (specZoom > 1) { specZoom = 1; specZoomCentre = S.iqCentre; e.preventDefault(); }
+  });
+
+  // Load memories and settings
+  loadMemories();
+  renderMemShort();
+  applySettings();
+
+  // Auto-connect if configured
+  const cfg = getSettings();
+  if (cfg.autoConn) { setTimeout(toggleConn, 800); }
+
   log('sys','Thetis On The Web — ready');
-  log('sys','Thetis: Setup → Network → TCI Server → tick Server Running');
+  log('sys','Press ? for keyboard shortcuts');
   log('sys','Enter ws://[pc-ip]:50001 above, then click CONNECT');
 });
 
@@ -2028,18 +4961,24 @@ window.addEventListener('load', () => {
   let dragPanel = null, clone = null, ox = 0, oy = 0;
   let dropTarget = null; // { parent, before } — where to insert on drop
 
-  // All droppable columns
+  // All droppable columns (left/right side panels + center-bottom dock + freq dock)
   function getColumns() {
-    return Array.from(document.querySelectorAll('.side-panel'));
+    return Array.from(document.querySelectorAll('.side-panel, .center-dock, .freq-dock'));
   }
 
-  // Get all drop slots in a column: before each child + after last
+  // Horizontal zones lay panels side by side — use x position for slot detection
+  function isHorizZone(col) {
+    return col.classList.contains('center-dock') || col.classList.contains('freq-dock');
+  }
+
+  // Get all drop slots in a column
   function getSlots(col) {
+    const horiz = isHorizZone(col);
     const panels = Array.from(col.querySelectorAll(':scope > .dock-panel'));
     return panels.map(p => {
       const r = p.getBoundingClientRect();
-      return { y: r.top + r.height / 2, before: p, parent: col };
-    }).concat([{ y: Infinity, before: null, parent: col }]);
+      return { pos: horiz ? r.left + r.width / 2 : r.top + r.height / 2, before: p, parent: col };
+    }).concat([{ pos: Infinity, before: null, parent: col }]);
   }
 
   // Show/hide drop indicator
@@ -2087,20 +5026,23 @@ window.addEventListener('load', () => {
 
   function findDropTarget(cx, cy) {
     const cols = getColumns();
-    // Find nearest column by x distance
+    // Use 2D distance so overlapping columns (freq-dock spans full width) resolve correctly
     let bestCol = null, bestDist = Infinity;
     cols.forEach(col => {
       const r = col.getBoundingClientRect();
       const dx = Math.max(0, r.left - cx, cx - r.right);
-      if (dx < bestDist) { bestDist = dx; bestCol = col; }
+      const dy = Math.max(0, r.top - cy, cy - r.bottom);
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < bestDist) { bestDist = dist; bestCol = col; }
     });
     if (!bestCol) return null;
 
-    // Find nearest slot by y within that column
+    // For horizontal zones use cursor x; vertical zones use cursor y
+    const cursor = isHorizZone(bestCol) ? cx : cy;
     const slots = getSlots(bestCol);
     let best = slots[slots.length - 1];
     for (const slot of slots) {
-      if (cy < slot.y) { best = slot; break; }
+      if (cursor < slot.pos) { best = slot; break; }
     }
     return best;
   }
@@ -2208,6 +5150,108 @@ window.addEventListener('load', () => {
       e2.addEventListener('touchend', () => { _tvY = null; });
     });
   });
+})();
+
+// ── SPECTRUM RESIZE HANDLE ──
+(function() {
+  const handle = document.getElementById('specResizeHandle');
+  const specWrap = document.getElementById('specWrap');
+  if (!handle || !specWrap) return;
+  let dragging = false, startY = 0, startH = 0;
+
+  handle.addEventListener('mousedown', function(e) {
+    dragging = true;
+    startY = e.clientY;
+    startH = specWrap.offsetHeight;
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+
+  handle.addEventListener('touchstart', function(e) {
+    dragging = true;
+    startY = e.touches[0].clientY;
+    startH = specWrap.offsetHeight;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    const newH = Math.max(80, Math.min(800, startH + (e.clientY - startY)));
+    specWrap.style.height = newH + 'px';
+    const specC = document.getElementById('specC');
+    if (specC) { specC.width = specWrap.offsetWidth; specC.height = specWrap.offsetHeight; }
+  });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!dragging) return;
+    const newH = Math.max(80, Math.min(800, startH + (e.touches[0].clientY - startY)));
+    specWrap.style.height = newH + 'px';
+    const specC = document.getElementById('specC');
+    if (specC) { specC.width = specWrap.offsetWidth; specC.height = specWrap.offsetHeight; }
+  }, { passive: true });
+
+  function stopDrag() {
+    if (!dragging) return;
+    dragging = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    saveState();
+  }
+  document.addEventListener('mouseup', stopDrag);
+  document.addEventListener('touchend', stopDrag);
+})();
+
+// ── WATERFALL RESIZE HANDLE ──
+(function() {
+  const handle = document.getElementById('wfResizeHandle');
+  const wfWrap = document.getElementById('wfWrap');
+  if (!handle || !wfWrap) return;
+  let dragging = false, startY = 0, startH = 0;
+
+  handle.addEventListener('mousedown', function(e) {
+    dragging = true;
+    startY = e.clientY;
+    startH = wfWrap.offsetHeight;
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+
+  // Touch support
+  handle.addEventListener('touchstart', function(e) {
+    dragging = true;
+    startY = e.touches[0].clientY;
+    startH = wfWrap.offsetHeight;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    const newH = Math.max(40, Math.min(500, startH + (e.clientY - startY)));
+    wfWrap.style.height = newH + 'px';
+    // Trigger canvas size sync
+    const wfC = document.getElementById('wfC');
+    if (wfC) { wfC.width = wfWrap.offsetWidth; wfC.height = wfWrap.offsetHeight; }
+  });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!dragging) return;
+    const newH = Math.max(40, Math.min(500, startH + (e.touches[0].clientY - startY)));
+    wfWrap.style.height = newH + 'px';
+    const wfC = document.getElementById('wfC');
+    if (wfC) { wfC.width = wfWrap.offsetWidth; wfC.height = wfWrap.offsetHeight; }
+  }, { passive: true });
+
+  function stopDrag() {
+    if (!dragging) return;
+    dragging = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    saveState();
+  }
+  document.addEventListener('mouseup', stopDrag);
+  document.addEventListener('touchend', stopDrag);
 })();
 
 </script>
