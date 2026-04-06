@@ -68,4 +68,4 @@ Click the gear icon (⚙) in the top bar to open the Settings modal. Here you ca
 * **IQ Processing:** Raw I/Q data is processed in the browser using a custom Radix-2 Cooley-Tukey FFT implementation with a Blackman-Harris window.
 
 ## 📝 License
-*MIT
+**MIT**
