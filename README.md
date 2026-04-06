@@ -1,4 +1,5 @@
 # Thetis On The Web (TOTW)
+![TOTW](images/Web-UI.png)
 
 Thetis On The Web is a lightweight, zero-install, browser-based client for the Thetis SDR software. It communicates with Thetis via WebSockets using the TCI (Transceiver Control Interface) Protocol v2.0, providing full rig control, real-time IQ panadapter displays, and two-way audio streaming directly in your web browser.
 
