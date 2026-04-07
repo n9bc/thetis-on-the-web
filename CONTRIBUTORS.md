@@ -1,5 +1,5 @@
-N9BC
-N8SDR
-KC8YTK
-VK2LAT
-ON7OFF
+N9BC - Brent
+N8SDR - Rick  
+KC8YTK - Tim
+VK2LAT - Murry
+ON7OFF - Kurt
