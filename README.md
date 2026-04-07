@@ -70,3 +70,10 @@ Click the gear icon (⚙) in the top bar to open the Settings modal. Here you ca
 
 ## 📝 License
 **MIT**
+
+## Contributors
+* N9BC - Brent
+* N8SDR - Rick
+* KC8YTK - Tim
+* VK2LAT - Murry
+* ON7OFF - Kurt
