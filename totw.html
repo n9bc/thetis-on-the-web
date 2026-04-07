@@ -229,8 +229,8 @@ body {
   padding: 8px 10px;
 }
 .ctrl-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-.ctrl-lbl { font-size: 10px; color: #7d8590; letter-spacing: 0.06em; font-family: 'SF Mono','Consolas',monospace; }
-.ctrl-val { font-size: 12px; color: #e6edf3; font-family: 'SF Mono','Consolas',monospace; }
+.ctrl-lbl { font-size: 14px; color: #7d8590; letter-spacing: 0.06em; font-family: 'SF Mono','Consolas',monospace; }
+.ctrl-val { font-size: 14px; color: #e6edf3; font-family: 'SF Mono','Consolas',monospace; }
 
 input[type=range] {
   -webkit-appearance: none;
@@ -529,9 +529,24 @@ canvas.wf { position: absolute; inset: 0; width: 100%; height: 100%; }
 .log-err { color: #f85149; }
 .log-sys { color: #484f58; }
 
+/* ── SPECTRUM CONTROL BAR (Spec Gain / WF Speed / FFT Smooth / Peak) ── */
+.spec-ctrl-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 3px 8px;
+  background: #0d1117;
+  border-bottom: 1px solid #30363d;
+}
+.spec-ctrl-divider {
+  width: 1px; height: 16px;
+  background: #30363d;
+  margin: 0 6px; flex-shrink: 0;
+}
+
 /* waterfall theme + peak hold buttons */
 .wf-theme-btn {
-  font-size: 8px;
+  font-size: 12px;
   padding: 2px 6px;
   background: #21262d;
   border: 1px solid #30363d;
@@ -853,6 +868,325 @@ canvas.audio-cv { width: 100%; height: 100%; }
 .freq-dock .dock-handle { padding: 3px 8px; }
 /* Hidden panels (visibility controlled via settings) */
 .dock-panel.dp-hidden { display: none !important; }
+
+/* ── TCI LOG — allow text selection for copy/paste ── */
+.tci-log { user-select: text; cursor: text; }
+
+/* ── UI COLOR THEMES ──
+   Applied as data-ui-theme on <html>. Overrides structural panel, text, and slider colors.
+   "dark" is the default — no override needed, it inherits the base stylesheet.
+   The 8 themes range from near-black to fully light for different environments. */
+
+/* ── THEME HELPERS — shared slider mixin via per-theme rules ── */
+
+/* Midnight — warm near-black, easier on eyes than blue-tinted dark */
+[data-ui-theme="midnight"] body              { background: #13100c; color: #ede8e0; }
+[data-ui-theme="midnight"] .top-bar          { background: #1e1912; border-color: #332810; }
+[data-ui-theme="midnight"] .freq-row         { background: #1e1912; border-color: #332810; }
+[data-ui-theme="midnight"] .side-panel       { background: #13100c; border-color: #332810; }
+[data-ui-theme="midnight"] .center           { background: #13100c; }
+[data-ui-theme="midnight"] .dock-panel       { background: #1e1912; border-color: #332810; }
+[data-ui-theme="midnight"] .dock-handle      { background: #28201a; border-color: #332810; }
+[data-ui-theme="midnight"] .modal-box        { background: #1e1912; border-color: #3d3020; }
+[data-ui-theme="midnight"] .modal-in         { background: #13100c; border-color: #332810; color: #ede8e0; }
+[data-ui-theme="midnight"] .conn-input       { background: #13100c; border-color: #332810; color: #ede8e0; }
+[data-ui-theme="midnight"] .btn-connect      { background: #28201a; border-color: #332810; color: #ede8e0; }
+[data-ui-theme="midnight"] .tci-log          { background: #13100c; border-color: #332810; color: #ede8e0; }
+[data-ui-theme="midnight"] .smeter-readout   { background: #1e1912; }
+[data-ui-theme="midnight"] .led-meter-wrap   { background: #1e1912; border-color: #332810; }
+[data-ui-theme="midnight"] .center-dock      { background: #1a1510; border-color: #332810; }
+[data-ui-theme="midnight"] .freq-dock        { background: #1e1912; border-color: #332810; }
+[data-ui-theme="midnight"] .vfo-freq         { color: #f0d090; }
+[data-ui-theme="midnight"] .vfo-freq .mhz    { color: #f0b040; }
+[data-ui-theme="midnight"] .ctrl-lbl         { color: #a89060; }
+[data-ui-theme="midnight"] .ctrl-val         { color: #ede8e0; }
+[data-ui-theme="midnight"] .ctrl-head        { color: #ede8e0; }
+[data-ui-theme="midnight"] .dock-title       { color: #d4b870; }
+[data-ui-theme="midnight"] input[type=range] { background: #3d3020; }
+[data-ui-theme="midnight"] input[type=range]::-webkit-slider-thumb { background: #c49020; border-color: #13100c; }
+[data-ui-theme="midnight"] input[type=range]::-moz-range-thumb     { background: #c49020; border-color: #13100c; }
+
+/* Navy — dark navy blue */
+[data-ui-theme="navy"] body              { background: #060f1c; color: #c8dff0; }
+[data-ui-theme="navy"] .top-bar          { background: #0b1930; border-color: #1c3660; }
+[data-ui-theme="navy"] .freq-row         { background: #0b1930; border-color: #1c3660; }
+[data-ui-theme="navy"] .side-panel       { background: #060f1c; border-color: #1c3660; }
+[data-ui-theme="navy"] .center           { background: #060f1c; }
+[data-ui-theme="navy"] .dock-panel       { background: #0b1930; border-color: #1c3660; }
+[data-ui-theme="navy"] .dock-handle      { background: #081422; border-color: #1c3660; }
+[data-ui-theme="navy"] .modal-box        { background: #0b1930; border-color: #1c3660; }
+[data-ui-theme="navy"] .modal-in         { background: #060f1c; border-color: #1c3660; color: #c8dff0; }
+[data-ui-theme="navy"] .conn-input       { background: #060f1c; border-color: #1c3660; color: #c8dff0; }
+[data-ui-theme="navy"] .btn-connect      { background: #0b1930; border-color: #1c3660; color: #c8dff0; }
+[data-ui-theme="navy"] .tci-log          { background: #060f1c; border-color: #1c3660; color: #c8dff0; }
+[data-ui-theme="navy"] .smeter-readout   { background: #0b1930; }
+[data-ui-theme="navy"] .led-meter-wrap   { background: #0b1930; border-color: #1c3660; }
+[data-ui-theme="navy"] .center-dock      { background: #081422; border-color: #1c3660; }
+[data-ui-theme="navy"] .freq-dock        { background: #0b1930; border-color: #1c3660; }
+[data-ui-theme="navy"] .vfo-freq         { color: #79c0ff; }
+[data-ui-theme="navy"] .vfo-freq .mhz    { color: #a5d6ff; }
+[data-ui-theme="navy"] .ctrl-lbl         { color: #5880a8; }
+[data-ui-theme="navy"] .ctrl-val         { color: #c8dff0; }
+[data-ui-theme="navy"] .ctrl-head        { color: #c8dff0; }
+[data-ui-theme="navy"] .dock-title       { color: #79c0ff; }
+[data-ui-theme="navy"] input[type=range] { background: #1c3660; }
+[data-ui-theme="navy"] input[type=range]::-webkit-slider-thumb { background: #388bfd; border-color: #060f1c; }
+[data-ui-theme="navy"] input[type=range]::-moz-range-thumb     { background: #388bfd; border-color: #060f1c; }
+
+/* Forest — deep forest green */
+[data-ui-theme="forest"] body              { background: #061008; color: #c0e8c4; }
+[data-ui-theme="forest"] .top-bar          { background: #0c1e10; border-color: #163d1c; }
+[data-ui-theme="forest"] .freq-row         { background: #0c1e10; border-color: #163d1c; }
+[data-ui-theme="forest"] .side-panel       { background: #061008; border-color: #163d1c; }
+[data-ui-theme="forest"] .center           { background: #061008; }
+[data-ui-theme="forest"] .dock-panel       { background: #0c1e10; border-color: #163d1c; }
+[data-ui-theme="forest"] .dock-handle      { background: #091508; border-color: #163d1c; }
+[data-ui-theme="forest"] .modal-box        { background: #0c1e10; border-color: #163d1c; }
+[data-ui-theme="forest"] .modal-in         { background: #061008; border-color: #163d1c; color: #c0e8c4; }
+[data-ui-theme="forest"] .conn-input       { background: #061008; border-color: #163d1c; color: #c0e8c4; }
+[data-ui-theme="forest"] .btn-connect      { background: #0c1e10; border-color: #163d1c; color: #c0e8c4; }
+[data-ui-theme="forest"] .tci-log          { background: #061008; border-color: #163d1c; color: #c0e8c4; }
+[data-ui-theme="forest"] .smeter-readout   { background: #0c1e10; }
+[data-ui-theme="forest"] .led-meter-wrap   { background: #0c1e10; border-color: #163d1c; }
+[data-ui-theme="forest"] .center-dock      { background: #091508; border-color: #163d1c; }
+[data-ui-theme="forest"] .freq-dock        { background: #0c1e10; border-color: #163d1c; }
+[data-ui-theme="forest"] .vfo-freq         { color: #56d364; }
+[data-ui-theme="forest"] .vfo-freq .mhz    { color: #7ce895; }
+[data-ui-theme="forest"] .dock-title       { color: #56d364; }
+[data-ui-theme="forest"] .ctrl-lbl         { color: #5a9860; }
+[data-ui-theme="forest"] .ctrl-val         { color: #c0e8c4; }
+[data-ui-theme="forest"] .ctrl-head        { color: #c0e8c4; }
+[data-ui-theme="forest"] input[type=range] { background: #163d1c; }
+[data-ui-theme="forest"] input[type=range]::-webkit-slider-thumb { background: #3fb950; border-color: #061008; }
+[data-ui-theme="forest"] input[type=range]::-moz-range-thumb     { background: #3fb950; border-color: #061008; }
+
+/* Charcoal — medium gray, comfortable in any lighting */
+[data-ui-theme="charcoal"] body              { background: #2a2d33; color: #e4e8ee; }
+[data-ui-theme="charcoal"] .top-bar          { background: #33373f; border-color: #484f5a; }
+[data-ui-theme="charcoal"] .freq-row         { background: #33373f; border-color: #484f5a; }
+[data-ui-theme="charcoal"] .side-panel       { background: #2a2d33; border-color: #484f5a; }
+[data-ui-theme="charcoal"] .center           { background: #2a2d33; }
+[data-ui-theme="charcoal"] .dock-panel       { background: #33373f; border-color: #484f5a; }
+[data-ui-theme="charcoal"] .dock-handle      { background: #3c4048; border-color: #484f5a; }
+[data-ui-theme="charcoal"] .modal-box        { background: #3c4048; border-color: #484f5a; }
+[data-ui-theme="charcoal"] .modal-in         { background: #2a2d33; border-color: #484f5a; color: #e4e8ee; }
+[data-ui-theme="charcoal"] .conn-input       { background: #2a2d33; border-color: #484f5a; color: #e4e8ee; }
+[data-ui-theme="charcoal"] .btn-connect      { background: #33373f; border-color: #484f5a; color: #e4e8ee; }
+[data-ui-theme="charcoal"] .tci-log          { background: #2a2d33; border-color: #484f5a; color: #e4e8ee; }
+[data-ui-theme="charcoal"] .smeter-readout   { background: #33373f; }
+[data-ui-theme="charcoal"] .led-meter-wrap   { background: #33373f; border-color: #484f5a; }
+[data-ui-theme="charcoal"] .center-dock      { background: #303438; border-color: #484f5a; }
+[data-ui-theme="charcoal"] .freq-dock        { background: #33373f; border-color: #484f5a; }
+[data-ui-theme="charcoal"] .dock-title       { color: #c0ccd8; }
+[data-ui-theme="charcoal"] .ctrl-lbl         { color: #a0a8b4; }
+[data-ui-theme="charcoal"] .ctrl-val         { color: #e4e8ee; }
+[data-ui-theme="charcoal"] .ctrl-head        { color: #e4e8ee; }
+[data-ui-theme="charcoal"] .modal-lbl        { color: #a0a8b4; }
+[data-ui-theme="charcoal"] input[type=range] { background: #484f5a; }
+[data-ui-theme="charcoal"] input[type=range]::-webkit-slider-thumb { background: #5a8fd8; border-color: #2a2d33; }
+[data-ui-theme="charcoal"] input[type=range]::-moz-range-thumb     { background: #5a8fd8; border-color: #2a2d33; }
+
+/* Warm — warm taupe/brown, easy on the eyes for long sessions */
+[data-ui-theme="warm"] body              { background: #26221c; color: #efe8dc; }
+[data-ui-theme="warm"] .top-bar          { background: #32291f; border-color: #504030; }
+[data-ui-theme="warm"] .freq-row         { background: #32291f; border-color: #504030; }
+[data-ui-theme="warm"] .side-panel       { background: #26221c; border-color: #504030; }
+[data-ui-theme="warm"] .center           { background: #26221c; }
+[data-ui-theme="warm"] .dock-panel       { background: #32291f; border-color: #504030; }
+[data-ui-theme="warm"] .dock-handle      { background: #3a3028; border-color: #504030; }
+[data-ui-theme="warm"] .modal-box        { background: #3a3028; border-color: #504030; }
+[data-ui-theme="warm"] .modal-in         { background: #26221c; border-color: #504030; color: #efe8dc; }
+[data-ui-theme="warm"] .conn-input       { background: #26221c; border-color: #504030; color: #efe8dc; }
+[data-ui-theme="warm"] .btn-connect      { background: #32291f; border-color: #504030; color: #efe8dc; }
+[data-ui-theme="warm"] .tci-log          { background: #26221c; border-color: #504030; color: #efe8dc; }
+[data-ui-theme="warm"] .smeter-readout   { background: #32291f; }
+[data-ui-theme="warm"] .led-meter-wrap   { background: #32291f; border-color: #504030; }
+[data-ui-theme="warm"] .center-dock      { background: #2c261e; border-color: #504030; }
+[data-ui-theme="warm"] .freq-dock        { background: #32291f; border-color: #504030; }
+[data-ui-theme="warm"] .vfo-freq         { color: #f0d898; }
+[data-ui-theme="warm"] .vfo-freq .mhz    { color: #e3b341; }
+[data-ui-theme="warm"] .dock-title       { color: #d4b870; }
+[data-ui-theme="warm"] .ctrl-lbl         { color: #a09080; }
+[data-ui-theme="warm"] .ctrl-val         { color: #efe8dc; }
+[data-ui-theme="warm"] .ctrl-head        { color: #efe8dc; }
+[data-ui-theme="warm"] .modal-lbl        { color: #a09080; }
+[data-ui-theme="warm"] input[type=range] { background: #504030; }
+[data-ui-theme="warm"] input[type=range]::-webkit-slider-thumb { background: #c49030; border-color: #26221c; }
+[data-ui-theme="warm"] input[type=range]::-moz-range-thumb     { background: #c49030; border-color: #26221c; }
+
+/* Parchment — warm beige, old-paper feel, light without being harsh */
+[data-ui-theme="parchment"] body              { background: #f0e6cc; color: #2c1e0e; }
+[data-ui-theme="parchment"] .top-bar          { background: #e8dab8; border-color: #c0a870; }
+[data-ui-theme="parchment"] .freq-row         { background: #e8dab8; border-color: #c0a870; }
+[data-ui-theme="parchment"] .side-panel       { background: #f0e6cc; border-color: #c0a870; }
+[data-ui-theme="parchment"] .center           { background: #f0e6cc; }
+[data-ui-theme="parchment"] .dock-panel       { background: #e8dab8; border-color: #c0a870; }
+[data-ui-theme="parchment"] .dock-handle      { background: #ddd0a0; border-color: #c0a870; color: #2c1e0e; }
+[data-ui-theme="parchment"] .modal-overlay    { background: rgba(0,0,0,0.4); }
+[data-ui-theme="parchment"] .modal-box        { background: #e8dab8; border-color: #c0a870; }
+[data-ui-theme="parchment"] .modal-in         { background: #f0e6cc; border-color: #c0a870; color: #2c1e0e; }
+[data-ui-theme="parchment"] .conn-input       { background: #f0e6cc; border-color: #c0a870; color: #2c1e0e; }
+[data-ui-theme="parchment"] .btn-connect      { background: #e8dab8; border-color: #c0a870; color: #2c1e0e; }
+[data-ui-theme="parchment"] .tci-log          { background: #f0e6cc; border-color: #c0a870; color: #2c1e0e; }
+[data-ui-theme="parchment"] .smeter-readout   { background: #e8dab8; }
+[data-ui-theme="parchment"] .led-meter-wrap   { background: #e8dab8; border-color: #c0a870; }
+[data-ui-theme="parchment"] .center-dock      { background: #ecdfc4; border-color: #c0a870; }
+[data-ui-theme="parchment"] .freq-dock        { background: #e8dab8; border-color: #c0a870; }
+[data-ui-theme="parchment"] .dock-title       { color: #5a3a18; }
+[data-ui-theme="parchment"] .ctrl-lbl         { color: #806040; }
+[data-ui-theme="parchment"] .ctrl-val         { color: #2c1e0e; }
+[data-ui-theme="parchment"] .ctrl-head        { color: #2c1e0e; }
+[data-ui-theme="parchment"] .modal-title      { color: #2c1e0e; }
+[data-ui-theme="parchment"] .modal-lbl        { color: #806040; }
+[data-ui-theme="parchment"] .modal-row label  { color: #2c1e0e; }
+[data-ui-theme="parchment"] .modal-close      { color: #806040; }
+[data-ui-theme="parchment"] .sbtn             { background: #ddd0a0; border-color: #c0a870; color: #2c1e0e; }
+[data-ui-theme="parchment"] .sbtn.active      { background: #b07830; border-color: #8a5c1c; color: #fff; }
+[data-ui-theme="parchment"] .mbtn             { background: #ddd0a0; border-color: #c0a870; color: #2c1e0e; }
+[data-ui-theme="parchment"] .mbtn.pri         { background: #b07830; border-color: #8a5c1c; color: #fff; }
+[data-ui-theme="parchment"] .band-btn         { background: #ddd0a0; border-color: #c0a870; color: #5a3a18; }
+[data-ui-theme="parchment"] .mode-btn         { background: #ddd0a0; border-color: #c0a870; color: #5a3a18; }
+[data-ui-theme="parchment"] .mode-btn.active  { background: #b07830; color: #fff; }
+[data-ui-theme="parchment"] .vfo-freq         { color: #3a2010; }
+[data-ui-theme="parchment"] .vfo-freq .mhz    { color: #8b4513; }
+[data-ui-theme="parchment"] .vfo-freq.secondary { color: #806040; }
+[data-ui-theme="parchment"] .callsign         { color: #806040; }
+[data-ui-theme="parchment"] .status-label     { color: #3a7020; }
+[data-ui-theme="parchment"] input[type=range] { background: #c0a870; }
+[data-ui-theme="parchment"] input[type=range]::-webkit-slider-thumb { background: #8b4513; border-color: #f0e6cc; }
+[data-ui-theme="parchment"] input[type=range]::-moz-range-thumb     { background: #8b4513; border-color: #f0e6cc; }
+
+/* Daylight — clean soft gray, comfortable in bright rooms */
+[data-ui-theme="daylight"] body              { background: #e8ecf0; color: #1a2030; }
+[data-ui-theme="daylight"] .top-bar          { background: #f0f4f8; border-color: #c0cad4; }
+[data-ui-theme="daylight"] .freq-row         { background: #f0f4f8; border-color: #c0cad4; }
+[data-ui-theme="daylight"] .side-panel       { background: #e8ecf0; border-color: #c0cad4; }
+[data-ui-theme="daylight"] .center           { background: #e8ecf0; }
+[data-ui-theme="daylight"] .dock-panel       { background: #f0f4f8; border-color: #c0cad4; }
+[data-ui-theme="daylight"] .dock-handle      { background: #dde3ea; border-color: #c0cad4; color: #1a2030; }
+[data-ui-theme="daylight"] .modal-overlay    { background: rgba(0,0,0,0.35); }
+[data-ui-theme="daylight"] .modal-box        { background: #f0f4f8; border-color: #c0cad4; }
+[data-ui-theme="daylight"] .modal-in         { background: #e8ecf0; border-color: #c0cad4; color: #1a2030; }
+[data-ui-theme="daylight"] .conn-input       { background: #e8ecf0; border-color: #c0cad4; color: #1a2030; }
+[data-ui-theme="daylight"] .btn-connect      { background: #f0f4f8; border-color: #c0cad4; color: #1a2030; }
+[data-ui-theme="daylight"] .tci-log          { background: #e8ecf0; border-color: #c0cad4; color: #1a2030; }
+[data-ui-theme="daylight"] .smeter-readout   { background: #f0f4f8; }
+[data-ui-theme="daylight"] .led-meter-wrap   { background: #f0f4f8; border-color: #c0cad4; }
+[data-ui-theme="daylight"] .center-dock      { background: #e0e6ec; border-color: #c0cad4; }
+[data-ui-theme="daylight"] .freq-dock        { background: #f0f4f8; border-color: #c0cad4; }
+[data-ui-theme="daylight"] .dock-title       { color: #2040a0; }
+[data-ui-theme="daylight"] .ctrl-lbl         { color: #506888; }
+[data-ui-theme="daylight"] .ctrl-val         { color: #1a2030; }
+[data-ui-theme="daylight"] .ctrl-head        { color: #1a2030; }
+[data-ui-theme="daylight"] .modal-title      { color: #1a2030; }
+[data-ui-theme="daylight"] .modal-lbl        { color: #506888; }
+[data-ui-theme="daylight"] .modal-row label  { color: #1a2030; }
+[data-ui-theme="daylight"] .modal-close      { color: #506888; }
+[data-ui-theme="daylight"] .sbtn             { background: #dde3ea; border-color: #b0bcc8; color: #1a2030; }
+[data-ui-theme="daylight"] .sbtn.active      { background: #0066cc; border-color: #0050a0; color: #fff; }
+[data-ui-theme="daylight"] .mbtn             { background: #dde3ea; border-color: #b0bcc8; color: #1a2030; }
+[data-ui-theme="daylight"] .mbtn.pri         { background: #0066cc; border-color: #0050a0; color: #fff; }
+[data-ui-theme="daylight"] .band-btn         { background: #dde3ea; border-color: #b0bcc8; color: #304060; }
+[data-ui-theme="daylight"] .mode-btn         { background: #dde3ea; border-color: #b0bcc8; color: #304060; }
+[data-ui-theme="daylight"] .mode-btn.active  { background: #0066cc; color: #fff; }
+[data-ui-theme="daylight"] .vfo-freq         { color: #0a1428; }
+[data-ui-theme="daylight"] .vfo-freq .mhz    { color: #0060c0; }
+[data-ui-theme="daylight"] .vfo-freq.secondary { color: #506888; }
+[data-ui-theme="daylight"] .callsign         { color: #506888; }
+[data-ui-theme="daylight"] .status-label     { color: #1a7030; }
+[data-ui-theme="daylight"] input[type=range] { background: #b0bcc8; }
+[data-ui-theme="daylight"] input[type=range]::-webkit-slider-thumb { background: #0066cc; border-color: #e8ecf0; }
+[data-ui-theme="daylight"] input[type=range]::-moz-range-thumb     { background: #0066cc; border-color: #e8ecf0; }
+
+/* Green Bay Packers — official dark green #203731 + gold #FFB612 */
+[data-ui-theme="packers"] body              { background: #1a2e26; color: #f0f0e0; }
+[data-ui-theme="packers"] .top-bar          { background: #203830; border-color: #2e5c40; }
+[data-ui-theme="packers"] .freq-row         { background: #203830; border-color: #2e5c40; }
+[data-ui-theme="packers"] .side-panel       { background: #1a2e26; border-color: #2e5c40; }
+[data-ui-theme="packers"] .center           { background: #1a2e26; }
+[data-ui-theme="packers"] .dock-panel       { background: #203830; border-color: #2e5c40; }
+[data-ui-theme="packers"] .dock-handle      { background: #183028; border-color: #2e5c40; }
+[data-ui-theme="packers"] .modal-box        { background: #203830; border-color: #2e5c40; }
+[data-ui-theme="packers"] .modal-in         { background: #1a2e26; border-color: #2e5c40; color: #f0f0e0; }
+[data-ui-theme="packers"] .conn-input       { background: #1a2e26; border-color: #2e5c40; color: #f0f0e0; }
+[data-ui-theme="packers"] .btn-connect      { background: #203830; border-color: #2e5c40; color: #f0f0e0; }
+[data-ui-theme="packers"] .tci-log          { background: #1a2e26; border-color: #2e5c40; color: #f0f0e0; }
+[data-ui-theme="packers"] .smeter-readout   { background: #203830; }
+[data-ui-theme="packers"] .led-meter-wrap   { background: #203830; border-color: #2e5c40; }
+[data-ui-theme="packers"] .center-dock      { background: #1e3430; border-color: #2e5c40; }
+[data-ui-theme="packers"] .freq-dock        { background: #203830; border-color: #2e5c40; }
+[data-ui-theme="packers"] .dock-title       { color: #FFB612; }
+[data-ui-theme="packers"] .ctrl-lbl         { color: #7ab890; }
+[data-ui-theme="packers"] .ctrl-val         { color: #FFB612; }
+[data-ui-theme="packers"] .ctrl-head        { color: #f0f0e0; }
+[data-ui-theme="packers"] .modal-title      { color: #FFB612; }
+[data-ui-theme="packers"] .modal-lbl        { color: #7ab890; }
+[data-ui-theme="packers"] .modal-row label  { color: #f0f0e0; }
+[data-ui-theme="packers"] .modal-close      { color: #7ab890; }
+[data-ui-theme="packers"] .vfo-freq         { color: #FFB612; }
+[data-ui-theme="packers"] .vfo-freq .mhz    { color: #ffd060; }
+[data-ui-theme="packers"] .vfo-freq.secondary { color: #7ab890; }
+[data-ui-theme="packers"] .callsign         { color: #7ab890; }
+[data-ui-theme="packers"] .status-label     { color: #56d364; }
+[data-ui-theme="packers"] .sbtn             { background: #183028; border-color: #2e5c40; color: #f0f0e0; }
+[data-ui-theme="packers"] .sbtn.active      { background: #FFB612; border-color: #d49000; color: #1a2e26; }
+[data-ui-theme="packers"] .mbtn             { background: #183028; border-color: #2e5c40; color: #f0f0e0; }
+[data-ui-theme="packers"] .mbtn.pri         { background: #FFB612; border-color: #d49000; color: #1a2e26; }
+[data-ui-theme="packers"] .band-btn         { background: #183028; border-color: #2e5c40; color: #90c8a0; }
+[data-ui-theme="packers"] .mode-btn         { background: #183028; border-color: #2e5c40; color: #90c8a0; }
+[data-ui-theme="packers"] .mode-btn.active  { background: #FFB612; border-color: #d49000; color: #1a2e26; }
+[data-ui-theme="packers"] input[type=range] { background: #2e5c40; }
+[data-ui-theme="packers"] input[type=range]::-webkit-slider-thumb { background: #FFB612; border-color: #1a2e26; }
+[data-ui-theme="packers"] input[type=range]::-moz-range-thumb     { background: #FFB612; border-color: #1a2e26; }
+
+/* ── SPEC CTRL BAR + WF-THEME-BTN overrides per UI theme ── */
+[data-ui-theme="midnight"] .spec-ctrl-bar      { background: #13100c; border-color: #332810; }
+[data-ui-theme="midnight"] .spec-ctrl-divider  { background: #332810; }
+[data-ui-theme="midnight"] .wf-theme-btn       { background: #28201a; border-color: #332810; color: #a89060; }
+[data-ui-theme="midnight"] .wf-theme-btn:hover { background: #3d3020; color: #ede8e0; }
+[data-ui-theme="midnight"] .wf-theme-btn.active{ background: #8b6010; border-color: #c49020; color: #ede8e0; }
+
+[data-ui-theme="navy"] .spec-ctrl-bar      { background: #060f1c; border-color: #1c3660; }
+[data-ui-theme="navy"] .spec-ctrl-divider  { background: #1c3660; }
+[data-ui-theme="navy"] .wf-theme-btn       { background: #081422; border-color: #1c3660; color: #5880a8; }
+[data-ui-theme="navy"] .wf-theme-btn:hover { background: #1c3660; color: #c8dff0; }
+[data-ui-theme="navy"] .wf-theme-btn.active{ background: #1a4090; border-color: #388bfd; color: #79c0ff; }
+
+[data-ui-theme="forest"] .spec-ctrl-bar      { background: #061008; border-color: #163d1c; }
+[data-ui-theme="forest"] .spec-ctrl-divider  { background: #163d1c; }
+[data-ui-theme="forest"] .wf-theme-btn       { background: #091508; border-color: #163d1c; color: #5a9860; }
+[data-ui-theme="forest"] .wf-theme-btn:hover { background: #163d1c; color: #c0e8c4; }
+[data-ui-theme="forest"] .wf-theme-btn.active{ background: #1a5c24; border-color: #3fb950; color: #56d364; }
+
+[data-ui-theme="charcoal"] .spec-ctrl-bar      { background: #2a2d33; border-color: #484f5a; }
+[data-ui-theme="charcoal"] .spec-ctrl-divider  { background: #484f5a; }
+[data-ui-theme="charcoal"] .wf-theme-btn       { background: #3c4048; border-color: #484f5a; color: #a0a8b4; }
+[data-ui-theme="charcoal"] .wf-theme-btn:hover { background: #484f5a; color: #e4e8ee; }
+[data-ui-theme="charcoal"] .wf-theme-btn.active{ background: #2a4a80; border-color: #5a8fd8; color: #c0d8f8; }
+
+[data-ui-theme="warm"] .spec-ctrl-bar      { background: #26221c; border-color: #504030; }
+[data-ui-theme="warm"] .spec-ctrl-divider  { background: #504030; }
+[data-ui-theme="warm"] .wf-theme-btn       { background: #3a3028; border-color: #504030; color: #a09080; }
+[data-ui-theme="warm"] .wf-theme-btn:hover { background: #504030; color: #efe8dc; }
+[data-ui-theme="warm"] .wf-theme-btn.active{ background: #8a6010; border-color: #c49030; color: #ffe090; }
+
+[data-ui-theme="parchment"] .spec-ctrl-bar      { background: #ecdfc4; border-color: #c0a870; }
+[data-ui-theme="parchment"] .spec-ctrl-divider  { background: #c0a870; }
+[data-ui-theme="parchment"] .wf-theme-btn       { background: #ddd0a0; border-color: #c0a870; color: #806040; }
+[data-ui-theme="parchment"] .wf-theme-btn:hover { background: #c8b890; color: #2c1e0e; }
+[data-ui-theme="parchment"] .wf-theme-btn.active{ background: #b07830; border-color: #8a5c1c; color: #fff8e8; }
+
+[data-ui-theme="daylight"] .spec-ctrl-bar      { background: #dde3ea; border-color: #c0cad4; }
+[data-ui-theme="daylight"] .spec-ctrl-divider  { background: #c0cad4; }
+[data-ui-theme="daylight"] .wf-theme-btn       { background: #e8edf3; border-color: #c0cad4; color: #506888; }
+[data-ui-theme="daylight"] .wf-theme-btn:hover { background: #c0cad4; color: #1a2030; }
+[data-ui-theme="daylight"] .wf-theme-btn.active{ background: #0066cc; border-color: #0050a0; color: #ffffff; }
+
+[data-ui-theme="packers"] .spec-ctrl-bar      { background: #1a2e26; border-color: #2e5c40; }
+[data-ui-theme="packers"] .spec-ctrl-divider  { background: #2e5c40; }
+[data-ui-theme="packers"] .wf-theme-btn       { background: #183028; border-color: #2e5c40; color: #7ab890; }
+[data-ui-theme="packers"] .wf-theme-btn:hover { background: #2e5c40; color: #f0f0e0; }
+[data-ui-theme="packers"] .wf-theme-btn.active{ background: #FFB612; border-color: #d49000; color: #1a2e26; }
 </style>
 </head>
 <body style="touch-action: manipulation;">
@@ -932,8 +1266,6 @@ canvas.audio-cv { width: 100%; height: 100%; }
     <div class="dock-handle"><span class="dock-title">Tune Step</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
     <div class="dock-body">
       <div class="step-row" id="stepRow">
-        <button class="sbtn" data-hz="1" onclick="setStep(this,1)">1Hz</button>
-        <button class="sbtn" data-hz="10" onclick="setStep(this,10)">10</button>
         <button class="sbtn" data-hz="100" onclick="setStep(this,100)">100</button>
         <button class="sbtn active" data-hz="500" onclick="setStep(this,500)">500</button>
         <button class="sbtn" data-hz="1000" onclick="setStep(this,1000)">1k</button>
@@ -1130,20 +1462,20 @@ canvas.audio-cv { width: 100%; height: 100%; }
     <div class="spec-resize-handle" id="specResizeHandle" title="Drag to resize spectrum"></div>
 
     <!-- Spectrum gain + waterfall speed sliders -->
-    <div style="display:flex;align-items:center;gap:12px;padding:3px 8px;background:#0d1117;border-bottom:1px solid #30363d;">
-      <span style="font-size:9px;color:#7d8590;font-family:'SF Mono',monospace;white-space:nowrap;">SPEC GAIN</span>
-      <input type="range" min="-60" max="120" value="20" step="1" id="specGainSlider" style="flex:1;height:4px;cursor:pointer;"
+    <div class="spec-ctrl-bar">
+      <span class="ctrl-lbl" style="white-space:nowrap;">SPEC GAIN</span>
+      <input type="range" min="-60" max="120" value="-5" step="1" id="specGainSlider" style="flex:1;height:4px;cursor:pointer;"
         oninput="specGain=parseInt(this.value);document.getElementById('specGainV').textContent=(specGain>=0?'+':'')+specGain+'dB';saveState()">
-      <span id="specGainV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:42px;text-align:right;">+20dB</span>
-      <span style="font-size:9px;color:#7d8590;font-family:'SF Mono',monospace;white-space:nowrap;margin-left:8px;">WF SPEED</span>
-      <input type="range" min="1" max="60" value="17" step="1" id="wfSpeedSlider" style="width:80px;height:4px;cursor:pointer;"
+      <span id="specGainV" class="ctrl-val" style="width:42px;text-align:right;">-5dB</span>
+      <span class="ctrl-lbl" style="white-space:nowrap;margin-left:8px;">WF SPEED</span>
+      <input type="range" min="1" max="60" value="10" step="1" id="wfSpeedSlider" style="width:80px;height:4px;cursor:pointer;"
         oninput="wfSpeed=parseInt(this.value);document.getElementById('wfSpeedV').textContent=this.value;saveState()">
-      <span id="wfSpeedV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:16px;text-align:right;">17</span>
-      <span style="font-size:9px;color:#7d8590;font-family:'SF Mono',monospace;white-space:nowrap;margin-left:8px;">FFT SMOOTH</span>
-      <input type="range" min="0" max="95" value="90" step="5" id="fftSmoothSlider" style="width:80px;height:4px;cursor:pointer;"
+      <span id="wfSpeedV" class="ctrl-val" style="width:16px;text-align:right;">10</span>
+      <span class="ctrl-lbl" style="white-space:nowrap;margin-left:8px;">FFT SMOOTH</span>
+      <input type="range" min="0" max="95" value="95" step="5" id="fftSmoothSlider" style="width:80px;height:4px;cursor:pointer;"
         oninput="IQ.smooth=parseInt(this.value)/100;if(S.analyser){S.analyser.smoothingTimeConstant=parseInt(this.value)/100;}document.getElementById('fftSpeedV').textContent=this.value+'%';saveState()">
-      <span id="fftSpeedV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:28px;text-align:right;">90%</span>
-      <div style="width:1px;height:16px;background:#30363d;margin:0 6px;flex-shrink:0;"></div>
+      <span id="fftSpeedV" class="ctrl-val" style="width:28px;text-align:right;">95%</span>
+      <div class="spec-ctrl-divider"></div>
       <button id="peakHoldBtn" onclick="togglePeakHold()" class="wf-theme-btn" style="padding:2px 8px;">PEAK</button>
     </div>
 
@@ -1328,6 +1660,18 @@ canvas.audio-cv { width: 100%; height: 100%; }
       <button class="mbtn" data-theme="night" onclick="setColorTheme(this)">Night</button>
       <button class="mbtn" data-theme="amber" onclick="setColorTheme(this)">Amber</button>
     </div>
+    <label class="modal-lbl">UI Color Theme</label>
+    <select class="modal-in" id="cfgUITheme" onchange="applyUITheme(this.value)" style="margin-bottom:8px;width:100%;cursor:pointer;">
+      <option value="dark">Dark (default)</option>
+      <option value="midnight">Midnight — warm near-black</option>
+      <option value="navy">Navy — dark blue</option>
+      <option value="forest">Forest — deep green</option>
+      <option value="charcoal">Charcoal — medium gray</option>
+      <option value="warm">Warm — taupe brown</option>
+      <option value="parchment">Parchment — warm light</option>
+      <option value="daylight">Daylight — clean light gray</option>
+      <option value="packers">Green Bay Packers — green &amp; gold</option>
+    </select>
     <div class="modal-sep"></div>
 
     <!-- DX Cluster Filters -->
@@ -1435,6 +1779,18 @@ canvas.audio-cv { width: 100%; height: 100%; }
     </div>
 
     <div class="modal-sep"></div>
+
+    <!-- Settings export / import -->
+    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:10px;letter-spacing:0.04em;">Settings Backup</div>
+    <div style="display:flex;gap:8px;margin-bottom:4px;">
+      <button class="mbtn" onclick="exportSettings()" style="flex:1;">Export to file…</button>
+      <button class="mbtn" onclick="el('importSettingsFile').click()" style="flex:1;">Import from file…</button>
+      <!-- Hidden file input — triggered by the Import button above -->
+      <input type="file" id="importSettingsFile" accept=".json" style="display:none" onchange="importSettings(this)">
+    </div>
+    <div style="font-size:10px;color:#7d8590;margin-bottom:8px;">Export saves all settings to a JSON file you can share or move to another browser.</div>
+
+    <div class="modal-sep"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
       <button class="mbtn" onclick="closeModal('settingsModal')">Cancel</button>
       <button class="mbtn pri" onclick="saveSettings()">Save</button>
@@ -1503,7 +1859,8 @@ const S = {
 };
 
 // noise / toggle states
-const TG = {};
+// Explicitly initialize all toggle states so first-use is predictable
+const TG = { split: false, mute: false, mon: false, rx2: false };
 
 // ── BANDPASS DRAG / PREVIEW STATE ──
 let bpDragHzOffset = 0;          // Hz offset during drag (read by drawSpec for preview)
@@ -1512,6 +1869,7 @@ let bpIgnoreVfoUpdateUntil = 0;  // timestamp — ignore radio VFO echoes until 
 let sliderLastValue = 0;         // tuning slider last position
 let _wheelCommitTimer = null;    // debounce timer for wheel tuning
 let _wheelBaseVfo = 0;           // VFO baseline when wheel scrolling starts
+let _wheelLastSend = 0;          // timestamp of last VFO send (rate-limiter)
 
 // ── WEBSOCKET ──
 function toggleConn() {
@@ -1520,6 +1878,11 @@ function toggleConn() {
 
 function connect() {
   const url = document.getElementById('hostInput').value.trim();
+  // Reject clearly invalid URLs before handing off to the WebSocket constructor
+  if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
+    log('err', 'Invalid URL — must begin with ws:// or wss://');
+    return;
+  }
   log('sys', 'Connecting → ' + url);
   document.getElementById('connBtn').textContent = 'CONNECTING…';
   try {
@@ -1639,7 +2002,7 @@ function parseTCI(msg) {
         const ab = document.querySelector('#filtG .f-btn.active');
         if (ab && ab.dataset.bw) {
           const [lo, hi] = bwToLoHi(parseInt(ab.dataset.bw));
-          el('flo').value = lo; el('fhi').value = hi;
+          el('flo').value =lo; el('fhi').value =hi;
         }
       }
       break;
@@ -1702,19 +2065,22 @@ function parseTCI(msg) {
       break;
 
 
-    case 'tx_power':
-      if (args.length >= 2 && args[0] === '0') {
-        SM.txWatts = parseFloat(args[1]) || 0;
-        const pct = Math.min(100, SM.txWatts);
-        if (el('txPBar')) el('txPBar').style.width = pct + '%';
-        if (el('txPV'))  el('txPV').textContent = SM.txWatts.toFixed(1) + ' W';
-      }
+    case 'tx_power': {
+      // Thetis may send either "tx_power:watts;" or "tx_power:trx,watts;"
+      // If two args, args[0] is the TRX index; if one arg, args[0] is the watts value.
+      const txW = parseFloat(args.length >= 2 ? args[1] : args[0]) || 0;
+      SM.txWatts = txW;
+      const pct = Math.min(100, txW);
+      if (el('txPBar')) el('txPBar').style.width = pct + '%';
+      if (el('txPV'))  el('txPV').textContent = txW.toFixed(1) + ' W';
       break;
-    case 'swr':
-      if (args.length >= 2 && args[0] === '0') {
-        SM.swr = Math.max(1.0, parseFloat(args[1]) || 1.0);
-      }
+    }
+    case 'swr': {
+      // Same dual-format handling: "swr:value;" or "swr:trx,value;"
+      const swrV = parseFloat(args.length >= 2 ? args[1] : args[0]) || 1.0;
+      SM.swr = Math.max(1.0, swrV);
       break;
+    }
     case 'rx_anf_enable':
       if (args.length >= 2 && args[0] === '0') {
         anfOn = args[1] === 'true';
@@ -1763,7 +2129,17 @@ function updMode() {
 
 
 
-function updTune() { el('tuneBtn').classList.toggle('active', S.tune); }
+function updTune() {
+  el('tuneBtn').classList.toggle('active', S.tune);
+  // Only clear TX display when TUNE goes OFF; leave it alone when turning ON
+  // so incoming tx_power readings aren't wiped immediately
+  if (!S.tune) {
+    el('txPBar').style.width = '0%';
+    el('txPV').textContent = '0 W';
+    SM.txWatts = 0;
+    SM.swr = 1.0;
+  }
+}
 
 // ── VFO ──
 const BAND_RANGES = [
@@ -1935,7 +2311,7 @@ function setMode(m) {
   const activeBtn = document.querySelector('#filtG .f-btn.active');
   if (activeBtn && activeBtn.dataset.bw) {
     const [lo, hi] = bwToLoHi(parseInt(activeBtn.dataset.bw));
-    el('flo').value = lo; el('fhi').value = hi;
+    el('flo').value =lo; el('fhi').value =hi;
     send('rx_filter_band:0,' + lo + ',' + hi + ';');
   }
   saveState();
@@ -1968,14 +2344,14 @@ function setFilt(btn) {
   btn.classList.add('active');
   const bw = parseInt(btn.dataset.bw);
   const [lo, hi] = bwToLoHi(bw);
-  el('flo').value = lo;
-  el('fhi').value = hi;
+  el('flo').value =lo;
+  el('fhi').value =hi;
   send('rx_filter_band:0,' + lo + ',' + hi + ';');
   saveState();
 }
 function customFilt() {
   document.querySelectorAll('#filtG .f-btn').forEach(b => b.classList.remove('active'));
-  send('rx_filter_band:0,'+el('flo').value+','+el('fhi').value+';');
+  send('rx_filter_band:0,'+el('flo')?.value+','+el('fhi')?.value+';');
   saveState();
 }
 
@@ -2539,15 +2915,18 @@ let smTciLastTime = 0;
 function startSmeterPoll() {
   if (SM.pollId) return;
   SM.pollId = setInterval(() => {
-    if (!S.connected || S.mox) return;
-    // Request TCI S-meter (silent send — don't flood log)
-    if (S.ws && S.ws.readyState === 1) { S.ws.send('rx_smeter:0,0;'); netTx(16); }
-    // Priority: TCI > IQ passband > audio
-    if (Date.now() - smTciLastTime > 2000) {
-      if (S.iqOn && IQ.fftReady) {
-        smeterFromIQ();
-      } else if (S.analyser && S.rxOn) {
-        smeterFromAudio();
+    if (!S.connected) return;
+    if (S.ws && S.ws.readyState !== 1) return;
+    if (S.mox || S.tune) {
+      // During TX/TUNE: query Thetis for TX forward power (responds with tx_power:trx,watts;)
+      S.ws.send('tx_power:0;');
+    } else {
+      // During RX: request S-meter reading from Thetis
+      S.ws.send('rx_smeter:0,0;');
+      // Fallback to IQ or audio if TCI S-meter hasn't arrived recently
+      if (Date.now() - smTciLastTime > 2000) {
+        if (S.iqOn && IQ.fftReady) smeterFromIQ();
+        else if (S.analyser && S.rxOn) smeterFromAudio();
       }
     }
   }, 100);  // 10 Hz
@@ -2564,8 +2943,8 @@ function smeterFromIQ() {
   const loHz = S.iqCentre - SR / 2;
 
   // Get filter passband in absolute Hz
-  const flo = parseInt(el('flo').value) || 100;
-  const fhi = parseInt(el('fhi').value) || 2900;
+  const flo = parseInt(el('flo')?.value) || 100;
+  const fhi = parseInt(el('fhi')?.value) || 2900;
   const filterLoHz = S.vfoA + Math.min(flo, fhi);
   const filterHiHz = S.vfoA + Math.max(flo, fhi);
 
@@ -2662,34 +3041,24 @@ function drawLedMeter(dbm) {
   const norm = dbmToNorm(dbm);
   const litSegs = Math.round(norm * totalSegs);
 
+  // Single clean bar per segment — no dual-row split
+  const segH = H - 4;  // 2px breathing room top and bottom
   for (let i = 0; i < totalSegs; i++) {
     const x = i * (segW + gap);
     const isLit = i < litSegs;
-    const isRed = i >= 14;     // +10dB and above
-    const isOrange = i >= 12 && i < 14;  // S8-S9 area
+    const isRed = i >= 14;
+    const isOrange = i >= 12 && i < 14;
 
-    // Top bar (taller)
-    const topH = H * 0.55;
     if (isLit) {
       ctx.fillStyle = isRed ? '#f85149' : isOrange ? '#e3b341' : '#3fb950';
       ctx.shadowColor = isRed ? '#f8514966' : isOrange ? '#e3b34144' : '#3fb95044';
-      ctx.shadowBlur = 4;
+      ctx.shadowBlur = 5;
     } else {
       ctx.fillStyle = isRed ? '#3d1010' : isOrange ? '#2a1f0d' : '#0d2a0d';
       ctx.shadowBlur = 0;
     }
-    ctx.fillRect(x, 2, segW, topH);
+    ctx.fillRect(x, 2, segW, segH);
     ctx.shadowBlur = 0;
-
-    // Bottom bar (shorter, slightly dimmer)
-    const botH = H * 0.30;
-    const botY = topH + 4;
-    if (isLit) {
-      ctx.fillStyle = isRed ? '#f8514999' : isOrange ? '#e3b34188' : '#3fb95088';
-    } else {
-      ctx.fillStyle = isRed ? '#2a0808' : isOrange ? '#1a1508' : '#081a08';
-    }
-    ctx.fillRect(x, botY, segW, botH);
   }
 }
 
@@ -2748,8 +3117,14 @@ function fmtBytes(b) {
 // ── S-Meter canvas drawing — classic analog style ──
 let smRAF;
 function drawSmeter() {
+  // Always reschedule first so a drawing error can't kill the loop
+  smRAF = requestAnimationFrame(drawSmeter);
+
   const cv = el('smeterC');
-  if (!cv) { smRAF = requestAnimationFrame(drawSmeter); return; }
+  // Skip if canvas is hidden (e.g. panel collapsed) or has zero dimensions
+  if (!cv || cv.offsetWidth === 0 || cv.offsetHeight === 0) return;
+
+  try {
   const dpr = window.devicePixelRatio || 1;
   const cssW = cv.offsetWidth || 200;
   const cssH = cv.offsetHeight || 105;
@@ -3017,14 +3392,16 @@ function drawSmeter() {
     }
     return 1.0;
   }
-  const needleNorm = S.mox ? txWattsToFrac(SM.txWatts) : dbmToNorm(SM.smoothDbm);
-  const needleActive = S.mox ? true : SM.dbm !== null;
+  // Show TX power during PTT or TUNE; show RX signal otherwise
+  const isTx = S.mox || S.tune;
+  const needleNorm = isTx ? txWattsToFrac(SM.txWatts) : dbmToNorm(SM.smoothDbm);
+  const needleActive = isTx ? true : SM.dbm !== null;
   const needleAngle = arcStart + needleNorm * arcRange;
   const needleTipR = R + 5;
   const needleTailR = 20;
 
   // ── SWR indicator (small triangle on SWR arc, TX only) ──
-  if (S.mox && SM.swr > 1.0) {
+  if (isTx && SM.swr > 1.0) {
     const sf = swrToFrac(SM.swr);
     const sa = arcStart + sf * arcRange;
     const sArrow = swrR - 2;
@@ -3125,7 +3502,7 @@ function drawSmeter() {
   ctx.font = '7px Georgia, serif';
   ctx.fillStyle = '#8b949e';
   ctx.textAlign = 'center';
-  ctx.fillText(S.mox ? 'TX  POWER' : 'THETIS  TCI', W / 2, H - bz - 2);
+  ctx.fillText(isTx ? (S.tune ? 'TUNE  POWER' : 'TX  POWER') : 'THETIS  TCI', W / 2, H - bz - 2);
 
   // ── Mic level bar ──
   (function() {
@@ -3140,7 +3517,9 @@ function drawSmeter() {
     bar.style.width = Math.min(100, peak * 100).toFixed(1) + '%';
   })();
 
-  smRAF = requestAnimationFrame(drawSmeter);
+  } catch(e) {
+    // Swallow drawing errors — the RAF is already scheduled above so the loop continues
+  }
 }
 
 // ── IQ PANADAPTER ENGINE ──
@@ -3152,7 +3531,7 @@ const IQ = {
   fftReady: false,
   window: null,            // Blackman-Harris window
   frameCount: 0,
-  smooth: 0.90,            // FFT smoothing (0=no smoothing, 0.99=very slow)
+  smooth: 0.95,            // FFT smoothing (0=no smoothing, 0.99=very slow)
 };
 
 // Pre-compute Blackman-Harris window
@@ -3304,7 +3683,7 @@ document.addEventListener('keydown', e => {
 // ── SPECTRUM CANVAS ──
 let specRAF;
 let DB_MIN = -140, DB_MAX = -30; // dBm range — adjustable via settings
-let specGain = 20; // dB offset adjusted by slider
+let specGain = -5; // dB offset adjusted by slider
 let specZoom = 1;        // 1 = full IQ span, 2/4/8/16/32 = zoomed in
 let specZoomCentre = 0;  // Hz at centre of zoom view (0 = auto)
 let peakHoldEnabled = false;
@@ -3434,8 +3813,8 @@ function drawSpec() {
     }
 
     // ── Filter passband overlay ──
-    const flo = parseInt(el('flo').value) || 100;
-    const fhi = parseInt(el('fhi').value) || 2900;
+    const flo = parseInt(el('flo')?.value) || 100;
+    const fhi = parseInt(el('fhi')?.value) || 2900;
     const filterLoHz = S.vfoA + Math.min(flo, fhi);
     const filterHiHz = S.vfoA + Math.max(flo, fhi);
     const xFlo = hzToX(filterLoHz);
@@ -3539,8 +3918,8 @@ function drawSpec() {
     const freqData = new Float32Array(bufLen);
     analyser.getFloatFrequencyData(freqData);
     const hzPerBin = 48000 / analyser.fftSize;
-    const flo = Math.abs(parseInt(el('flo').value) || 100);
-    const fhi = Math.abs(parseInt(el('fhi').value) || 2900);
+    const flo = Math.abs(parseInt(el('flo')?.value) || 100);
+    const fhi = Math.abs(parseInt(el('fhi')?.value) || 2900);
     const passBandHi = Math.max(flo, fhi);
     const displayMax = Math.max(4000, Math.ceil(passBandHi * 1.15 / 500) * 500);
     const maxBin = Math.min(bufLen - 1, Math.floor(displayMax / hzPerBin));
@@ -3577,7 +3956,7 @@ function drawSpec() {
 // ── WATERFALL ──
 let wfRAF, wfImg=null;
 let wfFrameSkip = 0;
-let wfSpeed = 17;
+let wfSpeed = 10;
 
 function drawWF() {
   const cv=el('wfC'); if (!cv) return;
@@ -3626,7 +4005,7 @@ function drawWF() {
     const freqData = new Float32Array(bufLen);
     analyser.getFloatFrequencyData(freqData);
     const hzPerBin = 48000 / analyser.fftSize;
-    const fhi = Math.abs(parseInt(el('fhi').value) || 2900);
+    const fhi = Math.abs(parseInt(el('fhi')?.value) || 2900);
     const displayMax = Math.max(4000, Math.ceil(fhi * 1.15 / 500) * 500);
     const maxBin = Math.min(bufLen - 1, Math.floor(displayMax / hzPerBin));
     for (let x = 0; x < W; x++) {
@@ -3647,8 +4026,8 @@ function drawWF() {
     const hzToX = (hz) => ((hz - loHz) / SR) * W;
 
     // Filter edges
-    const flo = parseInt(el('flo').value) || 100;
-    const fhi2 = parseInt(el('fhi').value) || 2900;
+    const flo = parseInt(el('flo')?.value) || 100;
+    const fhi2 = parseInt(el('fhi')?.value) || 2900;
     const xFlo = hzToX(S.vfoA + Math.min(flo, fhi2));
     const xFhi = hzToX(S.vfoA + Math.max(flo, fhi2));
     ctx.strokeStyle = S.mox ? '#ff550066' : '#e3b34144';
@@ -3730,47 +4109,33 @@ function vfoARit() { return ritOn ? S.vfoA + ritHz : S.vfoA; }
 
 // ── DIGITAL MODE MARKERS ──
 let showDigMarkers = true;
+// FT8, FT4, and PSK31 markers removed — only WSPR and JS8 remain
 const DIGITAL_MARKERS = [
   // 160m
-  { name:'FT8',  hz:1840000,  color:'#ff8800' },
   { name:'WSPR', hz:1836600,  color:'#00cc66' },
   // 80m
-  { name:'FT8',  hz:3573000,  color:'#ff8800' },
   { name:'WSPR', hz:3568600,  color:'#00cc66' },
   { name:'JS8',  hz:3578000,  color:'#aa88ff' },
-  // 60m
-  { name:'FT8',  hz:5357000,  color:'#ff8800' },
   // 40m
-  { name:'FT8',  hz:7074000,  color:'#ff8800' },
-  { name:'FT4',  hz:7047500,  color:'#ffaa00' },
   { name:'WSPR', hz:7038600,  color:'#00cc66' },
   { name:'JS8',  hz:7078000,  color:'#aa88ff' },
   // 30m
-  { name:'FT8',  hz:10136000, color:'#ff8800' },
   { name:'WSPR', hz:10138700, color:'#00cc66' },
   { name:'JS8',  hz:10130000, color:'#aa88ff' },
   // 20m
-  { name:'FT8',  hz:14074000, color:'#ff8800' },
-  { name:'FT4',  hz:14080000, color:'#ffaa00' },
   { name:'WSPR', hz:14095600, color:'#00cc66' },
   { name:'JS8',  hz:14078000, color:'#aa88ff' },
-  { name:'PSK31',hz:14070000, color:'#66ccff' },
   // 17m
-  { name:'FT8',  hz:18100000, color:'#ff8800' },
   { name:'WSPR', hz:18104600, color:'#00cc66' },
   // 15m
-  { name:'FT8',  hz:21074000, color:'#ff8800' },
   { name:'WSPR', hz:21094600, color:'#00cc66' },
   { name:'JS8',  hz:21078000, color:'#aa88ff' },
   // 12m
-  { name:'FT8',  hz:24915000, color:'#ff8800' },
   { name:'WSPR', hz:24924600, color:'#00cc66' },
   // 10m
-  { name:'FT8',  hz:28074000, color:'#ff8800' },
   { name:'WSPR', hz:28124600, color:'#00cc66' },
   { name:'JS8',  hz:28078000, color:'#aa88ff' },
   // 6m
-  { name:'FT8',  hz:50313000, color:'#ff8800' },
   { name:'WSPR', hz:50293000, color:'#00cc66' },
 ];
 
@@ -3885,6 +4250,16 @@ function dxApplyFilter() {
       if (myContinent && s.dx_continent !== myContinent) return false;
     }
 
+    return true;
+  });
+
+  // Deduplicate: keep only the most recent spot per dx_call per band.
+  // The same station may appear on multiple bands (keep each), but only once per band.
+  const seen = new Map();
+  dxSpots = filtered.filter(s => {
+    const key = (s.dx_call || '').toUpperCase() + '|' + (s.band || '');
+    if (seen.has(key)) return false;
+    seen.set(key, true);
     return true;
   }).slice(0, 100);
 
@@ -4310,6 +4685,25 @@ function applyColorTheme(name) {
     b.classList.toggle('active', parseInt(b.dataset.theme) === wfTheme));
 }
 
+// ── UI COLOR THEMES ──
+// Controls panel/background color via data-ui-theme on <html>.
+let activeUITheme = 'dark';
+
+// Called by the select dropdown's onchange — previews the theme immediately.
+// The choice is only permanently saved when the user clicks Save in Settings.
+function applyUITheme(name) {
+  activeUITheme = name || 'dark';
+  // 'dark' is the base stylesheet — remove the attribute to restore defaults
+  if (activeUITheme === 'dark') {
+    document.documentElement.removeAttribute('data-ui-theme');
+  } else {
+    document.documentElement.setAttribute('data-ui-theme', activeUITheme);
+  }
+  // Keep the select in sync (in case called from applySettings, not the select itself)
+  const sel = el('cfgUITheme');
+  if (sel) sel.value = activeUITheme;
+}
+
 // ── SETTINGS ──
 let specLineColor = '#58a6ff';
 
@@ -4329,6 +4723,9 @@ function loadSettingsUI() {
   activeColorTheme = cfg.colorTheme || 'classic';
   document.querySelectorAll('#colorThemeBtns .mbtn').forEach(b =>
     b.classList.toggle('pri', b.dataset.theme === activeColorTheme));
+  activeUITheme = cfg.uiTheme || 'dark';
+  const uiSel = el('cfgUITheme');
+  if (uiSel) uiSel.value = activeUITheme;
   // DX cluster filters
   v('cfgMyContinent',       cfg.dxMyContinent || '');
   v('cfgMyZone',            cfg.dxMyZone || '');
@@ -4363,6 +4760,7 @@ function saveSettings() {
     dbFloor:            parseInt(gv('cfgDbFloor')) || -140,
     dbCeil:             parseInt(gv('cfgDbCeil')) || -30,
     colorTheme:         activeColorTheme,
+    uiTheme:            activeUITheme,
     // DX cluster filters
     dxMyContinent:      gv('cfgMyContinent'),
     dxMyZone:           parseInt(gv('cfgMyZone')) || 0,
@@ -4381,6 +4779,7 @@ function saveSettings() {
     })),
   };
   try { localStorage.setItem('totw_cfg_v1', JSON.stringify(cfg)); } catch(e) {}
+  applyAppearance(cfg);
   showDigMarkers = cfg.digMarkers;
   DB_MIN = cfg.dbFloor;
   DB_MAX = cfg.dbCeil;
@@ -4399,6 +4798,46 @@ function getSettings() {
   try { return JSON.parse(localStorage.getItem('totw_cfg_v1')) || {}; } catch(e) { return {}; }
 }
 
+// ── SETTINGS EXPORT ──
+// Grabs the saved config and downloads it as a JSON file.
+function exportSettings() {
+  const cfg = getSettings();
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'totw-settings.json';
+  a.click();
+  // Release the object URL immediately after the click is dispatched
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  log('sys', 'Settings exported to totw-settings.json');
+}
+
+// ── SETTINGS IMPORT ──
+// Reads a previously exported JSON file, saves it to localStorage, and applies it.
+function importSettings(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const cfg = JSON.parse(ev.target.result);
+      // Basic sanity check — must be a plain object, not an array or primitive
+      if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
+        log('err', 'Import failed: file does not look like a TOTW settings export');
+        return;
+      }
+      localStorage.setItem('totw_cfg_v1', JSON.stringify(cfg));
+      applySettings();    // apply runtime effects (theme, markers, panels)
+      loadSettingsUI();   // refresh all the modal fields so the user sees the new values
+      log('sys', 'Settings imported — re-open Settings to verify');
+    } catch(e) {
+      log('err', 'Import failed: invalid JSON (' + e.message + ')');
+    }
+    input.value = ''; // reset so the same file can be re-imported if needed
+  };
+  reader.readAsText(file);
+}
+
 function applySettings() {
   const cfg = getSettings();
   showDigMarkers = cfg.digMarkers !== false;
@@ -4406,6 +4845,8 @@ function applySettings() {
   if (cfg.dbCeil)  DB_MAX = cfg.dbCeil;
   activeColorTheme = cfg.colorTheme || 'classic';
   applyColorTheme(activeColorTheme);
+  activeUITheme = cfg.uiTheme || 'dark';
+  applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
     if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web';
@@ -4463,14 +4904,11 @@ function previewVfoDisp(vfo, hz) {
   window['_previewHz' + vfo] = hz;
   const mhz = hz / 1e6;
   const whole = Math.floor(mhz).toString();
-  const decAll = mhz.toFixed(6).split('.')[1];
-  const decKhz = decAll.slice(0, 3);
-  const decHz  = decAll.slice(3, 6);
+  // Use 4 decimal places (100 Hz resolution) — same format as the static display
+  const dec = mhz.toFixed(4).split('.')[1];
   const disp = el('vfo' + vfo + 'Disp');
   if (!disp) return;
-  disp.innerHTML = whole + '.' + decKhz +
-    '<span class="hz-small"> ' + decHz + '</span>' +
-    '<span class="mhz"> MHz</span>';
+  disp.innerHTML = whole + '.' + dec + '<span class="mhz"> MHz</span>';
 }
 
 // ── TUNING SLIDER ──
@@ -4630,8 +5068,8 @@ function saveState() {
         mode: S.mode,
         step: S.step,
         filterBw: ab ? parseInt(ab.dataset.bw) : null,
-        filterLo: parseInt(el('flo').value) || 100,
-        filterHi: parseInt(el('fhi').value) || 2900,
+        filterLo: parseInt(el('flo')?.value) || 100,
+        filterHi: parseInt(el('fhi')?.value) || 2900,
         afGain: afEl ? parseInt(afEl.value) : -10,
         specGain: sgEl ? parseInt(sgEl.value) : 20,
         wfSpeed: wsEl ? parseInt(wsEl.value) : 17,
@@ -4663,8 +5101,8 @@ function loadState() {
     document.querySelectorAll('#filtG .f-btn').forEach(b =>
       b.classList.toggle('active', parseInt(b.dataset.bw) === p.filterBw));
   }
-  if (p.filterLo != null) el('flo').value = p.filterLo;
-  if (p.filterHi != null) el('fhi').value = p.filterHi;
+  if (p.filterLo != null) el('flo').value =p.filterLo;
+  if (p.filterHi != null) el('fhi').value =p.filterHi;
   const afEl = el('afSlider');
   if (afEl && p.afGain != null) { afEl.value = p.afGain; el('afV').textContent = p.afGain + ' dB'; }
   const sgEl = el('specGainSlider');
@@ -4691,7 +5129,7 @@ window.addEventListener('load', () => {
     const specWrap = el('specC') && el('specC').parentElement;
     const wfWrap   = el('wfC')  && el('wfC').parentElement;
     if (specWrap) { el('specC').width = specWrap.offsetWidth; el('specC').height = specWrap.offsetHeight; }
-    if (wfWrap)   { el('wfC').width   = wfWrap.offsetWidth;   el('wfC').height   = wfWrap.offsetHeight; }
+    if (wfWrap)   { el('wfC').width = wfWrap.offsetWidth; el('wfC').height = wfWrap.offsetHeight; wfImg = null; }
   };
   resizeCanvases();
   window.addEventListener('resize', resizeCanvases);
@@ -4724,8 +5162,8 @@ window.addEventListener('load', () => {
     function isInPassband(clientX) {
       if (!S.iqOn || !IQ.fftReady) return false;
       const clickHz = visRangeAtClientX(clientX);
-      const flo = parseInt(el('flo').value) || 100;
-      const fhi = parseInt(el('fhi').value) || 2900;
+      const flo = parseInt(el('flo')?.value) || 100;
+      const fhi = parseInt(el('fhi')?.value) || 2900;
       const filterLoHz = S.vfoA + Math.min(flo, fhi);
       const filterHiHz = S.vfoA + Math.max(flo, fhi);
       return clickHz >= filterLoHz && clickHz <= filterHiHz;
@@ -4905,35 +5343,39 @@ window.addEventListener('load', () => {
       if (specZoom > 1) specZoomCentre = mouseHz;
       else specZoomCentre = S.iqCentre;
     } else {
-      // Plain wheel = step tune with debounced commit and auto-recentering
-      if (bpDragHzOffset === 0) _wheelBaseVfo = S.vfoA;
+      // Plain wheel = step tune — commit VFO immediately (rate-limited) and pan spectrum
       const dir = e.deltaY < 0 ? 1 : -1;
-      bpDragHzOffset += dir * S.step;
-      bpDragHzOffset = snapToStep(bpDragHzOffset, S.step);
-      previewVfoDisp('A', _wheelBaseVfo + bpDragHzOffset);
+      const newVfo = Math.max(0, snapToStep(S.vfoA + dir * S.step, S.step));
+      S.vfoA = newVfo;
+      setVfoDisp('A', newVfo);
 
-      // Auto-recenter if VFO drifts near IQ window edges
-      const SR = S.iqSR || 192000;
-      const newVfo = _wheelBaseVfo + bpDragHzOffset;
-      const margin = SR * 0.15;
-      if (newVfo < S.iqCentre - SR / 2 + margin || newVfo > S.iqCentre + SR / 2 - margin) {
-        const hz = Math.max(0, snapToStep(newVfo, S.step));
-        S.vfoA = hz; setVfoDisp('A', hz); send('vfo:0,0,' + hz + ';');
-        bpIgnoreVfoUpdateUntil = Date.now() + 1000;
-        S.iqCentre = hz; bpDragHzOffset = 0; _wheelBaseVfo = hz;
+      // Pan zoomed spectrum to follow VFO on every tick so the cursor never hits the edge
+      if (specZoom > 1) specZoomCentre = newVfo;
+
+      const now = Date.now();
+      // Rate-limit TCI sends to ~20 per second to avoid flooding the radio
+      if (now - _wheelLastSend >= 50) {
+        send('vfo:0,0,' + newVfo + ';');
+        bpIgnoreVfoUpdateUntil = now + 500;
+        _wheelLastSend = now;
         if (_wheelCommitTimer) { clearTimeout(_wheelCommitTimer); _wheelCommitTimer = null; }
-        if (specZoom > 1) specZoomCentre = hz;
-        return;
+      } else {
+        // Always queue a trailing send so the final resting frequency is committed
+        if (_wheelCommitTimer) clearTimeout(_wheelCommitTimer);
+        _wheelCommitTimer = setTimeout(() => {
+          send('vfo:0,0,' + S.vfoA + ';');
+          bpIgnoreVfoUpdateUntil = Date.now() + 500;
+          _wheelCommitTimer = null; _wheelLastSend = Date.now();
+        }, 120);
       }
 
-      if (_wheelCommitTimer) clearTimeout(_wheelCommitTimer);
-      _wheelCommitTimer = setTimeout(() => {
-        const hz = window._previewHzA || Math.max(0, snapToStep(_wheelBaseVfo + bpDragHzOffset, S.step));
-        S.vfoA = hz; setVfoDisp('A', hz); send('vfo:0,0,' + hz + ';');
-        bpIgnoreVfoUpdateUntil = Date.now() + 1000;
-        bpDragHzOffset = 0; window._previewHzA = null; _wheelCommitTimer = null;
-        if (specZoom > 1) specZoomCentre = hz;
-      }, 500);
+      // Recenter IQ when VFO drifts within 25% of an edge — keeps IQ data fresh
+      const SR = S.iqSR || 192000;
+      const margin = SR * 0.25;
+      if (newVfo < S.iqCentre - SR / 2 + margin || newVfo > S.iqCentre + SR / 2 - margin) {
+        S.iqCentre = newVfo;
+        if (specZoom > 1) specZoomCentre = newVfo;
+      }
     }
   }, { passive: false });
 
@@ -5230,9 +5672,9 @@ window.addEventListener('load', () => {
     if (!dragging) return;
     const newH = Math.max(40, Math.min(500, startH + (e.clientY - startY)));
     wfWrap.style.height = newH + 'px';
-    // Trigger canvas size sync
+    // Trigger canvas size sync — also clear wfImg so drawWF rebuilds at new dimensions
     const wfC = document.getElementById('wfC');
-    if (wfC) { wfC.width = wfWrap.offsetWidth; wfC.height = wfWrap.offsetHeight; }
+    if (wfC) { wfC.width = wfWrap.offsetWidth; wfC.height = wfWrap.offsetHeight; wfImg = null; }
   });
 
   document.addEventListener('touchmove', function(e) {
@@ -5240,7 +5682,7 @@ window.addEventListener('load', () => {
     const newH = Math.max(40, Math.min(500, startH + (e.touches[0].clientY - startY)));
     wfWrap.style.height = newH + 'px';
     const wfC = document.getElementById('wfC');
-    if (wfC) { wfC.width = wfWrap.offsetWidth; wfC.height = wfWrap.offsetHeight; }
+    if (wfC) { wfC.width = wfWrap.offsetWidth; wfC.height = wfWrap.offsetHeight; wfImg = null; }
   }, { passive: true });
 
   function stopDrag() {
@@ -5253,6 +5695,32 @@ window.addEventListener('load', () => {
   document.addEventListener('mouseup', stopDrag);
   document.addEventListener('touchend', stopDrag);
 })();
+
+// ── SLIDER WHEEL CONTROL ──
+// Hovering any <input type="range"> and scrolling the mouse wheel nudges it
+// by one step. We dispatch a synthetic 'input' event so existing oninput
+// handlers (gain display updates, saveState, etc.) still fire normally.
+document.addEventListener('wheel', function(e) {
+  const t = e.target;
+  if (t.tagName !== 'INPUT' || t.type !== 'range') return;
+  e.preventDefault(); // stop the page from scrolling while adjusting a slider
+  const step  = parseFloat(t.step)  || 1;
+  const min   = parseFloat(t.min);
+  const max   = parseFloat(t.max);
+  // Scroll up (negative deltaY) = increase; scroll down = decrease
+  const delta = e.deltaY < 0 ? step : -step;
+  t.value = Math.min(max, Math.max(min, parseFloat(t.value) + delta));
+  t.dispatchEvent(new Event('input', { bubbles: true }));
+}, { passive: false });
+
+// ── RAF CLEANUP ──
+// Cancel all animation loops when the tab/window is closed so the browser
+// doesn't keep running draw callbacks on an unloaded page.
+window.addEventListener('unload', () => {
+  cancelAnimationFrame(smRAF);
+  cancelAnimationFrame(specRAF);
+  cancelAnimationFrame(wfRAF);
+});
 
 </script>
 </body>
