@@ -1187,6 +1187,137 @@ canvas.audio-cv { width: 100%; height: 100%; }
 [data-ui-theme="packers"] .wf-theme-btn       { background: #183028; border-color: #2e5c40; color: #7ab890; }
 [data-ui-theme="packers"] .wf-theme-btn:hover { background: #2e5c40; color: #f0f0e0; }
 [data-ui-theme="packers"] .wf-theme-btn.active{ background: #FFB612; border-color: #d49000; color: #1a2e26; }
+
+/* ── PER-THEME BUTTON OVERRIDES ──
+   Covers: .band-btn/.active  .mode-btn/.active  .sbtn/.active
+           .f-btn/.active  .chip/.on  .vbtn
+   PTT (red) and TUNE (amber) keep their universal danger/caution colors in all themes. */
+
+/* Midnight — amber accent */
+[data-ui-theme="midnight"] .band-btn         { background: #28201a; border-color: #332810; color: #c0a878; }
+[data-ui-theme="midnight"] .band-btn.active  { background: #8b6010; border-color: #c49020; color: #ffe090; }
+[data-ui-theme="midnight"] .band-btn:hover   { background: #3d3020; color: #ede8e0; }
+[data-ui-theme="midnight"] .mode-btn         { background: #28201a; border-color: #332810; color: #c0a878; }
+[data-ui-theme="midnight"] .mode-btn.active  { background: #8b6010; border-color: #c49020; color: #ffe090; }
+[data-ui-theme="midnight"] .mode-btn:hover   { background: #3d3020; color: #ede8e0; }
+[data-ui-theme="midnight"] .sbtn             { background: #28201a; border-color: #332810; color: #c0a878; }
+[data-ui-theme="midnight"] .sbtn.active      { background: #8b6010; border-color: #c49020; color: #ffe090; }
+[data-ui-theme="midnight"] .f-btn            { background: #28201a; border-color: #332810; color: #c0a878; }
+[data-ui-theme="midnight"] .f-btn.active     { background: #8b6010; border-color: #c49020; color: #ffe090; }
+[data-ui-theme="midnight"] .chip             { background: #28201a; border-color: #332810; color: #c0a878; }
+[data-ui-theme="midnight"] .chip.on          { background: #3a2e08; border-color: #c49020; color: #ffe090; }
+[data-ui-theme="midnight"] .vbtn             { background: #28201a; border-color: #332810; color: #c0a878; }
+[data-ui-theme="midnight"] .vbtn:hover       { background: #3d3020; color: #ede8e0; }
+
+/* Navy — blue accent */
+[data-ui-theme="navy"] .band-btn         { background: #081422; border-color: #1c3660; color: #6898c8; }
+[data-ui-theme="navy"] .band-btn.active  { background: #1a4090; border-color: #388bfd; color: #a5d6ff; }
+[data-ui-theme="navy"] .band-btn:hover   { background: #1c3660; color: #c8dff0; }
+[data-ui-theme="navy"] .mode-btn         { background: #081422; border-color: #1c3660; color: #6898c8; }
+[data-ui-theme="navy"] .mode-btn.active  { background: #1a4090; border-color: #388bfd; color: #a5d6ff; }
+[data-ui-theme="navy"] .mode-btn:hover   { background: #1c3660; color: #c8dff0; }
+[data-ui-theme="navy"] .sbtn             { background: #081422; border-color: #1c3660; color: #6898c8; }
+[data-ui-theme="navy"] .sbtn.active      { background: #1a4090; border-color: #388bfd; color: #a5d6ff; }
+[data-ui-theme="navy"] .f-btn            { background: #081422; border-color: #1c3660; color: #6898c8; }
+[data-ui-theme="navy"] .f-btn.active     { background: #1a4090; border-color: #388bfd; color: #a5d6ff; }
+[data-ui-theme="navy"] .chip             { background: #081422; border-color: #1c3660; color: #6898c8; }
+[data-ui-theme="navy"] .chip.on          { background: #0a2040; border-color: #388bfd; color: #79c0ff; }
+[data-ui-theme="navy"] .vbtn             { background: #081422; border-color: #1c3660; color: #6898c8; }
+[data-ui-theme="navy"] .vbtn:hover       { background: #1c3660; color: #c8dff0; }
+
+/* Forest — green accent */
+[data-ui-theme="forest"] .band-btn         { background: #091508; border-color: #163d1c; color: #60a868; }
+[data-ui-theme="forest"] .band-btn.active  { background: #1a5c24; border-color: #3fb950; color: #7ce895; }
+[data-ui-theme="forest"] .band-btn:hover   { background: #163d1c; color: #c0e8c4; }
+[data-ui-theme="forest"] .mode-btn         { background: #091508; border-color: #163d1c; color: #60a868; }
+[data-ui-theme="forest"] .mode-btn.active  { background: #1a5c24; border-color: #3fb950; color: #7ce895; }
+[data-ui-theme="forest"] .mode-btn:hover   { background: #163d1c; color: #c0e8c4; }
+[data-ui-theme="forest"] .sbtn             { background: #091508; border-color: #163d1c; color: #60a868; }
+[data-ui-theme="forest"] .sbtn.active      { background: #1a5c24; border-color: #3fb950; color: #7ce895; }
+[data-ui-theme="forest"] .f-btn            { background: #091508; border-color: #163d1c; color: #60a868; }
+[data-ui-theme="forest"] .f-btn.active     { background: #1a5c24; border-color: #3fb950; color: #7ce895; }
+[data-ui-theme="forest"] .chip             { background: #091508; border-color: #163d1c; color: #60a868; }
+[data-ui-theme="forest"] .chip.on          { background: #0d3012; border-color: #3fb950; color: #56d364; }
+[data-ui-theme="forest"] .vbtn             { background: #091508; border-color: #163d1c; color: #60a868; }
+[data-ui-theme="forest"] .vbtn:hover       { background: #163d1c; color: #c0e8c4; }
+
+/* Charcoal — steel blue accent */
+[data-ui-theme="charcoal"] .band-btn         { background: #33373f; border-color: #484f5a; color: #a0a8b4; }
+[data-ui-theme="charcoal"] .band-btn.active  { background: #2a4a80; border-color: #5a8fd8; color: #c0d8f8; }
+[data-ui-theme="charcoal"] .band-btn:hover   { background: #484f5a; color: #e4e8ee; }
+[data-ui-theme="charcoal"] .mode-btn         { background: #33373f; border-color: #484f5a; color: #a0a8b4; }
+[data-ui-theme="charcoal"] .mode-btn.active  { background: #2a4a80; border-color: #5a8fd8; color: #c0d8f8; }
+[data-ui-theme="charcoal"] .mode-btn:hover   { background: #484f5a; color: #e4e8ee; }
+[data-ui-theme="charcoal"] .sbtn             { background: #33373f; border-color: #484f5a; color: #a0a8b4; }
+[data-ui-theme="charcoal"] .sbtn.active      { background: #2a4a80; border-color: #5a8fd8; color: #c0d8f8; }
+[data-ui-theme="charcoal"] .f-btn            { background: #33373f; border-color: #484f5a; color: #a0a8b4; }
+[data-ui-theme="charcoal"] .f-btn.active     { background: #2a4a80; border-color: #5a8fd8; color: #c0d8f8; }
+[data-ui-theme="charcoal"] .chip             { background: #33373f; border-color: #484f5a; color: #a0a8b4; }
+[data-ui-theme="charcoal"] .chip.on          { background: #1a3a60; border-color: #5a8fd8; color: #c0d8f8; }
+[data-ui-theme="charcoal"] .vbtn             { background: #33373f; border-color: #484f5a; color: #a0a8b4; }
+[data-ui-theme="charcoal"] .vbtn:hover       { background: #484f5a; color: #e4e8ee; }
+
+/* Warm — amber accent */
+[data-ui-theme="warm"] .band-btn         { background: #3a3028; border-color: #504030; color: #b09070; }
+[data-ui-theme="warm"] .band-btn.active  { background: #8a6010; border-color: #c49030; color: #ffe090; }
+[data-ui-theme="warm"] .band-btn:hover   { background: #504030; color: #efe8dc; }
+[data-ui-theme="warm"] .mode-btn         { background: #3a3028; border-color: #504030; color: #b09070; }
+[data-ui-theme="warm"] .mode-btn.active  { background: #8a6010; border-color: #c49030; color: #ffe090; }
+[data-ui-theme="warm"] .mode-btn:hover   { background: #504030; color: #efe8dc; }
+[data-ui-theme="warm"] .sbtn             { background: #3a3028; border-color: #504030; color: #b09070; }
+[data-ui-theme="warm"] .sbtn.active      { background: #8a6010; border-color: #c49030; color: #ffe090; }
+[data-ui-theme="warm"] .f-btn            { background: #3a3028; border-color: #504030; color: #b09070; }
+[data-ui-theme="warm"] .f-btn.active     { background: #8a6010; border-color: #c49030; color: #ffe090; }
+[data-ui-theme="warm"] .chip             { background: #3a3028; border-color: #504030; color: #b09070; }
+[data-ui-theme="warm"] .chip.on          { background: #3a2808; border-color: #c49030; color: #ffe090; }
+[data-ui-theme="warm"] .vbtn             { background: #3a3028; border-color: #504030; color: #b09070; }
+[data-ui-theme="warm"] .vbtn:hover       { background: #504030; color: #efe8dc; }
+
+/* Parchment — brown accent; light base for all buttons */
+[data-ui-theme="parchment"] .band-btn.active  { background: #b07830; border-color: #8a5c1c; color: #fff8e8; }
+[data-ui-theme="parchment"] .band-btn:hover   { background: #c8b890; color: #2c1e0e; }
+[data-ui-theme="parchment"] .f-btn            { background: #ddd0a0; border-color: #c0a870; color: #5a3a18; }
+[data-ui-theme="parchment"] .f-btn.active     { background: #b07830; border-color: #8a5c1c; color: #fff8e8; }
+[data-ui-theme="parchment"] .f-btn:hover      { background: #c8b890; color: #2c1e0e; }
+[data-ui-theme="parchment"] .chip             { background: #ddd0a0; border-color: #c0a870; color: #5a3a18; }
+[data-ui-theme="parchment"] .chip:hover       { background: #c8b890; color: #2c1e0e; }
+[data-ui-theme="parchment"] .chip.on          { background: #8a5c1c; border-color: #b07830; color: #fff8e8; }
+[data-ui-theme="parchment"] .chip.amber       { background: #8a5c1c; border-color: #b07830; color: #fff8e8; }
+[data-ui-theme="parchment"] .chip.blue        { background: #3a5c8a; border-color: #5a8fd8; color: #c0d8f8; }
+[data-ui-theme="parchment"] .vbtn             { background: #ddd0a0; border-color: #c0a870; color: #5a3a18; }
+[data-ui-theme="parchment"] .vbtn:hover       { background: #c8b890; color: #2c1e0e; border-color: #b07830; }
+[data-ui-theme="parchment"] .ptt-btn          { background: #ddd0a0; border-color: #c0a870; color: #8b2010; }
+[data-ui-theme="parchment"] .tune-btn         { background: #ddd0a0; border-color: #c0a870; color: #6b4010; }
+
+/* Daylight — blue accent; light base for all buttons */
+[data-ui-theme="daylight"] .band-btn.active  { background: #0066cc; border-color: #0050a0; color: #ffffff; }
+[data-ui-theme="daylight"] .band-btn:hover   { background: #c0cad4; color: #1a2030; }
+[data-ui-theme="daylight"] .f-btn            { background: #dde3ea; border-color: #b0bcc8; color: #304060; }
+[data-ui-theme="daylight"] .f-btn.active     { background: #0066cc; border-color: #0050a0; color: #ffffff; }
+[data-ui-theme="daylight"] .f-btn:hover      { background: #c0cad4; color: #1a2030; }
+[data-ui-theme="daylight"] .chip             { background: #dde3ea; border-color: #b0bcc8; color: #304060; }
+[data-ui-theme="daylight"] .chip:hover       { background: #c0cad4; color: #1a2030; }
+[data-ui-theme="daylight"] .chip.on          { background: #0d4020; border-color: #3fb950; color: #7ce895; }
+[data-ui-theme="daylight"] .chip.amber       { background: #4a3000; border-color: #e3b341; color: #ffe090; }
+[data-ui-theme="daylight"] .chip.blue        { background: #0066cc; border-color: #0050a0; color: #ffffff; }
+[data-ui-theme="daylight"] .vbtn             { background: #dde3ea; border-color: #b0bcc8; color: #304060; }
+[data-ui-theme="daylight"] .vbtn:hover       { background: #c0cad4; color: #1a2030; border-color: #0066cc; }
+[data-ui-theme="daylight"] .ptt-btn          { background: #dde3ea; border-color: #b0bcc8; color: #8b1010; }
+[data-ui-theme="daylight"] .tune-btn         { background: #dde3ea; border-color: #b0bcc8; color: #704000; }
+
+/* Packers — gold accent; dark green base */
+[data-ui-theme="packers"] .band-btn.active  { background: #FFB612; border-color: #d49000; color: #1a2e26; }
+[data-ui-theme="packers"] .band-btn:hover   { background: #2e5c40; color: #f0f0e0; }
+[data-ui-theme="packers"] .f-btn            { background: #183028; border-color: #2e5c40; color: #90c8a0; }
+[data-ui-theme="packers"] .f-btn.active     { background: #FFB612; border-color: #d49000; color: #1a2e26; }
+[data-ui-theme="packers"] .f-btn:hover      { background: #2e5c40; color: #f0f0e0; }
+[data-ui-theme="packers"] .chip             { background: #183028; border-color: #2e5c40; color: #90c8a0; }
+[data-ui-theme="packers"] .chip:hover       { background: #2e5c40; color: #f0f0e0; }
+[data-ui-theme="packers"] .chip.on          { background: #4a5c10; border-color: #FFB612; color: #FFB612; }
+[data-ui-theme="packers"] .chip.amber       { background: #4a3800; border-color: #FFB612; color: #FFB612; }
+[data-ui-theme="packers"] .chip.blue        { background: #0a2050; border-color: #388bfd; color: #79c0ff; }
+[data-ui-theme="packers"] .vbtn             { background: #183028; border-color: #2e5c40; color: #90c8a0; }
+[data-ui-theme="packers"] .vbtn:hover       { background: #2e5c40; color: #f0f0e0; border-color: #FFB612; }
 </style>
 </head>
 <body style="touch-action: manipulation;">
@@ -5388,6 +5519,8 @@ window.addEventListener('load', () => {
   loadMemories();
   renderMemShort();
   applySettings();
+  // Highlight the correct band button for the initial VFO frequency
+  updBandButtons(S.vfoA);
 
   // Auto-connect if configured
   const cfg = getSettings();
