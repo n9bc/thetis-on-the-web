@@ -3282,7 +3282,7 @@ html[data-touch] #mobileDrawer { display: block; }
 <div class="top-bar">
   <div class="status-dot" id="sDot"></div>
   <span class="status-label" id="sLabel">OFFLINE</span>
-  <span class="callsign">Thetis On The Web · Beta v.0.48</span>
+  <span class="callsign">Thetis On The Web · Beta v.0.49</span>
   <a id="updateBadge" href="https://github.com/n9bc/thetis-on-the-web/releases" target="_blank"
      style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d4a1e;color:#56d364;
             border:1px solid #3fb950;border-radius:4px;padding:3px 10px;text-decoration:none;
@@ -4294,8 +4294,7 @@ function updTXRX() {
 }
 
 function updMode() {
-  // Sync active state on ALL mode buttons (desktop panel + mobile drawer)
-  document.querySelectorAll('.mode-btn[data-m]').forEach(b =>
+  document.querySelectorAll('#modeBtns .mode-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.m === S.mode));
 }
 
@@ -4453,8 +4452,7 @@ function vfoSwap(cmd) {
 
 function setStep(btn, hz) {
   S.step = hz;
-  // Update active state on ALL step buttons (desktop + mobile drawer)
-  document.querySelectorAll('.sbtn[data-hz]').forEach(b =>
+  document.querySelectorAll('#stepRow .sbtn').forEach(b =>
     b.classList.toggle('active', parseInt(b.dataset.hz)===hz));
   // Update tuning slider label to reflect new step size
   const lbl = el('tuningStepLabel');
@@ -4514,9 +4512,8 @@ function bwToLoHi(bw) {
 }
 
 function setFilt(btn) {
-  // Sync active state on ALL filter buttons (desktop + mobile drawer)
-  document.querySelectorAll('.f-btn[data-bw]').forEach(b =>
-    b.classList.toggle('active', b.dataset.bw === btn.dataset.bw));
+  document.querySelectorAll('#filtG .f-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
   const bw = parseInt(btn.dataset.bw);
   const [lo, hi] = bwToLoHi(bw);
   el('flo').value =lo;
@@ -7085,7 +7082,7 @@ function saveSettings() {
   DB_MAX = cfg.dbCeil;
   applyColorTheme(cfg.colorTheme);
   const csEl = document.querySelector('.callsign');
-  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.48';
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.49';
   // Apply panel visibility
   applyPanelVisibility();
   // Apply greyline
@@ -7161,7 +7158,7 @@ function applySettings() {
   applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
-    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.48';
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.49';
   }
   // Panel visibility
   applyPanelVisibility();
@@ -7450,7 +7447,7 @@ function loadState() {
 // Fetches the raw totw.html from GitHub once on load and compares the version string.
 // Shows a badge in the top bar if a newer version is available.
 (function checkForUpdate() {
-  // Extract current version number from the page title string (e.g. "Beta v.0.48" → 39)
+  // Extract current version number from the page title string (e.g. "Beta v.0.49" → 39)
   const match = document.title.match(/Beta v\.0\.(\d+)/) ||
                 (document.querySelector('.callsign') || {}).textContent?.match(/Beta v\.0\.(\d+)/);
   const currentNum = match ? parseInt(match[1]) : 0;
