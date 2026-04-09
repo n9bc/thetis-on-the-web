@@ -3204,13 +3204,20 @@ html[data-touch] body { padding-bottom: 120px; }
 <div class="top-bar">
   <div class="status-dot" id="sDot"></div>
   <span class="status-label" id="sLabel">OFFLINE</span>
-  <span class="callsign">Thetis On The Web · Beta v.0.42</span>
+  <span class="callsign">Thetis On The Web · Beta v.0.43</span>
   <a id="updateBadge" href="https://github.com/n9bc/thetis-on-the-web/releases" target="_blank"
      style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d4a1e;color:#56d364;
             border:1px solid #3fb950;border-radius:4px;padding:3px 10px;text-decoration:none;
             white-space:nowrap;cursor:pointer;" title="Click to open releases page">
     ⬆ Update available
   </a>
+  <!-- Shown alongside update badge — reminds user to back up settings before upgrading -->
+  <button id="exportBeforeUpdate" onclick="exportSettings()"
+     style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d2200;color:#e3b341;
+            border:1px solid #6a4e00;border-radius:4px;padding:3px 10px;cursor:pointer;white-space:nowrap;"
+     title="Export your settings now so you can restore them after upgrading">
+    ⬇ Backup settings
+  </button>
   <div class="spacer"></div>
   <span class="utc-clock" id="utcClock">00:00:00 UTC</span>
 
@@ -3853,17 +3860,21 @@ html[data-touch] body { padding-bottom: 120px; }
     <div class="modal-sep"></div>
 
     <!-- Settings export / import -->
-    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:10px;letter-spacing:0.04em;">Settings Backup</div>
+    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:6px;letter-spacing:0.04em;">Backup &amp; Restore</div>
+    <div style="font-size:10px;color:#e3b341;background:#2d2200;border:1px solid #6a4e00;border-radius:4px;padding:6px 9px;margin-bottom:8px;">
+      ⚠ Export your settings before upgrading to a new version — especially if you open TOTW as a local file.
+    </div>
     <div style="display:flex;gap:8px;margin-bottom:4px;">
-      <button class="mbtn" onclick="exportSettings()" style="flex:1;">Export to file…</button>
-      <button class="mbtn" onclick="el('importSettingsFile').click()" style="flex:1;">Import from file…</button>
+      <button class="mbtn" onclick="exportSettings()" style="flex:1;">⬇ Export settings…</button>
+      <button class="mbtn" onclick="el('importSettingsFile').click()" style="flex:1;">⬆ Import settings…</button>
       <!-- Hidden file input — triggered by the Import button above -->
       <input type="file" id="importSettingsFile" accept=".json" style="display:none" onchange="importSettings(this)">
     </div>
-    <div style="font-size:10px;color:#7d8590;margin-bottom:8px;">Export saves all settings to a JSON file you can share or move to another browser.</div>
+    <div style="font-size:10px;color:#7d8590;margin-bottom:8px;">Saves all settings, themes, and filters to a JSON file you can reload after upgrading.</div>
 
     <div class="modal-sep"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;">
+    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;">
+      <button class="mbtn danger" onclick="resetSettings()" style="margin-right:auto;">Reset to Defaults</button>
       <button class="mbtn" onclick="closeModal('settingsModal')">Cancel</button>
       <button class="mbtn pri" onclick="saveSettings()">Save</button>
     </div>
@@ -6977,7 +6988,7 @@ function saveSettings() {
   DB_MAX = cfg.dbCeil;
   applyColorTheme(cfg.colorTheme);
   const csEl = document.querySelector('.callsign');
-  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.42';
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.43';
   // Apply panel visibility
   applyPanelVisibility();
   // Apply greyline
@@ -7030,6 +7041,18 @@ function importSettings(input) {
   reader.readAsText(file);
 }
 
+// ── SETTINGS RESET ──
+// Clears all localStorage keys used by TOTW and reloads the page to apply defaults.
+// A confirmation dialog prevents accidental resets.
+function resetSettings() {
+  if (!confirm('Reset ALL settings, layout, and state to defaults?\n\nThis cannot be undone — export first if you want to keep your settings.')) return;
+  localStorage.removeItem('totw_cfg_v1');  // user preferences, themes, DX filters
+  localStorage.removeItem('totw_v1');       // runtime state: VFO, mode, step, panel layout
+  // Note: memories (totw_mem_v1) are intentionally kept — use the Memories panel to clear those
+  log('sys', 'Settings reset to defaults — reloading…');
+  setTimeout(() => location.reload(), 600);
+}
+
 function applySettings() {
   const cfg = getSettings();
   showDigMarkers = cfg.digMarkers !== false;
@@ -7041,7 +7064,7 @@ function applySettings() {
   applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
-    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.42';
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.43';
   }
   // Panel visibility
   applyPanelVisibility();
@@ -7330,7 +7353,7 @@ function loadState() {
 // Fetches the raw totw.html from GitHub once on load and compares the version string.
 // Shows a badge in the top bar if a newer version is available.
 (function checkForUpdate() {
-  // Extract current version number from the page title string (e.g. "Beta v.0.42" → 39)
+  // Extract current version number from the page title string (e.g. "Beta v.0.43" → 39)
   const match = document.title.match(/Beta v\.0\.(\d+)/) ||
                 (document.querySelector('.callsign') || {}).textContent?.match(/Beta v\.0\.(\d+)/);
   const currentNum = match ? parseInt(match[1]) : 0;
@@ -7351,6 +7374,9 @@ function loadState() {
           badge.textContent = '⬆ Beta v.0.' + remoteNum + ' available';
           badge.style.display = 'inline-block';
         }
+        // Show the backup-settings reminder button alongside the update badge
+        const backupBtn = el('exportBeforeUpdate');
+        if (backupBtn) backupBtn.style.display = 'inline-block';
       }
     })
     .catch(() => {}); // silently ignore network errors
