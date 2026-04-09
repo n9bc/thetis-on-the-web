@@ -28,7 +28,7 @@ body {
   border-bottom: 1px solid #30363d;
   flex-wrap: wrap;
 }
-.callsign { font-size: 13px; color: #7d8590; }
+.callsign { font-size: 30px; color: #7d8590; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #3d444d; flex-shrink: 0; transition: background 0.3s; }
 .status-dot.rx  { background: #3fb950; box-shadow: 0 0 6px #3fb950; }
 .status-dot.tx  { background: #f85149; box-shadow: 0 0 6px #f85149; }
@@ -209,7 +209,13 @@ body {
   flex-shrink: 0;
 }
 .center-dock:empty { display: none; }
-.center-dock > .dock-panel { min-width: 200px; flex: 0 0 auto; }
+.center-dock > .dock-panel {
+  min-width: 200px;
+  flex: 0 0 auto;
+  /* Allow the user to drag-resize panels horizontally while docked below the waterfall */
+  resize: horizontal;
+  overflow: hidden;
+}
 
 .sec-title {
   font-size: 9px;
@@ -3145,7 +3151,7 @@ canvas.audio-cv { width: 100%; height: 100%; }
 <div class="top-bar">
   <div class="status-dot" id="sDot"></div>
   <span class="status-label" id="sLabel">OFFLINE</span>
-  <span class="callsign">Thetis On The Web</span>
+  <span class="callsign">Thetis On The Web · Beta 39</span>
   <div class="spacer"></div>
   <span class="utc-clock" id="utcClock">00:00:00 UTC</span>
 
@@ -3530,8 +3536,8 @@ canvas.audio-cv { width: 100%; height: 100%; }
             <input type="checkbox" id="dxTrackMode" onchange="dxApplyFilter()" style="cursor:pointer;"> Track Mode
           </label>
         </div>
-        <div id="dxList" style="max-height:130px;overflow-y:auto;font-family:'SF Mono',monospace;font-size:9px;line-height:1.8;"></div>
-        <div style="margin-top:3px;font-size:8px;color:#484f58;font-family:'SF Mono',monospace;text-align:right;" id="dxAge"></div>
+        <div id="dxList" style="max-height:130px;overflow-y:auto;font-family:'SF Mono',monospace;font-size:11px;line-height:1.8;"></div>
+        <div style="margin-top:3px;font-size:9px;color:#484f58;font-family:'SF Mono',monospace;text-align:right;" id="dxAge"></div>
       </div>
     </div>
 
@@ -3599,24 +3605,25 @@ canvas.audio-cv { width: 100%; height: 100%; }
       <input type="number" class="modal-in" id="cfgDbCeil" value="-30" min="-100" max="0"></div>
     </div>
     <label class="modal-lbl">Color Theme — Spectrum &amp; Waterfall</label>
-    <div style="display:flex;gap:6px;margin-bottom:4px;flex-wrap:wrap;" id="colorThemeBtns">
-      <button class="mbtn pri" data-theme="classic" onclick="setColorTheme(this)">Classic</button>
-      <button class="mbtn" data-theme="heat" onclick="setColorTheme(this)">Heat</button>
-      <button class="mbtn" data-theme="gray" onclick="setColorTheme(this)">Gray</button>
-      <button class="mbtn" data-theme="night" onclick="setColorTheme(this)">Night</button>
-      <button class="mbtn" data-theme="amber" onclick="setColorTheme(this)">Amber</button>
-    </div>
-    <label class="modal-lbl" style="font-size:10px;opacity:0.7;">NFL Team Spectrums</label>
-    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-      <button class="mbtn" data-theme="nfl_chiefs"   onclick="setColorTheme(this)" style="font-size:10px;">Chiefs</button>
-      <button class="mbtn" data-theme="nfl_ravens"   onclick="setColorTheme(this)" style="font-size:10px;">Ravens</button>
-      <button class="mbtn" data-theme="nfl_broncos"  onclick="setColorTheme(this)" style="font-size:10px;">Broncos</button>
-      <button class="mbtn" data-theme="nfl_seahawks" onclick="setColorTheme(this)" style="font-size:10px;">Seahawks</button>
-      <button class="mbtn" data-theme="nfl_dolphins" onclick="setColorTheme(this)" style="font-size:10px;">Dolphins</button>
-      <button class="mbtn" data-theme="nfl_raiders"  onclick="setColorTheme(this)" style="font-size:10px;">Raiders</button>
-      <button class="mbtn" data-theme="nfl_niners"   onclick="setColorTheme(this)" style="font-size:10px;">49ers</button>
-      <button class="mbtn" data-theme="nfl_packers"  onclick="setColorTheme(this)" style="font-size:10px;">Packers</button>
-    </div>
+    <select class="modal-in" id="cfgColorTheme" onchange="setColorTheme(this.value)" style="margin-bottom:8px;width:100%;cursor:pointer;">
+      <optgroup label="── Standard ──">
+        <option value="classic">Classic — blue trace</option>
+        <option value="heat">Heat — orange trace</option>
+        <option value="gray">Gray — gray trace</option>
+        <option value="night">Night — green trace</option>
+        <option value="amber">Amber — amber trace</option>
+      </optgroup>
+      <optgroup label="── NFL ──">
+        <option value="nfl_chiefs">Chiefs — black / crimson / gold</option>
+        <option value="nfl_ravens">Ravens — black / purple / gold</option>
+        <option value="nfl_broncos">Broncos — black / navy / orange</option>
+        <option value="nfl_seahawks">Seahawks — navy / green</option>
+        <option value="nfl_dolphins">Dolphins — black / teal / orange</option>
+        <option value="nfl_raiders">Raiders — black / silver</option>
+        <option value="nfl_niners">49ers — black / red / gold</option>
+        <option value="nfl_packers">Packers — dark green / gold</option>
+      </optgroup>
+    </select>
     <label class="modal-lbl">UI Color Theme</label>
     <select class="modal-in" id="cfgUITheme" onchange="applyUITheme(this.value)" style="margin-bottom:8px;width:100%;cursor:pointer;">
       <optgroup label="── General ──">
@@ -4010,6 +4017,8 @@ function parseTCI(msg) {
           const [lo, hi] = bwToLoHi(parseInt(ab.dataset.bw));
           el('flo').value =lo; el('fhi').value =hi;
         }
+        // Immediately re-filter DX spots if Track Mode is active
+        if (dxEnabled && (el('dxTrackMode') || {}).checked) dxApplyFilter();
       }
       break;
     case 'trx':
@@ -6208,6 +6217,9 @@ function drawDigMarkers(ctx, W, H, hzToX) {
 let dxSpots = [];       // filtered spots for display
 let dxAllSpots = [];    // raw spots from API
 let dxEnabled = false;
+let dxLabelHits = [];   // [{freq, x, y, w, h}] bounding boxes of drawn callsign pills, in canvas px
+// Tracks newly-arrived spots: key = "CALL|band" → { firstSeen: ms, acked: bool }
+const dxNewMap = new Map();
 let dxPollId = null;
 let dxLastFetch = 0;
 const DX_POLL_INTERVAL = 60000; // 60s
@@ -6231,19 +6243,37 @@ function fetchDXSpots() {
   fetch('https://spothole.app/api/v1/spots?limit=200')
     .then(r => r.json())
     .then(data => {
-      dxAllSpots = Array.isArray(data) ? data : [];
-      dxLastFetch = Date.now();
+      const incoming = Array.isArray(data) ? data : [];
+      const now = Date.now();
+
+      // Build set of keys that already existed before this fetch
+      const existingKeys = new Set(dxAllSpots.map(s =>
+        (s.dx_call || '').toUpperCase() + '|' + (s.band || '')));
+
+      // Mark any spot we haven't seen before as new
+      incoming.forEach(s => {
+        const key = (s.dx_call || '').toUpperCase() + '|' + (s.band || '');
+        if (!existingKeys.has(key) && !dxNewMap.has(key)) {
+          dxNewMap.set(key, { firstSeen: now, acked: false });
+        }
+      });
+
+      // Expire entries older than 90s to keep the map tidy
+      dxNewMap.forEach((v, k) => { if (now - v.firstSeen > 90000) dxNewMap.delete(k); });
+
+      dxAllSpots = incoming;
+      dxLastFetch = now;
       dxApplyFilter();
     })
     .catch(() => {});
 }
 
-// Map current mode to mode_type string
+// Map current TCI mode string to Spothole mode_type ('CW' | 'DATA' | 'SSB')
 function modeToModeType(m) {
   m = (m || '').toUpperCase();
-  if (['CWL','CWU'].includes(m)) return 'CW';
-  if (['DIGU','DIGL'].includes(m)) return 'DATA';
-  return 'SSB';
+  if (['CW','CWL','CWU','CWN'].includes(m)) return 'CW';
+  if (['DIGU','DIGL','DATA','RTTY','PSK','FT8','FT4','JS8','WSPR'].includes(m)) return 'DATA';
+  return 'SSB'; // USB, LSB, AM, FM, SAM, etc.
 }
 
 function dxApplyFilter() {
@@ -6267,7 +6297,7 @@ function dxApplyFilter() {
   dxSpots = dxAllSpots.filter(s => {
     // Track band / track mode (from dock panel checkboxes)
     if (trackBand && curBand && s.band !== curBand) return false;
-    if (trackMode && s.mode_type !== curModeType) return false;
+    if (trackMode && (s.mode_type || '').toUpperCase() !== curModeType && curModeType !== 'SSB') return false;
 
     // Max age
     if (maxAgeMins > 0 && s.time_iso) {
@@ -6298,7 +6328,7 @@ function dxApplyFilter() {
   // Deduplicate: keep only the most recent spot per dx_call per band.
   // The same station may appear on multiple bands (keep each), but only once per band.
   const seen = new Map();
-  dxSpots = filtered.filter(s => {
+  dxSpots = dxSpots.filter(s => {
     const key = (s.dx_call || '').toUpperCase() + '|' + (s.band || '');
     if (seen.has(key)) return false;
     seen.set(key, true);
@@ -6317,10 +6347,10 @@ function renderDXList() {
     const mhz = s.freq ? (s.freq / 1e6).toFixed(3) : '?';
     const time = s.time_iso ? s.time_iso.slice(11, 16) + 'Z' : '';
     return `<div style="cursor:pointer;padding:1px 2px;border-radius:2px;" onclick="dxTuneTo(${s.freq})" title="${s.de_call||''} → ${s.dx_call} @ ${mhz} MHz ${s.mode}">
-      <span style="color:${modeColor};min-width:32px;display:inline-block;">${(s.mode||'?').slice(0,4)}</span>
-      <span style="color:#58a6ff;min-width:44px;display:inline-block;">${mhz}</span>
-      <span style="color:#e6edf3;min-width:58px;display:inline-block;">${s.dx_call||''}</span>
-      <span style="color:#484f58;">${s.dx_flag||''} ${s.dx_country||''}</span>
+      <span style="color:${modeColor};min-width:38px;display:inline-block;">${(s.mode||'?').slice(0,4)}</span>
+      <span style="color:#58a6ff;min-width:52px;display:inline-block;">${mhz}</span>
+      <span style="color:#e6edf3;min-width:68px;display:inline-block;">${s.dx_call||''} ${s.dx_flag||''}</span>
+      <span style="color:#e6edf3;">${s.dx_country||''}</span>
     </div>`;
   }).join('');
   const age = dxLastFetch ? Math.round((Date.now() - dxLastFetch) / 1000) + 's ago' : '';
@@ -6354,6 +6384,7 @@ setInterval(() => {
 
 // Draw DX spots on spectrum — horizontal stacked callsigns just below freq labels
 function drawDXOverlay(ctx, W, H, hzToX) {
+  dxLabelHits = []; // reset hit areas each frame
   if (!dxEnabled || !dxSpots.length) return;
 
   ctx.font = 'bold 13px SF Mono, Consolas, monospace';
@@ -6367,7 +6398,12 @@ function drawDXOverlay(ctx, W, H, hzToX) {
     if (x < 1 || x > W - 1) continue;
     const mt = s.mode_type || 'SSB';
     const col = mt === 'DATA' ? '#ff8800' : mt === 'CW' ? '#3fb950' : '#79c0ff';
-    items.push({ x, col, call: (s.dx_call || '?').slice(0, 10), spot: s });
+    const flag = s.dx_flag || '';
+    const label = ((s.dx_call || '?').slice(0, 10) + (flag ? ' ' + flag : '')).trimEnd();
+    const dxKey = (s.dx_call || '').toUpperCase() + '|' + (s.band || '');
+    const newEntry = dxNewMap.get(dxKey);
+    const isNew = newEntry && !newEntry.acked && (Date.now() - newEntry.firstSeen) < 60000;
+    items.push({ x, col, call: label, spot: s, dxKey, isNew });
   }
   if (!items.length) return;
 
@@ -6417,12 +6453,23 @@ function drawDXOverlay(ctx, W, H, hzToX) {
 
     // Dark pill behind callsign text for readability
     const tw = ctx.measureText(item.call).width;
+    const pillX = item.x + 1, pillY = labelY - 12, pillW = tw + 6, pillH = 15;
     ctx.fillStyle = 'rgba(1,4,9,0.82)';
-    ctx.fillRect(item.x + 1, labelY - 12, tw + 6, 15);
+    ctx.fillRect(pillX, pillY, pillW, pillH);
 
     // Callsign — horizontal, readable
     ctx.fillStyle = item.col;
     ctx.fillText(item.call, item.x + 3, labelY);
+
+    // Yellow highlight border for spots that arrived in the last 60s and haven't been clicked
+    if (item.isNew) {
+      ctx.strokeStyle = '#ffe033';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(pillX - 1, pillY - 1, pillW + 2, pillH + 2);
+    }
+
+    // Store hit area so click handler can tune to this spot (and ack new-spot highlight)
+    dxLabelHits.push({ freq: item.spot.freq, x: pillX, y: pillY, w: pillW, h: pillH, dxKey: item.dxKey });
   }
 }
 
@@ -6461,6 +6508,26 @@ function drawDXOverlay(ctx, W, H, hzToX) {
       }
     });
     cv.addEventListener('mouseleave', () => { const t = el('dxTooltip'); if (t) t.style.display = 'none'; });
+
+    // Click on a callsign/flag pill to tune VFO A to that spot's frequency
+    cv.addEventListener('click', function(e) {
+      if (!dxEnabled || !dxLabelHits.length) return;
+      const rect = cv.getBoundingClientRect();
+      // Convert CSS click coords to canvas pixel coords
+      const scaleX = cv.width  / rect.width;
+      const scaleY = cv.height / rect.height;
+      const cx = (e.clientX - rect.left) * scaleX;
+      const cy = (e.clientY - rect.top)  * scaleY;
+      for (const hit of dxLabelHits) {
+        if (cx >= hit.x && cx <= hit.x + hit.w && cy >= hit.y && cy <= hit.y + hit.h) {
+          // Dismiss the new-spot yellow highlight when clicked
+          if (hit.dxKey && dxNewMap.has(hit.dxKey)) dxNewMap.get(hit.dxKey).acked = true;
+          dxTuneTo(hit.freq);
+          e.stopPropagation(); // don't also trigger spectrum drag-to-tune
+          return;
+        }
+      }
+    });
   }
   // Attach after DOM is ready
   window.addEventListener('load', () => { attachDXHover('specC'); });
@@ -6721,11 +6788,12 @@ const COLOR_THEMES = {
 };
 let activeColorTheme = 'classic';
 
-function setColorTheme(btn) {
-  activeColorTheme = btn.dataset.theme;
-  // Sync pri state across both the standard buttons and the NFL buttons
-  document.querySelectorAll('[data-theme]').forEach(b =>
-    b.classList.toggle('pri', b.dataset.theme === activeColorTheme));
+function setColorTheme(name) {
+  // Accept either a string name or a legacy button element (backwards compat)
+  activeColorTheme = (typeof name === 'string') ? name : name.dataset.theme;
+  // Sync dropdown selector
+  const sel = el('cfgColorTheme');
+  if (sel) sel.value = activeColorTheme;
   applyColorTheme(activeColorTheme);
 }
 
@@ -6774,8 +6842,8 @@ function loadSettingsUI() {
   v('cfgDbFloor', cfg.dbFloor || -140);
   v('cfgDbCeil', cfg.dbCeil || -30);
   activeColorTheme = cfg.colorTheme || 'classic';
-  document.querySelectorAll('[data-theme]').forEach(b =>
-    b.classList.toggle('pri', b.dataset.theme === activeColorTheme));
+  const colorSel = el('cfgColorTheme');
+  if (colorSel) colorSel.value = activeColorTheme;
   activeUITheme = cfg.uiTheme || 'dark';
   const uiSel = el('cfgUITheme');
   if (uiSel) uiSel.value = activeUITheme;
@@ -6838,7 +6906,7 @@ function saveSettings() {
   DB_MAX = cfg.dbCeil;
   applyColorTheme(cfg.colorTheme);
   const csEl = document.querySelector('.callsign');
-  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web';
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta 39';
   // Apply panel visibility
   applyPanelVisibility();
   // Apply greyline
@@ -6902,7 +6970,7 @@ function applySettings() {
   applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
-    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web';
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta 39';
   }
   // Panel visibility
   applyPanelVisibility();
@@ -7133,6 +7201,8 @@ function saveState() {
         specHeight: document.getElementById('specWrap') ? document.getElementById('specWrap').offsetHeight : 300,
         wfHeight: document.getElementById('wfWrap') ? document.getElementById('wfWrap').offsetHeight : 200,
         wsUrl: el('hostInput').value,
+        // Save which panels are in the center-bottom dock zone and in what order
+        centerDockIds: Array.from(document.querySelectorAll('#centerDock > .dock-panel')).map(p => p.id),
       }));
     } catch(e) {}
   }, 400);
@@ -7173,6 +7243,16 @@ function loadState() {
   const wfWrapEl = document.getElementById('wfWrap');
   if (wfWrapEl && p.wfHeight) wfWrapEl.style.height = Math.max(40, Math.min(500, p.wfHeight)) + 'px';
   if (p.wsUrl) el('hostInput').value = p.wsUrl;
+  // Restore panels that were dragged to the center-bottom dock zone
+  if (Array.isArray(p.centerDockIds) && p.centerDockIds.length) {
+    const centerDock = el('centerDock');
+    if (centerDock) {
+      p.centerDockIds.forEach(id => {
+        const panel = el(id);
+        if (panel) centerDock.appendChild(panel);
+      });
+    }
+  }
 }
 
 // ── INIT ──
@@ -7612,7 +7692,8 @@ window.addEventListener('load', () => {
     if (dropTarget) {
       const { parent, before } = dropTarget;
       parent.insertBefore(dragPanel, before || null);
-      // Re-insert indicators (panel order changed)
+      // Persist the new dock layout (including center-dock membership)
+      saveState();
     }
 
     removeIndicators();
