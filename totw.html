@@ -664,6 +664,59 @@ canvas.audio-cv { width: 100%; height: 100%; }
   .spectrum-wrap { min-height: 180px; }
 }
 
+/* ── MOBILE TOUCH BAR ── */
+/* Fixed bar at the bottom of the screen — only visible on touch devices.
+   JS sets data-touch on <html> when navigator.maxTouchPoints > 0. */
+#mobileBar {
+  display: none;           /* hidden by default; shown only by html[data-touch] below */
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 110px;
+  background: #161b22;
+  border-top: 2px solid #30363d;
+  z-index: 900;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  gap: 12px;
+}
+/* Activated by JS touch-detection */
+html[data-touch] #mobileBar { display: flex; }
+/* Push page content up so spectrum isn't hidden behind the bar */
+html[data-touch] body { padding-bottom: 120px; }
+
+/* VFO rotary knob canvas */
+#vfoKnob { touch-action: none; cursor: grab; display: block; }
+#vfoKnob:active { cursor: grabbing; }
+
+/* Center readout inside the mobile bar */
+#mobileBarCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+#mobileBarFreq {
+  font-family: 'SF Mono','Consolas',monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: #58a6ff;
+  letter-spacing: 0.04em;
+}
+#mobileBarInfo {
+  font-family: 'SF Mono','Consolas',monospace;
+  font-size: 12px;
+  color: #7d8590;
+  letter-spacing: 0.06em;
+}
+/* PTT button in mobile bar */
+#pttBtnMobile {
+  width: 90px; height: 84px;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
 /* ── UTC CLOCK ── */
 .utc-clock { font-family:'SF Mono','Consolas',monospace; font-size:15px; color:#58a6ff; background:#21262d; border:1px solid #30363d; padding:3px 10px; border-radius:4px; white-space:nowrap; letter-spacing:0.06em; font-weight:600; }
 
@@ -3151,7 +3204,7 @@ canvas.audio-cv { width: 100%; height: 100%; }
 <div class="top-bar">
   <div class="status-dot" id="sDot"></div>
   <span class="status-label" id="sLabel">OFFLINE</span>
-  <span class="callsign">Thetis On The Web · Beta v.0.41</span>
+  <span class="callsign">Thetis On The Web · Beta v.0.42</span>
   <a id="updateBadge" href="https://github.com/n9bc/thetis-on-the-web/releases" target="_blank"
      style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d4a1e;color:#56d364;
             border:1px solid #3fb950;border-radius:4px;padding:3px 10px;text-decoration:none;
@@ -4340,6 +4393,7 @@ function setMode(m) {
     send('rx_filter_band:0,' + lo + ',' + hi + ';');
   }
   saveState();
+  updateMobileBar(); // keep mobile bar mode readout current
 }
 
 // ── ANF ──
@@ -6923,7 +6977,7 @@ function saveSettings() {
   DB_MAX = cfg.dbCeil;
   applyColorTheme(cfg.colorTheme);
   const csEl = document.querySelector('.callsign');
-  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.41';
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.42';
   // Apply panel visibility
   applyPanelVisibility();
   // Apply greyline
@@ -6987,7 +7041,7 @@ function applySettings() {
   applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
-    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.41';
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.42';
   }
   // Panel visibility
   applyPanelVisibility();
@@ -7276,7 +7330,7 @@ function loadState() {
 // Fetches the raw totw.html from GitHub once on load and compares the version string.
 // Shows a badge in the top bar if a newer version is available.
 (function checkForUpdate() {
-  // Extract current version number from the page title string (e.g. "Beta v.0.41" → 39)
+  // Extract current version number from the page title string (e.g. "Beta v.0.42" → 39)
   const match = document.title.match(/Beta v\.0\.(\d+)/) ||
                 (document.querySelector('.callsign') || {}).textContent?.match(/Beta v\.0\.(\d+)/);
   const currentNum = match ? parseInt(match[1]) : 0;
@@ -7439,9 +7493,43 @@ window.addEventListener('load', () => {
       e.preventDefault();
     }, { passive: false });
 
+    // Track pinch state for two-finger zoom on the spectrum canvas
+    let pinchStartDist = 0;
+    let pinchStartZoom = 1;
+    let isPinching = false;
+
     cv.addEventListener('touchmove', function(e) {
       if (!bpDraggingInProgress) return;
       e.preventDefault();
+
+      // ── Two-finger pinch: zoom the panadapter in/out ──────────────────────
+      // Mirrors the Ctrl+scroll zoom formula so the same zoom levels are used.
+      if (e.touches.length === 2) {
+        const t0 = e.touches[0], t1 = e.touches[1];
+        const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+        if (!isPinching) {
+          // First frame of pinch — record baseline
+          isPinching = true;
+          pinchStartDist = dist;
+          pinchStartZoom = specZoom;
+          dragMoved = true; // suppress tap-to-tune on release
+        }
+        // Scale factor relative to when the pinch started
+        const scale = dist / pinchStartDist;
+        let newZoom = pinchStartZoom * scale;
+        // Snap to nearest power-of-2 zoom level (1, 2, 4, 8, 16, 32)
+        newZoom = Math.max(1, Math.min(32, newZoom));
+        newZoom = Math.pow(2, Math.round(Math.log2(newZoom)));
+        specZoom = newZoom;
+        // Centre the zoomed view on VFO A frequency
+        if (specZoom > 1) specZoomCentre = S.vfoA;
+        else specZoomCentre = S.iqCentre;
+        return; // don't process single-touch tune while pinching
+      }
+
+      // ── One-finger swipe: step tune (vertical) or drag tune (horizontal) ──
+      isPinching = false; // reset pinch state when fingers reduce to one
+
       const touch = e.touches[0];
       const dx = touch.clientX - dragStartX;
       const dy = touch.clientY - dragStartY;
@@ -7471,6 +7559,7 @@ window.addEventListener('load', () => {
     cv.addEventListener('touchend', function(e) {
       if (!bpDraggingInProgress) return;
       bpDraggingInProgress = false;
+      isPinching = false; // always reset pinch state on lift
 
       if (dragMoved && bpDragHzOffset !== 0) {
         const newVfo = window._previewHzA || Math.max(0, snapToStep(S.vfoA + bpDragHzOffset, S.step));
@@ -7899,6 +7988,181 @@ document.addEventListener('wheel', function(e) {
 // ── RAF CLEANUP ──
 // Cancel all animation loops when the tab/window is closed so the browser
 // doesn't keep running draw callbacks on an unloaded page.
+// ── MOBILE TOUCH OPTIMIZATIONS ──────────────────────────────────────────────
+
+// Detect touch-capable device and activate touch layout via CSS data attribute.
+// This runs immediately so CSS transitions don't flash.
+if (navigator.maxTouchPoints > 0 || ('ontouchstart' in window)) {
+  document.documentElement.setAttribute('data-touch', '1');
+  // Initialise VFO knob once DOM is ready (it may already be ready at this point)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initVfoKnob);
+  } else {
+    initVfoKnob();
+  }
+}
+
+// ── updateMobileBar ──────────────────────────────────────────────────────────
+// Keeps the mobile bar frequency and mode readouts in sync with VFO A.
+// Called by setVfoDisp hook and mode-change events.
+function updateMobileBar() {
+  const freqEl = el('mobileBarFreq');
+  const infoEl = el('mobileBarInfo');
+  if (!freqEl) return;
+
+  // Format: "14.225.00" — whole MHz . first 3 dec . last 2 dec
+  const hz = S.vfoA || 0;
+  const mhz = hz / 1e6;
+  const whole = Math.floor(mhz).toString();
+  const dec = mhz.toFixed(4).split('.')[1];          // "2250" for 14.2250 MHz
+  freqEl.textContent = whole + '.' + dec.slice(0, 3) + '.' + dec.slice(3);
+
+  // Mode and band info
+  if (infoEl) {
+    const bandEl = document.querySelector('.band-btn.active');
+    const bandLabel = bandEl ? bandEl.dataset.band : '';
+    infoEl.textContent = (S.mode || 'USB') + (bandLabel ? ' · ' + bandLabel : '');
+  }
+}
+
+// Hook into setVfoDisp so the mobile bar stays current whenever VFO changes
+const _origSetVfoDisp = setVfoDisp;
+function setVfoDisp(vfo, hz) {
+  _origSetVfoDisp(vfo, hz);
+  if (vfo === 'A') updateMobileBar();
+}
+
+// ── initVfoKnob ──────────────────────────────────────────────────────────────
+// Draws a canvas-based rotary knob and maps touch rotation to VFO frequency.
+// Full revolution (2π rad) = 100 tune steps in the current step size.
+function initVfoKnob() {
+  const canvas = el('vfoKnob');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let knobAngle = -Math.PI / 2;  // 12 o'clock start position
+  let lastTouchAngle = null;
+  let knobTouchId = null;
+
+  // Draw the knob face — called on every touch move to animate the notch
+  function drawKnob(angle) {
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H / 2;
+    const R = Math.min(W, H) / 2 - 3;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Outer bezel ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fillStyle = '#21262d';
+    ctx.fill();
+    ctx.strokeStyle = '#388bfd';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Inner knob body
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 0.76, 0, Math.PI * 2);
+    ctx.fillStyle = '#2d333b';
+    ctx.fill();
+
+    // Tick marks around the bezel (every 30°)
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      const r1 = R * 0.88, r2 = R * 0.98;
+      ctx.beginPath();
+      ctx.moveTo(cx + r1 * Math.cos(a), cy + r1 * Math.sin(a));
+      ctx.lineTo(cx + r2 * Math.cos(a), cy + r2 * Math.sin(a));
+      ctx.strokeStyle = '#484f58';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Notch line — rotates with touch angle to show knob position
+    const notchLen = R * 0.62;
+    ctx.beginPath();
+    ctx.moveTo(cx + 4 * Math.cos(angle), cy + 4 * Math.sin(angle));
+    ctx.lineTo(cx + notchLen * Math.cos(angle), cy + notchLen * Math.sin(angle));
+    ctx.strokeStyle = '#58a6ff';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Center dot
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#58a6ff';
+    ctx.fill();
+  }
+
+  drawKnob(knobAngle);
+
+  // Touch start — record the initial angle from canvas centre to finger
+  canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    knobTouchId = t.identifier;
+    const rect = canvas.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    lastTouchAngle = Math.atan2(t.clientY - cy, t.clientX - cx);
+  }, { passive: false });
+
+  // Touch move — compute angle delta → tune step → send VFO
+  canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    if (lastTouchAngle === null) return;
+
+    // Find our tracked finger in the changed touches list
+    let t = null;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === knobTouchId) { t = e.changedTouches[i]; break; }
+    }
+    if (!t) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const curAngle = Math.atan2(t.clientY - cy, t.clientX - cx);
+
+    // Angle delta with wrap-around correction (±π boundary)
+    let delta = curAngle - lastTouchAngle;
+    if (delta >  Math.PI) delta -= 2 * Math.PI;
+    if (delta < -Math.PI) delta += 2 * Math.PI;
+
+    lastTouchAngle = curAngle;
+    knobAngle += delta;
+    drawKnob(knobAngle);
+
+    // Map: one full revolution = 100 tune steps (speed-sensitive)
+    const stepsFloat = (delta / (2 * Math.PI)) * 100;
+    const hzDelta = stepsFloat * (S.step || 500);
+    const newVfo = Math.max(0, snapToStep(S.vfoA + hzDelta, S.step || 500));
+    S.vfoA = newVfo;
+    setVfoDisp('A', newVfo);
+
+    // Rate-limit TCI sends to ~20/sec to avoid flooding the radio
+    const now = Date.now();
+    if (!window._knobLastSend || now - window._knobLastSend > 50) {
+      send('vfo:0,0,' + newVfo + ';');
+      bpIgnoreVfoUpdateUntil = now + 500;
+      window._knobLastSend = now;
+    }
+  }, { passive: false });
+
+  // Touch end — flush final frequency to radio
+  canvas.addEventListener('touchend', function() {
+    if (S.vfoA > 0) {
+      send('vfo:0,0,' + S.vfoA + ';');
+      bpIgnoreVfoUpdateUntil = Date.now() + 500;
+    }
+    lastTouchAngle = null;
+    knobTouchId = null;
+  });
+}
+
+// ── END MOBILE TOUCH OPTIMIZATIONS ──────────────────────────────────────────
+
 window.addEventListener('unload', () => {
   cancelAnimationFrame(smRAF);
   cancelAnimationFrame(specRAF);
@@ -7906,6 +8170,32 @@ window.addEventListener('unload', () => {
 });
 
 </script>
+
+<!-- ── MOBILE TOUCH BAR ──
+     Shown only on touch-capable devices (html[data-touch] set by JS).
+     Left: rotary VFO knob canvas  |  Center: freq + mode readout  |  Right: PTT button -->
+<div id="mobileBar">
+
+  <!-- Rotary tuning knob: canvas drawn by initVfoKnob() in JS -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;">
+    <canvas id="vfoKnob" width="90" height="90"></canvas>
+    <span style="font-size:9px;color:#484f58;font-family:'SF Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;">TUNE</span>
+  </div>
+
+  <!-- Center: frequency and mode display (mirrors VFO A) -->
+  <div id="mobileBarCenter">
+    <div id="mobileBarFreq">14.225.00</div>
+    <div id="mobileBarInfo">USB · 20m</div>
+  </div>
+
+  <!-- PTT button — reuses the same ptt-btn class and startPTT/stopPTT functions -->
+  <button class="ptt-btn" id="pttBtnMobile"
+    ontouchstart="startPTT(event)" ontouchend="stopPTT(event)"
+    onmousedown="startPTT(event)" onmouseup="stopPTT(event)" onmouseleave="stopPTT(event)">
+    PTT
+  </button>
+
+</div>
 </body>
 </html>
 
