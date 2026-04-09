@@ -666,7 +666,7 @@ canvas.audio-cv { width: 100%; height: 100%; }
 
 /* ── MOBILE TOUCH BAR ── */
 /* Fixed bar at the bottom of the screen — only visible on touch devices.
-   JS sets data-touch on <html> when navigator.maxTouchPoints > 0. */
+   JS sets data-touch on <html> when (pointer: coarse) — touch-primary devices only. */
 #mobileBar {
   display: none;           /* hidden by default; shown only by html[data-touch] below */
   position: fixed;
@@ -3282,7 +3282,7 @@ html[data-touch] #mobileDrawer { display: block; }
 <div class="top-bar">
   <div class="status-dot" id="sDot"></div>
   <span class="status-label" id="sLabel">OFFLINE</span>
-  <span class="callsign">Thetis On The Web · Beta v.0.46</span>
+  <span class="callsign">Thetis On The Web · Beta v.0.47</span>
   <a id="updateBadge" href="https://github.com/n9bc/thetis-on-the-web/releases" target="_blank"
      style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d4a1e;color:#56d364;
             border:1px solid #3fb950;border-radius:4px;padding:3px 10px;text-decoration:none;
@@ -7085,7 +7085,7 @@ function saveSettings() {
   DB_MAX = cfg.dbCeil;
   applyColorTheme(cfg.colorTheme);
   const csEl = document.querySelector('.callsign');
-  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.46';
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.47';
   // Apply panel visibility
   applyPanelVisibility();
   // Apply greyline
@@ -7161,7 +7161,7 @@ function applySettings() {
   applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
-    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.46';
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.47';
   }
   // Panel visibility
   applyPanelVisibility();
@@ -7450,7 +7450,7 @@ function loadState() {
 // Fetches the raw totw.html from GitHub once on load and compares the version string.
 // Shows a badge in the top bar if a newer version is available.
 (function checkForUpdate() {
-  // Extract current version number from the page title string (e.g. "Beta v.0.46" → 39)
+  // Extract current version number from the page title string (e.g. "Beta v.0.47" → 39)
   const match = document.title.match(/Beta v\.0\.(\d+)/) ||
                 (document.querySelector('.callsign') || {}).textContent?.match(/Beta v\.0\.(\d+)/);
   const currentNum = match ? parseInt(match[1]) : 0;
@@ -8115,7 +8115,11 @@ document.addEventListener('wheel', function(e) {
 
 // Detect touch-capable device and activate touch layout via CSS data attribute.
 // This runs immediately so CSS transitions don't flash.
-if (navigator.maxTouchPoints > 0 || ('ontouchstart' in window)) {
+// Touch detection: use (pointer: coarse) to identify genuine touch-primary devices
+// (phones and tablets). This correctly excludes Windows touchscreen laptops and
+// desktops where the primary pointer is still a mouse (pointer: fine), even if
+// navigator.maxTouchPoints > 0.
+if (window.matchMedia('(pointer: coarse)').matches) {
   document.documentElement.setAttribute('data-touch', '1');
   // Initialise VFO knob once DOM is ready (it may already be ready at this point)
   if (document.readyState === 'loading') {
