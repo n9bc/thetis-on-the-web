@@ -85,10 +85,11 @@ TOTW is a single HTML file. "Installation" is just downloading and opening it:
 | :--- | :--- | :--- |
 | N9BC | Brent | Project lead & idea man |
 | N8SDR | Rick | Contributor |
-| KC8YTK | Tim | Testing |
+| KC8TYK | Tim | Testing |
 | VK2LAT | Murry | Testing |
 | ON7OFF | Kurt | Contributor |
-| — | Claude.ai Sonnet 4.6 | AI development assistant |
+
+> 🤖 This project was built with the assistance of [Claude](https://claude.ai) (Anthropic Sonnet 4.6), which helped design, write, and debug the majority of the codebase through an AI-assisted development workflow.
 
 ---
 
