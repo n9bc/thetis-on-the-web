@@ -3151,7 +3151,7 @@ canvas.audio-cv { width: 100%; height: 100%; }
 <div class="top-bar">
   <div class="status-dot" id="sDot"></div>
   <span class="status-label" id="sLabel">OFFLINE</span>
-  <span class="callsign">Thetis On The Web · Beta v.0.40</span>
+  <span class="callsign">Thetis On The Web · Beta v.0.41</span>
   <a id="updateBadge" href="https://github.com/n9bc/thetis-on-the-web/releases" target="_blank"
      style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d4a1e;color:#56d364;
             border:1px solid #3fb950;border-radius:4px;padding:3px 10px;text-decoration:none;
@@ -3837,6 +3837,17 @@ canvas.audio-cv { width: 100%; height: 100%; }
       <span class="kbd">P</span><span class="kdesc">Toggle peak hold</span>
       <span class="kbd">?</span><span class="kdesc">This help overlay</span>
       <span class="kbd">Esc</span><span class="kdesc">Close modals / cancel</span>
+    </div>
+    <div style="margin-top:16px;border-top:1px solid #30363d;padding-top:12px;">
+      <div style="font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#484f58;margin-bottom:8px;">Contributors</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span class="kbd">N9BC</span><span class="kdesc">Brent</span>
+        <span class="kbd">N8SDR</span><span class="kdesc">Rick</span>
+        <span class="kbd">KC8YTK</span><span class="kdesc">Tim</span>
+        <span class="kbd">VK2LAT</span><span class="kdesc">Murry</span>
+        <span class="kbd">ON7OFF</span><span class="kdesc">Kurt</span>
+        <span class="kbd" style="font-size:9px;">Claude.ai</span><span class="kdesc">Sonnet 4.6</span>
+      </div>
     </div>
     <div style="text-align:right;margin-top:14px;">
       <button class="mbtn pri" onclick="closeModal('keysModal')">OK</button>
@@ -6912,7 +6923,7 @@ function saveSettings() {
   DB_MAX = cfg.dbCeil;
   applyColorTheme(cfg.colorTheme);
   const csEl = document.querySelector('.callsign');
-  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.40';
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.41';
   // Apply panel visibility
   applyPanelVisibility();
   // Apply greyline
@@ -6976,7 +6987,7 @@ function applySettings() {
   applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
-    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.40';
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.41';
   }
   // Panel visibility
   applyPanelVisibility();
@@ -7265,7 +7276,7 @@ function loadState() {
 // Fetches the raw totw.html from GitHub once on load and compares the version string.
 // Shows a badge in the top bar if a newer version is available.
 (function checkForUpdate() {
-  // Extract current version number from the page title string (e.g. "Beta v.0.40" → 39)
+  // Extract current version number from the page title string (e.g. "Beta v.0.41" → 39)
   const match = document.title.match(/Beta v\.0\.(\d+)/) ||
                 (document.querySelector('.callsign') || {}).textContent?.match(/Beta v\.0\.(\d+)/);
   const currentNum = match ? parseInt(match[1]) : 0;
