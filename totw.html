@@ -716,6 +716,84 @@ html[data-touch] body { padding-bottom: 120px; }
   font-size: 20px;
   flex-shrink: 0;
 }
+#pttBtnMobile.active { background: #da3633; border-color: #f85149; color: #fff; }
+
+/* Menu button in mobile bar */
+#mobileMenuBtn {
+  background: #21262d; border: 1px solid #30363d; color: #8b949e;
+  border-radius: 6px; padding: 5px 10px; font-size: 18px; cursor: pointer;
+  font-family: sans-serif; line-height: 1;
+}
+#mobileMenuBtn.open { border-color: #388bfd; color: #58a6ff; background: #1a2535; }
+
+/* ── MOBILE LAYOUT: hide desktop chrome, full-screen spectrum ── */
+/* These rules only activate when JS sets data-touch on <html>  */
+html[data-touch] .side-panel   { display: none !important; }
+html[data-touch] .freq-dock    { display: none !important; }
+html[data-touch] .center-dock  { display: none !important; }
+html[data-touch] .body-grid {
+  grid-template-columns: 1fr !important;
+  /* Fill viewport minus top bar (~50px) and fixed mobile bar (110px) */
+  height: calc(100dvh - 160px);
+}
+html[data-touch] .center { height: 100%; }
+/* Give spectrum most of the space; waterfall a comfortable slice */
+html[data-touch] .spectrum-wrap { flex: 3 1 0 !important; min-height: 0 !important; }
+html[data-touch] .wf-wrap       { flex: 1 1 0 !important; min-height: 60px !important; height: auto !important; }
+
+/* ── SLIDE-UP CONTROL DRAWER ── */
+#mobileDrawer {
+  display: none; /* JS shows this only on touch devices */
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 110px; /* sits just above the mobile bar */
+  background: #161b22;
+  border-top: 2px solid #388bfd;
+  border-radius: 14px 14px 0 0;
+  z-index: 870;
+  max-height: 65vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 16px 20px;
+  /* Closed: translated fully below the screen so it's invisible */
+  transform: translateY(calc(100% + 110px));
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+html[data-touch] #mobileDrawer { display: block; }
+#mobileDrawer.open { transform: translateY(0); }
+
+/* Dim overlay behind drawer */
+#mobileDrawerBackdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); z-index: 860;
+}
+#mobileDrawerBackdrop.open { display: block; }
+
+/* Drawer section labels */
+.mdrw-lbl {
+  font-size: 9px; color: #484f58;
+  font-family: 'SF Mono','Consolas',monospace;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  margin: 12px 0 5px; display: block;
+}
+.mdrw-lbl:first-child { margin-top: 0; }
+
+/* Drawer button rows — larger tap targets than desktop */
+.mdrw-row {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.mdrw-row .band-btn { padding: 8px 12px; font-size: 14px; min-height: 40px; }
+.mdrw-row .mode-btn { padding: 8px 14px; font-size: 14px; min-height: 40px; }
+.mdrw-row .f-btn    { padding: 8px 12px; font-size: 14px; min-height: 40px; }
+.mdrw-row .sbtn     { padding: 8px 14px; font-size: 14px; min-height: 40px; }
+
+/* AF Gain slider row in drawer */
+.mdrw-slider-row {
+  display: flex; align-items: center; gap: 10px; margin-top: 4px;
+}
+.mdrw-slider-row input[type=range] { flex: 1; height: 6px; }
+.mdrw-slider-row span { font-family: 'SF Mono','Consolas',monospace; font-size: 12px;
+  color: #e6edf3; min-width: 52px; text-align: right; }
 
 /* ── UTC CLOCK ── */
 .utc-clock { font-family:'SF Mono','Consolas',monospace; font-size:15px; color:#58a6ff; background:#21262d; border:1px solid #30363d; padding:3px 10px; border-radius:4px; white-space:nowrap; letter-spacing:0.06em; font-weight:600; }
@@ -3204,7 +3282,7 @@ html[data-touch] body { padding-bottom: 120px; }
 <div class="top-bar">
   <div class="status-dot" id="sDot"></div>
   <span class="status-label" id="sLabel">OFFLINE</span>
-  <span class="callsign">Thetis On The Web · Beta v.0.44</span>
+  <span class="callsign">Thetis On The Web · Beta v.0.45</span>
   <a id="updateBadge" href="https://github.com/n9bc/thetis-on-the-web/releases" target="_blank"
      style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d4a1e;color:#56d364;
             border:1px solid #3fb950;border-radius:4px;padding:3px 10px;text-decoration:none;
@@ -4211,10 +4289,13 @@ function updTXRX() {
   el('txrxDot').className = 'status-dot ' + (S.mox ? 'tx' : 'rx');
   el('txrxLabel').textContent = S.mox ? 'TX' : 'RX';
   el('pttBtn').classList.toggle('active', S.mox);
+  // Keep mobile bar PTT button state in sync
+  el('pttBtnMobile')?.classList.toggle('active', S.mox);
 }
 
 function updMode() {
-  document.querySelectorAll('#modeBtns .mode-btn').forEach(b =>
+  // Sync active state on ALL mode buttons (desktop panel + mobile drawer)
+  document.querySelectorAll('.mode-btn[data-m]').forEach(b =>
     b.classList.toggle('active', b.dataset.m === S.mode));
 }
 
@@ -4222,6 +4303,7 @@ function updMode() {
 
 function updTune() {
   el('tuneBtn').classList.toggle('active', S.tune);
+  el('tuneBtnMobile')?.classList.toggle('active', S.tune);
   // Only reset TX values when TUNE goes OFF so the S-meter keeps
   // showing power until the key actually drops.
   if (!S.tune) {
@@ -4371,7 +4453,8 @@ function vfoSwap(cmd) {
 
 function setStep(btn, hz) {
   S.step = hz;
-  document.querySelectorAll('#stepRow .sbtn').forEach(b =>
+  // Update active state on ALL step buttons (desktop + mobile drawer)
+  document.querySelectorAll('.sbtn[data-hz]').forEach(b =>
     b.classList.toggle('active', parseInt(b.dataset.hz)===hz));
   // Update tuning slider label to reflect new step size
   const lbl = el('tuningStepLabel');
@@ -4431,8 +4514,9 @@ function bwToLoHi(bw) {
 }
 
 function setFilt(btn) {
-  document.querySelectorAll('#filtG .f-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  // Sync active state on ALL filter buttons (desktop + mobile drawer)
+  document.querySelectorAll('.f-btn[data-bw]').forEach(b =>
+    b.classList.toggle('active', b.dataset.bw === btn.dataset.bw));
   const bw = parseInt(btn.dataset.bw);
   const [lo, hi] = bwToLoHi(bw);
   el('flo').value =lo;
@@ -4521,7 +4605,7 @@ function togTune() { S.tune=!S.tune; updTune(); send('tune:0,'+S.tune+';'); }
 function sl(k, v) {
   v = parseInt(v);
   const map = {
-    af:    () => { el('afV').textContent=v+' dB';     send('rx_volume:0,0,'+v+';'); },
+    af:    () => { el('afV').textContent=v+' dB'; const ms=el('afSliderMobile'); if(ms){ms.value=v;el('afVMobile').textContent=v+' dB';} send('rx_volume:0,0,'+v+';'); },
 
     drive: () => { el('drV').textContent=v+'%';       send('drive:0,'+v+';'); },
 
@@ -6989,7 +7073,7 @@ function saveSettings() {
   DB_MAX = cfg.dbCeil;
   applyColorTheme(cfg.colorTheme);
   const csEl = document.querySelector('.callsign');
-  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.44';
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.45';
   // Apply panel visibility
   applyPanelVisibility();
   // Apply greyline
@@ -7065,7 +7149,7 @@ function applySettings() {
   applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
-    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.44';
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.45';
   }
   // Panel visibility
   applyPanelVisibility();
@@ -7354,7 +7438,7 @@ function loadState() {
 // Fetches the raw totw.html from GitHub once on load and compares the version string.
 // Shows a badge in the top bar if a newer version is available.
 (function checkForUpdate() {
-  // Extract current version number from the page title string (e.g. "Beta v.0.44" → 39)
+  // Extract current version number from the page title string (e.g. "Beta v.0.45" → 39)
   const match = document.title.match(/Beta v\.0\.(\d+)/) ||
                 (document.querySelector('.callsign') || {}).textContent?.match(/Beta v\.0\.(\d+)/);
   const currentNum = match ? parseInt(match[1]) : 0;
@@ -8029,6 +8113,39 @@ if (navigator.maxTouchPoints > 0 || ('ontouchstart' in window)) {
   }
 }
 
+// ── AudioContext resume on touch ─────────────────────────────────────────────
+// Mobile browsers (iOS Safari, Android Chrome) suspend AudioContext until a
+// user gesture occurs. Resume it on every touchstart so audio plays as soon
+// as the user interacts with the page — even if the context was suspended
+// mid-session (e.g. after backgrounding the app).
+document.addEventListener('touchstart', function() {
+  if (S.audioCtx && S.audioCtx.state === 'suspended') {
+    S.audioCtx.resume().then(() => log('sys', 'AudioContext resumed via touch gesture'));
+  }
+}, { passive: true });
+
+// ── toggleMobileDrawer ───────────────────────────────────────────────────────
+// Opens/closes the slide-up controls drawer and syncs the menu button style.
+function toggleMobileDrawer() {
+  const drawer   = el('mobileDrawer');
+  const backdrop = el('mobileDrawerBackdrop');
+  const btn      = el('mobileMenuBtn');
+  if (!drawer) return;
+  const isOpen = drawer.classList.toggle('open');
+  backdrop.classList.toggle('open', isOpen);
+  btn.classList.toggle('open', isOpen);
+
+  // When opening, sync the mobile AF slider to the current desktop slider value
+  if (isOpen) {
+    const desktopSlider = el('afSlider');
+    const mobileSlider  = el('afSliderMobile');
+    if (desktopSlider && mobileSlider) {
+      mobileSlider.value = desktopSlider.value;
+      el('afVMobile').textContent = desktopSlider.value + ' dB';
+    }
+  }
+}
+
 // ── updateMobileBar ──────────────────────────────────────────────────────────
 // Keeps the mobile bar frequency and mode readouts in sync with VFO A.
 // Called by setVfoDisp hook and mode-change events.
@@ -8196,24 +8313,104 @@ window.addEventListener('unload', () => {
      Left: rotary VFO knob canvas  |  Center: freq + mode readout  |  Right: PTT button -->
 <div id="mobileBar">
 
-  <!-- Rotary tuning knob: canvas drawn by initVfoKnob() in JS -->
-  <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;">
-    <canvas id="vfoKnob" width="90" height="90"></canvas>
-    <span style="font-size:9px;color:#484f58;font-family:'SF Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;">TUNE</span>
+  <!-- Left: rotary VFO knob + controls drawer toggle stacked -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;">
+    <canvas id="vfoKnob" width="86" height="86"></canvas>
+    <button id="mobileMenuBtn" onclick="toggleMobileDrawer()">☰</button>
   </div>
 
-  <!-- Center: frequency and mode display (mirrors VFO A) -->
+  <!-- Center: VFO A frequency + mode/band readout -->
   <div id="mobileBarCenter">
     <div id="mobileBarFreq">14.225.00</div>
     <div id="mobileBarInfo">USB · 20m</div>
   </div>
 
-  <!-- PTT button — reuses the same ptt-btn class and startPTT/stopPTT functions -->
+  <!-- Right: PTT — uses setPTT(true/false), matching the desktop button exactly -->
   <button class="ptt-btn" id="pttBtnMobile"
-    ontouchstart="startPTT(event)" ontouchend="stopPTT(event)"
-    onmousedown="startPTT(event)" onmouseup="stopPTT(event)" onmouseleave="stopPTT(event)">
+    ontouchstart="event.preventDefault();setPTT(true);"
+    ontouchend="event.preventDefault();setPTT(false);"
+    onmousedown="setPTT(true)" onmouseup="setPTT(false)" onmouseleave="setPTT(false)">
     PTT
   </button>
+
+</div>
+
+<!-- ── MOBILE CONTROLS DRAWER ── -->
+<!-- Slide-up panel with band/mode/filter/step/AF controls. Shown only on touch devices. -->
+<div id="mobileDrawerBackdrop" onclick="toggleMobileDrawer()"></div>
+<div id="mobileDrawer">
+
+  <!-- Drag handle / close affordance -->
+  <div style="text-align:center;margin-bottom:10px;">
+    <div style="width:40px;height:4px;background:#30363d;border-radius:2px;display:inline-block;"></div>
+  </div>
+
+  <!-- Band -->
+  <span class="mdrw-lbl">Band</span>
+  <div class="mdrw-row">
+    <button class="band-btn" data-band="160m" data-freq="1900000">160m</button>
+    <button class="band-btn" data-band="80m"  data-freq="3700000">80m</button>
+    <button class="band-btn" data-band="60m"  data-freq="5330500">60m</button>
+    <button class="band-btn" data-band="40m"  data-freq="7200000">40m</button>
+    <button class="band-btn" data-band="30m"  data-freq="10130000">30m</button>
+    <button class="band-btn" data-band="20m"  data-freq="14225000">20m</button>
+    <button class="band-btn" data-band="17m"  data-freq="18130000">17m</button>
+    <button class="band-btn" data-band="15m"  data-freq="21300000">15m</button>
+    <button class="band-btn" data-band="12m"  data-freq="24940000">12m</button>
+    <button class="band-btn" data-band="10m"  data-freq="28500000">10m</button>
+    <button class="band-btn" data-band="6m"   data-freq="50200000">6m</button>
+  </div>
+
+  <!-- Mode -->
+  <span class="mdrw-lbl">Mode</span>
+  <div class="mdrw-row">
+    <button class="mode-btn" data-m="LSB"  onclick="setMode('LSB')">LSB</button>
+    <button class="mode-btn" data-m="USB"  onclick="setMode('USB')">USB</button>
+    <button class="mode-btn" data-m="CWL"  onclick="setMode('CWL')">CWL</button>
+    <button class="mode-btn" data-m="CWU"  onclick="setMode('CWU')">CWU</button>
+    <button class="mode-btn" data-m="AM"   onclick="setMode('AM')">AM</button>
+    <button class="mode-btn" data-m="NFM"  onclick="setMode('NFM')">FM</button>
+    <button class="mode-btn" data-m="DIGU" onclick="setMode('DIGU')">DIGU</button>
+    <button class="mode-btn" data-m="DIGL" onclick="setMode('DIGL')">DIGL</button>
+  </div>
+
+  <!-- Filter -->
+  <span class="mdrw-lbl">Filter</span>
+  <div class="mdrw-row">
+    <button class="f-btn" data-bw="8000"  onclick="setFilt(this)">8k</button>
+    <button class="f-btn" data-bw="6000"  onclick="setFilt(this)">6k</button>
+    <button class="f-btn" data-bw="4000"  onclick="setFilt(this)">4k</button>
+    <button class="f-btn" data-bw="3000"  onclick="setFilt(this)">3k</button>
+    <button class="f-btn" data-bw="2800"  onclick="setFilt(this)">2.8k</button>
+    <button class="f-btn" data-bw="1800"  onclick="setFilt(this)">1.8k</button>
+    <button class="f-btn" data-bw="500"   onclick="setFilt(this)">500</button>
+    <button class="f-btn" data-bw="250"   onclick="setFilt(this)">250</button>
+  </div>
+
+  <!-- Tune Step -->
+  <span class="mdrw-lbl">Tune Step</span>
+  <div class="mdrw-row">
+    <button class="sbtn" data-hz="100"  onclick="setStep(this,100)">100</button>
+    <button class="sbtn" data-hz="500"  onclick="setStep(this,500)">500</button>
+    <button class="sbtn" data-hz="1000" onclick="setStep(this,1000)">1k</button>
+    <button class="sbtn" data-hz="5000" onclick="setStep(this,5000)">5k</button>
+    <button class="sbtn" data-hz="9000" onclick="setStep(this,9000)">9k</button>
+  </div>
+
+  <!-- AF Gain -->
+  <span class="mdrw-lbl">AF Gain</span>
+  <div class="mdrw-slider-row">
+    <span style="font-size:11px;color:#7d8590;font-family:'SF Mono',monospace;">VOL</span>
+    <input type="range" min="-60" max="0" value="-10" step="1" id="afSliderMobile"
+      oninput="sl('af',this.value);el('afSlider').value=this.value;">
+    <span id="afVMobile">-10 dB</span>
+  </div>
+
+  <!-- TUNE + close row -->
+  <div style="display:flex;gap:8px;margin-top:14px;align-items:center;">
+    <button class="tune-btn" id="tuneBtnMobile" onclick="togTune()" style="flex:1;min-height:44px;font-size:15px;">TUNE</button>
+    <button onclick="toggleMobileDrawer()" style="flex:1;min-height:44px;font-size:14px;background:#21262d;border:1px solid #30363d;color:#7d8590;border-radius:6px;cursor:pointer;">✕ Close</button>
+  </div>
 
 </div>
 </body>
