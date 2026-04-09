@@ -3282,7 +3282,7 @@ html[data-touch] #mobileDrawer { display: block; }
 <div class="top-bar">
   <div class="status-dot" id="sDot"></div>
   <span class="status-label" id="sLabel">OFFLINE</span>
-  <span class="callsign">Thetis On The Web · Beta v.0.49</span>
+  <span class="callsign">Thetis On The Web · Beta v.0.50</span>
   <a id="updateBadge" href="https://github.com/n9bc/thetis-on-the-web/releases" target="_blank"
      style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d4a1e;color:#56d364;
             border:1px solid #3fb950;border-radius:4px;padding:3px 10px;text-decoration:none;
@@ -6473,7 +6473,7 @@ function dxApplyFilter() {
   dxSpots = dxAllSpots.filter(s => {
     // Track band / track mode (from dock panel checkboxes)
     if (trackBand && curBand && s.band !== curBand) return false;
-    if (trackMode && (s.mode_type || '').toUpperCase() !== curModeType && curModeType !== 'SSB') return false;
+    if (trackMode && (s.mode_type || '').toUpperCase() !== curModeType) return false;
 
     // Max age
     if (maxAgeMins > 0 && s.time_iso) {
@@ -7082,7 +7082,7 @@ function saveSettings() {
   DB_MAX = cfg.dbCeil;
   applyColorTheme(cfg.colorTheme);
   const csEl = document.querySelector('.callsign');
-  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.49';
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.50';
   // Apply panel visibility
   applyPanelVisibility();
   // Apply greyline
@@ -7158,7 +7158,7 @@ function applySettings() {
   applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
-    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.49';
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.50';
   }
   // Panel visibility
   applyPanelVisibility();
@@ -7447,7 +7447,7 @@ function loadState() {
 // Fetches the raw totw.html from GitHub once on load and compares the version string.
 // Shows a badge in the top bar if a newer version is available.
 (function checkForUpdate() {
-  // Extract current version number from the page title string (e.g. "Beta v.0.49" → 39)
+  // Extract current version number from the page title string (e.g. "Beta v.0.50" → 39)
   const match = document.title.match(/Beta v\.0\.(\d+)/) ||
                 (document.querySelector('.callsign') || {}).textContent?.match(/Beta v\.0\.(\d+)/);
   const currentNum = match ? parseInt(match[1]) : 0;
