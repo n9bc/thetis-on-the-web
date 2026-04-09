@@ -3282,7 +3282,7 @@ html[data-touch] #mobileDrawer { display: block; }
 <div class="top-bar">
   <div class="status-dot" id="sDot"></div>
   <span class="status-label" id="sLabel">OFFLINE</span>
-  <span class="callsign">Thetis On The Web · Beta v.0.45</span>
+  <span class="callsign">Thetis On The Web · Beta v.0.46</span>
   <a id="updateBadge" href="https://github.com/n9bc/thetis-on-the-web/releases" target="_blank"
      style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d4a1e;color:#56d364;
             border:1px solid #3fb950;border-radius:4px;padding:3px 10px;text-decoration:none;
@@ -4671,14 +4671,26 @@ let rxNextTime = 0;
 async function startRx() {
   try {
     if (S.audioCtx) { S.audioCtx.close(); }
-    S.audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+
+    // Reuse a pre-unlocked context if one was created by the iOS touch handler.
+    // This is the only reliable way to get audio on iOS Safari — the context must
+    // have been resume()d while a user-gesture event was on the call stack.
+    if (window._preUnlockedAudioCtx && window._preUnlockedAudioCtx.state !== 'closed') {
+      S.audioCtx = window._preUnlockedAudioCtx;
+      window._preUnlockedAudioCtx = null;
+      log('sys', 'Reusing pre-unlocked AudioContext (iOS) — state: ' + S.audioCtx.state);
+    } else {
+      S.audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+    }
+
     // Analyser for real-time spectrum display
     S.analyser = S.audioCtx.createAnalyser();
     S.analyser.fftSize = 2048;
     S.analyser.smoothingTimeConstant = 0.89;
     S.analyser.connect(S.audioCtx.destination);
 
-    // Chrome suspends AudioContext until user gesture — resume it
+    // On desktop Chrome the context may be suspended until first gesture — resume it.
+    // On iOS this should already be 'running' if the pre-unlock path was taken.
     if (S.audioCtx.state === 'suspended') {
       await S.audioCtx.resume();
       log('sys', 'AudioContext resumed from suspended state');
@@ -7073,7 +7085,7 @@ function saveSettings() {
   DB_MAX = cfg.dbCeil;
   applyColorTheme(cfg.colorTheme);
   const csEl = document.querySelector('.callsign');
-  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.45';
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.46';
   // Apply panel visibility
   applyPanelVisibility();
   // Apply greyline
@@ -7149,7 +7161,7 @@ function applySettings() {
   applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
-    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.45';
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.46';
   }
   // Panel visibility
   applyPanelVisibility();
@@ -7438,7 +7450,7 @@ function loadState() {
 // Fetches the raw totw.html from GitHub once on load and compares the version string.
 // Shows a badge in the top bar if a newer version is available.
 (function checkForUpdate() {
-  // Extract current version number from the page title string (e.g. "Beta v.0.45" → 39)
+  // Extract current version number from the page title string (e.g. "Beta v.0.46" → 39)
   const match = document.title.match(/Beta v\.0\.(\d+)/) ||
                 (document.querySelector('.callsign') || {}).textContent?.match(/Beta v\.0\.(\d+)/);
   const currentNum = match ? parseInt(match[1]) : 0;
@@ -8113,14 +8125,36 @@ if (navigator.maxTouchPoints > 0 || ('ontouchstart' in window)) {
   }
 }
 
-// ── AudioContext resume on touch ─────────────────────────────────────────────
-// Mobile browsers (iOS Safari, Android Chrome) suspend AudioContext until a
-// user gesture occurs. Resume it on every touchstart so audio plays as soon
-// as the user interacts with the page — even if the context was suspended
-// mid-session (e.g. after backgrounding the app).
+// ── iOS AudioContext unlock ───────────────────────────────────────────────────
+// iOS Safari (and some Android browsers) require AudioContext.resume() to be
+// called synchronously inside a user-gesture event handler. The TCI audio path
+// creates the AudioContext from a WebSocket callback — not a gesture — so it
+// lands in 'suspended' state and can never be resumed automatically.
+//
+// Strategy:
+//   1. On the very first touchstart, eagerly create an AudioContext and resume()
+//      it while we're still inside the gesture. Store it in _preUnlockedAudioCtx.
+//   2. startRx() checks for _preUnlockedAudioCtx first and reuses it, so the
+//      context is already running by the time audio frames arrive.
+//   3. On every subsequent touch, if S.audioCtx is suspended (e.g. after the
+//      app was backgrounded), resume it — again while inside the gesture.
+let _iosAudioUnlocked = false;
 document.addEventListener('touchstart', function() {
+  // Case A: audio already running but suspended (e.g. phone call / background)
   if (S.audioCtx && S.audioCtx.state === 'suspended') {
-    S.audioCtx.resume().then(() => log('sys', 'AudioContext resumed via touch gesture'));
+    S.audioCtx.resume().then(() => log('sys', 'AudioContext resumed via touch'));
+    return;
+  }
+  // Case B: first touch before any connection — pre-unlock a context for startRx()
+  if (!_iosAudioUnlocked && !S.audioCtx) {
+    _iosAudioUnlocked = true;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+      ctx.resume().then(() => {
+        window._preUnlockedAudioCtx = ctx;
+        log('sys', 'iOS: AudioContext pre-unlocked and ready');
+      }).catch(() => {});
+    } catch(e) {}
   }
 }, { passive: true });
 
