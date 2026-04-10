@@ -3282,7 +3282,7 @@ html[data-touch] #mobileDrawer { display: block; }
 <div class="top-bar">
   <div class="status-dot" id="sDot"></div>
   <span class="status-label" id="sLabel">OFFLINE</span>
-  <span class="callsign">Thetis On The Web · Beta v.0.50</span>
+  <span class="callsign">Thetis On The Web · Beta v.0.51</span>
   <a id="updateBadge" href="https://github.com/n9bc/thetis-on-the-web/releases" target="_blank"
      style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d4a1e;color:#56d364;
             border:1px solid #3fb950;border-radius:4px;padding:3px 10px;text-decoration:none;
@@ -4048,19 +4048,76 @@ function toggleConn() {
   S.connected ? disconnect() : connect();
 }
 
-function connect() {
-  const url = document.getElementById('hostInput').value.trim();
+// ── Auto-reconnect ──
+// On any unexpected WebSocket close (network blip, Thetis restart, etc.) we
+// transparently retry the last URL with exponential backoff: 2s, 4s, 8s,
+// 16s, 30s (cap). The user can stop the loop at any time by clicking
+// DISCONNECT, which sets S._userDisconnect=true and cancels the timer.
+function _scheduleReconnect() {
+  if (S._userDisconnect) return;        // user explicitly stopped — do nothing
+  if (!S._lastUrl) return;              // never had a successful URL to retry
+  if (S._reconnectTimer) return;        // already scheduled — don't stack timers
+
+  S._reconnectAttempts = (S._reconnectAttempts || 0) + 1;
+  // 2^(n-1) * 2000 ms, capped at 30s. Sequence: 2, 4, 8, 16, 30, 30, 30, …
+  const delay = Math.min(30000, 2000 * Math.pow(2, S._reconnectAttempts - 1));
+  log('sys', 'Reconnect attempt ' + S._reconnectAttempts + ' in ' + (delay / 1000) + 's…');
+
+  S._reconnectTimer = setTimeout(() => {
+    S._reconnectTimer = null;
+    if (S._userDisconnect) return;      // user clicked DISCONNECT while we waited
+    connect(S._lastUrl);
+  }, delay);
+}
+
+function connect(reconnectUrl) {
+  // If called with an explicit URL we're inside the auto-reconnect path;
+  // otherwise the user clicked CONNECT and we read from the input field.
+  const url = (typeof reconnectUrl === 'string' && reconnectUrl) || document.getElementById('hostInput').value.trim();
+
   // Reject clearly invalid URLs before handing off to the WebSocket constructor
   if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
     log('err', 'Invalid URL — must begin with ws:// or wss://');
     return;
   }
-  log('sys', 'Connecting → ' + url);
+
+  // Reset the user-disconnect flag — every fresh connect attempt is opt-in
+  S._userDisconnect = false;
+  S._lastUrl = url;
+
+  // If a previous socket is still hanging around (zombie from a failed
+  // reconnect attempt that never fully closed), neutralise its handlers and
+  // tear it down so it cannot fire onclose into the new connection lifecycle.
+  if (S.ws) {
+    try { S.ws.onopen = S.ws.onmessage = S.ws.onerror = S.ws.onclose = null; S.ws.close(); } catch(_) {}
+    S.ws = null;
+  }
+
+  log('sys', (reconnectUrl ? 'Reconnecting → ' : 'Connecting → ') + url);
   document.getElementById('connBtn').textContent = 'CONNECTING…';
+
   try {
     S.ws = new WebSocket(url);
     S.ws.binaryType = 'arraybuffer';
+
+    // Connection-establishment timeout. WebSocket itself has no built-in
+    // timeout — if Thetis is hung or the network is black-holing packets the
+    // socket can sit in CONNECTING forever. After 5s we force-close, which
+    // fires onclose, which schedules the next reconnect attempt.
+    if (S._connectTimeout) clearTimeout(S._connectTimeout);
+    S._connectTimeout = setTimeout(() => {
+      S._connectTimeout = null;
+      if (S.ws && S.ws.readyState !== 1) {
+        log('err', 'Connection timed out after 5s');
+        try { S.ws.close(); } catch(_) {}
+      }
+    }, 5000);
+
     S.ws.onopen    = () => {
+      // Connection established — clear timeout and reset retry counter
+      if (S._connectTimeout) { clearTimeout(S._connectTimeout); S._connectTimeout = null; }
+      S._reconnectAttempts = 0;
+
       S.connected = true;
       setUI(true);
       log('sys', 'Connected — Thetis TCI online');
@@ -4090,18 +4147,32 @@ function connect() {
     };
     S.ws.onmessage = onMsg;
     S.ws.onclose   = () => {
+      // Clear connect-timeout if it's still pending
+      if (S._connectTimeout) { clearTimeout(S._connectTimeout); S._connectTimeout = null; }
+
       S.connected = false; S.iqOn = false;
       if (S.mox)  { S.mox = false;  stopMicStream(); updTXRX(); log('err','⚠ PTT auto-released — connection lost'); }
       if (S.tune) { S.tune = false; updTune(); }
       if (S._pttWatchdog) { clearTimeout(S._pttWatchdog); S._pttWatchdog = null; }
       setUI(false); log('sys','Disconnected'); stopRx(); stopSmeterPoll(); stopNetMonitor();
       SM.dbm = null; SM.smoothDbm = -130; SM.peakDbm = -130;
+
+      // Schedule auto-reconnect (no-op if user clicked DISCONNECT)
+      _scheduleReconnect();
     };
     S.ws.onerror   = () => { log('err','Connection error — is Thetis TCI Server running?'); setUI(false); };
   } catch(e) { log('err', 'Bad URL: ' + e.message); setUI(false); }
 }
 
-function disconnect() { if (S.ws) S.ws.close(); }
+function disconnect() {
+  // Mark as user-initiated so onclose does NOT fire the auto-reconnect loop
+  S._userDisconnect = true;
+  // Cancel any pending reconnect attempt or connect timeout
+  if (S._reconnectTimer)  { clearTimeout(S._reconnectTimer);  S._reconnectTimer  = null; }
+  if (S._connectTimeout)  { clearTimeout(S._connectTimeout);  S._connectTimeout  = null; }
+  S._reconnectAttempts = 0;
+  if (S.ws) S.ws.close();
+}
 
 function onMsg(evt) {
   if (evt.data instanceof ArrayBuffer) {
@@ -4274,6 +4345,22 @@ function send(msg) {
 
 // ── UI helpers ──
 function el(id) { return document.getElementById(id); }
+
+// Render-loop element cache.
+// drawSpec/drawWF/drawSmeter run at ~60 fps. Calling getElementById on every
+// frame for stable canvas references is wasted work. We lazy-fill this cache
+// the first time each id is requested and reuse the reference forever after.
+// Safe because the canvas elements are declared once in the HTML and never
+// removed/recreated by the app.
+const _renderRefs = {};
+function _rEl(id) {
+  let e = _renderRefs[id];
+  if (!e) {
+    e = document.getElementById(id);
+    if (e) _renderRefs[id] = e;
+  }
+  return e;
+}
 
 function setUI(on) {
   const btn = el('connBtn');
@@ -5304,7 +5391,8 @@ function drawSmeter() {
   // Always reschedule first so a drawing error can't kill the loop
   smRAF = requestAnimationFrame(drawSmeter);
 
-  const cv = el('smeterC');
+  // Cached lookup — see _rEl helper. Skips a getElementById call per frame.
+  const cv = _rEl('smeterC');
   // Skip if canvas is hidden (e.g. panel collapsed) or has zero dimensions
   if (!cv || cv.offsetWidth === 0 || cv.offsetHeight === 0) return;
 
@@ -5725,6 +5813,12 @@ function initIQ() {
   IQ.bufQ = new Float32Array(N);
   IQ.fftResult = new Float32Array(N);
   IQ.window = new Float32Array(N);
+  // Persistent FFT scratch buffers — reused every call to runIQFFT() to avoid
+  // ~16 KB of garbage per FFT (4096 floats × 4 bytes × 2 buffers). At ~47 Hz
+  // FFT rate that's ~1.5 MB/min of GC pressure that used to cause audio
+  // dropouts during major collections.
+  IQ._fftRe = new Float32Array(N);
+  IQ._fftIm = new Float32Array(N);
   const prev = new Float32Array(N); // for smoothing
   IQ._prev = prev;
   for (let i = 0; i < N; i++) {
@@ -5803,9 +5897,10 @@ function handleIQFrame(buf) {
 
 function runIQFFT() {
   const N = IQ.FFT_SIZE;
-  // Copy and apply window
-  const re = new Float32Array(N);
-  const im = new Float32Array(N);
+  // Reuse persistent scratch buffers (allocated once in initIQ).
+  // Every element is overwritten below, so no zero-fill needed.
+  const re = IQ._fftRe;
+  const im = IQ._fftIm;
   for (let i = 0; i < N; i++) {
     re[i] = IQ.bufI[i] * IQ.window[i];
     im[i] = IQ.bufQ[i] * IQ.window[i];
@@ -5885,7 +5980,8 @@ let peakHoldBuf = null;  // Float32Array per-pixel peak values
 let wfTheme = 0;         // 0=classic 1=heat 2=gray 3=night
 
 function drawSpec() {
-  const cv = el('specC'); if (!cv) return;
+  // Cached lookup — see _rEl helper. Skips a getElementById call per frame.
+  const cv = _rEl('specC'); if (!cv) return;
   const W = cv.width || cv.parentElement.offsetWidth;
   const H = cv.height || cv.parentElement.offsetHeight;
   const ctx = cv.getContext('2d');
@@ -6153,7 +6249,8 @@ let wfFrameSkip = 0;
 let wfSpeed = 10;
 
 function drawWF() {
-  const cv=el('wfC'); if (!cv) return;
+  // Cached lookup — see _rEl helper. Skips a getElementById call per frame.
+  const cv=_rEl('wfC'); if (!cv) return;
   const W=cv.parentElement.offsetWidth, H=cv.parentElement.offsetHeight;
   if (cv.width!==W||cv.height!==H) { cv.width=W; cv.height=H; wfImg=null; }
   const ctx=cv.getContext('2d');
@@ -6182,11 +6279,16 @@ function drawWF() {
   const dbRange = DB_MAX - DB_MIN;
 
   if (useIQ) {
-    // IQ waterfall row
+    // IQ waterfall row.
+    // Clamp bin index to [0, N-1]: when canvas width W > FFT size N, the
+    // rightmost columns can compute round((x/W)*N) === N, which would read
+    // past fftResult and produce a black row. The clamp keeps the rightmost
+    // pixel mapped to the last real bin.
     const N = IQ.FFT_SIZE;
+    const lastBin = N - 1;
     for (let x = 0; x < W; x++) {
-      const bin = Math.round((x / W) * N);
-      const db = Math.max(DB_MIN, Math.min(DB_MAX, (bin >= 0 && bin < N ? IQ.fftResult[bin] : -150) + specGain));
+      const bin = Math.min(lastBin, Math.round((x / W) * N));
+      const db = Math.max(DB_MIN, Math.min(DB_MAX, IQ.fftResult[bin] + specGain));
       const t = (db - DB_MIN) / dbRange;
       const [r,g,b] = wfCol(t);
       const idx = x * 4;
@@ -6449,7 +6551,7 @@ function modeToModeType(m) {
   m = (m || '').toUpperCase();
   if (['CW','CWL','CWU','CWN'].includes(m)) return 'CW';
   if (['DIGU','DIGL','DATA','RTTY','PSK','FT8','FT4','JS8','WSPR'].includes(m)) return 'DATA';
-  return 'SSB'; // USB, LSB, AM, FM, SAM, etc.
+  return 'PHONE'; // Spothole uses 'PHONE' (not 'SSB') for USB, LSB, AM, FM, SAM
 }
 
 function dxApplyFilter() {
@@ -6517,18 +6619,80 @@ function dxApplyFilter() {
 function renderDXList() {
   const box = el('dxList');
   if (!box) return;
-  if (!dxSpots.length) { box.innerHTML = '<span style="color:#484f58;">No spots</span>'; return; }
-  box.innerHTML = dxSpots.slice(0, 30).map(s => {
-    const modeColor = s.mode_type === 'DATA' ? '#ff8800' : s.mode_type === 'CW' ? '#3fb950' : '#58a6ff';
+
+  // Always wipe the previous list before rebuilding. Using textContent='' is
+  // both faster than innerHTML='' and avoids any HTML parser invocation.
+  box.textContent = '';
+
+  if (!dxSpots.length) {
+    // Empty-state placeholder — built as a real DOM node so we don't reach
+    // for innerHTML at all in this function.
+    const empty = document.createElement('span');
+    empty.style.color = '#484f58';
+    empty.textContent = 'No spots';
+    box.appendChild(empty);
+    return;
+  }
+
+  // Build each row with createElement + textContent. All string fields below
+  // come from a remote DX API, so they MUST NOT be interpolated into HTML —
+  // a malicious or compromised feed could inject <script> or onerror handlers.
+  const spots = dxSpots.slice(0, 30);
+  for (const s of spots) {
+    const row = document.createElement('div');
+    row.style.cursor = 'pointer';
+    row.style.padding = '1px 2px';
+    row.style.borderRadius = '2px';
+
     const mhz = s.freq ? (s.freq / 1e6).toFixed(3) : '?';
-    const time = s.time_iso ? s.time_iso.slice(11, 16) + 'Z' : '';
-    return `<div style="cursor:pointer;padding:1px 2px;border-radius:2px;" onclick="dxTuneTo(${s.freq})" title="${s.de_call||''} → ${s.dx_call} @ ${mhz} MHz ${s.mode}">
-      <span style="color:${modeColor};min-width:38px;display:inline-block;">${(s.mode||'?').slice(0,4)}</span>
-      <span style="color:#58a6ff;min-width:52px;display:inline-block;">${mhz}</span>
-      <span style="color:#e6edf3;min-width:68px;display:inline-block;">${s.dx_call||''} ${s.dx_flag||''}</span>
-      <span style="color:#e6edf3;">${s.dx_country||''}</span>
-    </div>`;
-  }).join('');
+    // Tooltip is plain text via the title attribute; the browser does not
+    // parse it as HTML so this is safe even with unescaped data.
+    row.title = (s.de_call || '') + ' → ' + (s.dx_call || '') + ' @ ' + mhz + ' MHz ' + (s.mode || '');
+
+    // Real click listener — replaces the old inline `onclick="dxTuneTo(...)"`
+    // attribute. Closes over the freq value so even malformed remote data
+    // can never end up as executable code.
+    if (s.freq) {
+      row.addEventListener('click', () => dxTuneTo(s.freq));
+    }
+
+    // Mode column (color reflects mode family)
+    const modeColor = s.mode_type === 'DATA' ? '#ff8800'
+                    : s.mode_type === 'CW'   ? '#3fb950'
+                    : '#58a6ff';
+    const modeSpan = document.createElement('span');
+    modeSpan.style.color = modeColor;
+    modeSpan.style.minWidth = '38px';
+    modeSpan.style.display = 'inline-block';
+    modeSpan.textContent = (s.mode || '?').slice(0, 4);
+    row.appendChild(modeSpan);
+
+    // Frequency column
+    const mhzSpan = document.createElement('span');
+    mhzSpan.style.color = '#58a6ff';
+    mhzSpan.style.minWidth = '52px';
+    mhzSpan.style.display = 'inline-block';
+    mhzSpan.textContent = mhz;
+    row.appendChild(mhzSpan);
+
+    // Callsign + flag column. Flag is typically a Unicode emoji string from
+    // the API (e.g. "🇯🇵"), but we still treat it as untrusted text.
+    const callSpan = document.createElement('span');
+    callSpan.style.color = '#e6edf3';
+    callSpan.style.minWidth = '68px';
+    callSpan.style.display = 'inline-block';
+    callSpan.textContent = (s.dx_call || '') + ' ' + (s.dx_flag || '');
+    row.appendChild(callSpan);
+
+    // Country column
+    const countrySpan = document.createElement('span');
+    countrySpan.style.color = '#e6edf3';
+    countrySpan.textContent = s.dx_country || '';
+    row.appendChild(countrySpan);
+
+    box.appendChild(row);
+  }
+
   const age = dxLastFetch ? Math.round((Date.now() - dxLastFetch) / 1000) + 's ago' : '';
   const ageEl = el('dxAge'); if (ageEl) ageEl.textContent = dxSpots.length + ' spots · ' + age;
 }
@@ -6672,10 +6836,54 @@ function drawDXOverlay(ctx, W, H, hzToX) {
       if (hit) {
         const mhz = (hit.freq / 1e6).toFixed(4);
         const time = hit.time_iso ? hit.time_iso.slice(11, 16) + 'Z' : '';
-        tooltip.innerHTML = `<b style="color:#58a6ff;">${hit.dx_call || '?'}</b> ${hit.dx_flag || ''} <span style="color:#7d8590;">${hit.dx_country || ''}</span><br>
-          <span style="color:#3fb950;">${mhz} MHz</span> · <span style="color:#e3b341;">${hit.mode || '?'}</span> · ${time}<br>
-          <span style="color:#484f58;">Spotter: ${hit.de_call || '?'} (${hit.de_country || ''})</span>
-          ${hit.comment ? '<br><span style="color:#7d8590;">' + hit.comment + '</span>' : ''}`;
+
+        // Build the tooltip with createElement + textContent so untrusted
+        // remote fields (especially `comment`, which is operator free text
+        // from the cluster network) cannot inject HTML or script.
+        tooltip.textContent = ''; // wipe previous contents
+
+        // Line 1: callsign / flag / country
+        const callB = document.createElement('b');
+        callB.style.color = '#58a6ff';
+        callB.textContent = hit.dx_call || '?';
+        tooltip.appendChild(callB);
+        tooltip.appendChild(document.createTextNode(' ' + (hit.dx_flag || '') + ' '));
+        const countryS = document.createElement('span');
+        countryS.style.color = '#7d8590';
+        countryS.textContent = hit.dx_country || '';
+        tooltip.appendChild(countryS);
+        tooltip.appendChild(document.createElement('br'));
+
+        // Line 2: frequency · mode · time
+        const mhzS = document.createElement('span');
+        mhzS.style.color = '#3fb950';
+        mhzS.textContent = mhz + ' MHz';
+        tooltip.appendChild(mhzS);
+        tooltip.appendChild(document.createTextNode(' · '));
+        const modeS = document.createElement('span');
+        modeS.style.color = '#e3b341';
+        modeS.textContent = hit.mode || '?';
+        tooltip.appendChild(modeS);
+        tooltip.appendChild(document.createTextNode(' · ' + time));
+        tooltip.appendChild(document.createElement('br'));
+
+        // Line 3: spotter info
+        const spotterS = document.createElement('span');
+        spotterS.style.color = '#484f58';
+        spotterS.textContent = 'Spotter: ' + (hit.de_call || '?') + ' (' + (hit.de_country || '') + ')';
+        tooltip.appendChild(spotterS);
+
+        // Line 4: free-text comment (only if present) — this is the highest
+        // XSS-risk field on the entire page and the original code injected
+        // it raw via innerHTML. textContent neutralizes any markup.
+        if (hit.comment) {
+          tooltip.appendChild(document.createElement('br'));
+          const commentS = document.createElement('span');
+          commentS.style.color = '#7d8590';
+          commentS.textContent = hit.comment;
+          tooltip.appendChild(commentS);
+        }
+
         tooltip.style.display = 'block';
         tooltip.style.left = (e.clientX + 14) + 'px';
         tooltip.style.top  = (e.clientY - 10) + 'px';
@@ -7082,7 +7290,7 @@ function saveSettings() {
   DB_MAX = cfg.dbCeil;
   applyColorTheme(cfg.colorTheme);
   const csEl = document.querySelector('.callsign');
-  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.50';
+  if (csEl && cfg.callsign) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.51';
   // Apply panel visibility
   applyPanelVisibility();
   // Apply greyline
@@ -7158,7 +7366,7 @@ function applySettings() {
   applyUITheme(activeUITheme);
   if (cfg.callsign) {
     const csEl = document.querySelector('.callsign');
-    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.50';
+    if (csEl) csEl.textContent = cfg.callsign + ' · Thetis On The Web · Beta v.0.51';
   }
   // Panel visibility
   applyPanelVisibility();
@@ -7447,7 +7655,7 @@ function loadState() {
 // Fetches the raw totw.html from GitHub once on load and compares the version string.
 // Shows a badge in the top bar if a newer version is available.
 (function checkForUpdate() {
-  // Extract current version number from the page title string (e.g. "Beta v.0.50" → 39)
+  // Extract current version number from the page title string (e.g. "Beta v.0.51" → 39)
   const match = document.title.match(/Beta v\.0\.(\d+)/) ||
                 (document.querySelector('.callsign') || {}).textContent?.match(/Beta v\.0\.(\d+)/);
   const currentNum = match ? parseInt(match[1]) : 0;
