@@ -33,6 +33,31 @@ Built entirely with vanilla HTML, CSS, and JavaScript. No build tools, no depend
 
 ## 🚀 Getting Started
 
+## Build Variants
+
+TOTW now has two deployable versions:
+
+- **Portable:** `totw.html` is the single-file version for releases and local downloads.
+- **Website:** `website/index.html` with `website/assets/totw.css` and `website/assets/totw.js` is the split version for hosting on `n9bc.com`.
+
+Regenerate the website version from the portable file:
+
+```bash
+node scripts/build-variants.js split
+```
+
+Rebuild the portable file from the website version:
+
+```bash
+node scripts/build-variants.js bundle
+```
+
+Run a quick syntax and asset smoke test:
+
+```bash
+node scripts/smoke-test.js
+```
+
 ### Prerequisites
 
 1. **Thetis SDR Software** — installed and running with your OpenHPSDR hardware (ANAN, Hermes-Lite 2, etc.)

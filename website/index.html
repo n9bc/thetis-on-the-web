@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Thetis On The Web</title>
+<!-- PWA / mobile standalone install — inline data-URL manifest since the app is a single file. -->
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TOTW">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href='data:application/manifest+json;utf8,{"name":"Thetis On The Web","short_name":"TOTW","display":"standalone","orientation":"any","background_color":"%230d1117","theme_color":"%230d1117","start_url":".","scope":"./"}'>
+<link rel="stylesheet" href="assets/totw.css">
+</head>
+<body style="touch-action: manipulation;">
+
+<!-- ── TOP BAR ── -->
+<div class="top-bar">
+  <div class="status-dot" id="sDot"></div>
+  <span class="status-label" id="sLabel">OFFLINE</span>
+  <span class="callsign">Thetis On The Web · Beta v.0.52</span>
+  <a id="updateBadge" href="https://github.com/n9bc/thetis-on-the-web/releases" target="_blank"
+     style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d4a1e;color:#56d364;
+            border:1px solid #3fb950;border-radius:4px;padding:3px 10px;text-decoration:none;
+            white-space:nowrap;cursor:pointer;" title="Click to open releases page">
+    ⬆ Update available
+  </a>
+  <!-- Shown alongside update badge — reminds user to back up settings before upgrading -->
+  <button id="exportBeforeUpdate" onclick="exportSettings()"
+     style="display:none;font-size:11px;font-family:'SF Mono',monospace;background:#2d2200;color:#e3b341;
+            border:1px solid #6a4e00;border-radius:4px;padding:3px 10px;cursor:pointer;white-space:nowrap;"
+     title="Export your settings now so you can restore them after upgrading">
+    ⬇ Backup settings
+  </button>
+  <div class="spacer"></div>
+  <span class="utc-clock" id="utcClock">00:00:00 UTC</span>
+
+  <input type="text" class="conn-input" id="hostInput" value="ws://127.0.0.1:50001" />
+  <button class="btn-connect" id="connBtn" onclick="toggleConn()">CONNECT</button>
+
+  <!-- Settings gear -->
+  <button class="band-btn" onclick="openModal('settingsModal');this.blur()" title="Settings" style="font-size:14px;padding:3px 9px;">⚙</button>
+  <button class="band-btn" onclick="openModal('diagModal');this.blur()" title="Diagnostics" style="font-size:11px;padding:4px 9px;">DIAG</button>
+  <!-- Keyboard shortcut help -->
+  <button class="band-btn" onclick="openModal('keysModal');this.blur()" title="Keyboard shortcuts" style="font-size:13px;padding:3px 9px;">?</button>
+
+  <!-- TX/RX pill -->
+  <div style="display:flex;align-items:center;gap:6px;padding:3px 10px;background:#21262d;border:1px solid #30363d;border-radius:20px;">
+    <div class="status-dot" id="txrxDot"></div>
+    <span class="mono" style="font-size:11px;" id="txrxLabel">RX</span>
+  </div>
+</div>
+
+<!-- ── FREQ DOCK ── -->
+<div class="freq-dock" id="freqDock">
+
+  <!-- Bands -->
+  <div class="dock-panel" id="dpBands">
+    <div class="dock-handle"><span class="dock-title">Bands</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+    <div class="dock-body">
+      <div style="display:flex;flex-wrap:wrap;gap:3px;">
+        <button class="band-btn" data-band="160m" data-freq="1900000">160m</button>
+        <button class="band-btn" data-band="80m"  data-freq="3700000">80m</button>
+        <button class="band-btn" data-band="60m"  data-freq="5330500">60m</button>
+        <button class="band-btn" data-band="40m"  data-freq="7200000">40m</button>
+        <button class="band-btn" data-band="30m"  data-freq="10130000">30m</button>
+        <button class="band-btn active" data-band="20m" data-freq="14225000">20m</button>
+        <button class="band-btn" data-band="17m"  data-freq="18130000">17m</button>
+        <button class="band-btn" data-band="15m"  data-freq="21300000">15m</button>
+        <button class="band-btn" data-band="12m"  data-freq="24940000">12m</button>
+        <button class="band-btn" data-band="10m"  data-freq="28500000">10m</button>
+        <button class="band-btn" data-band="6m"   data-freq="50200000">6m</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VFO -->
+  <div class="dock-panel" id="dpVFO">
+    <div class="dock-handle"><span class="dock-title">VFO</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+    <div class="dock-body">
+      <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+        <div class="vfo-block">
+          <div class="vfo-label">VFO A</div>
+          <div class="vfo-freq" id="vfoADisp" ondblclick="editFreq('A')">14.225<span class="mhz"> MHz</span></div>
+          <input class="vfo-freq-input" id="vfoAIn" onblur="commitFreq('A')" onkeydown="freqKey(event,'A')" />
+        </div>
+        <div class="vfo-swap-row">
+          <button class="vbtn" onclick="vfoSwap('A2B')">A→B</button>
+          <button class="vbtn" onclick="vfoSwap('B2A')">B→A</button>
+          <button class="vbtn" onclick="vfoSwap('SWAP')">A⇌B</button>
+        </div>
+        <div class="vfo-block">
+          <div class="vfo-label">VFO B</div>
+          <div class="vfo-freq secondary" id="vfoBDisp" ondblclick="editFreq('B')">14.196<span class="mhz"> MHz</span></div>
+          <input class="vfo-freq-input" id="vfoBIn" onblur="commitFreq('B')" onkeydown="freqKey(event,'B')" style="font-size:20px;width:180px;color:#7d8590;" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tune Step -->
+  <div class="dock-panel" id="dpStep">
+    <div class="dock-handle"><span class="dock-title">Tune Step</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+    <div class="dock-body">
+      <div class="step-row" id="stepRow">
+        <button class="sbtn" data-hz="100" onclick="setStep(this,100)">100</button>
+        <button class="sbtn active" data-hz="500" onclick="setStep(this,500)">500</button>
+        <button class="sbtn" data-hz="1000" onclick="setStep(this,1000)">1k</button>
+        <button class="sbtn" data-hz="5000" onclick="setStep(this,5000)">5k</button>
+        <button class="sbtn" data-hz="9000" onclick="setStep(this,9000)">9k</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode -->
+  <div class="dock-panel" id="dpMode">
+    <div class="dock-handle"><span class="dock-title">Mode</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+    <div class="dock-body">
+      <div class="mode-grid" id="modeBtns">
+        <button class="mode-btn" data-m="LSB" onclick="setMode('LSB')">LSB</button>
+        <button class="mode-btn active" data-m="USB" onclick="setMode('USB')">USB</button>
+        <button class="mode-btn" data-m="CWL" onclick="setMode('CWL')">CWL</button>
+        <button class="mode-btn" data-m="CWU" onclick="setMode('CWU')">CWU</button>
+        <button class="mode-btn" data-m="AM" onclick="setMode('AM')">AM</button>
+        <button class="mode-btn" data-m="SAM" onclick="setMode('SAM')">SAM</button>
+        <button class="mode-btn" data-m="NFM" onclick="setMode('NFM')">FM</button>
+        <button class="mode-btn" data-m="DIGU" onclick="setMode('DIGU')">DIGU</button>
+        <button class="mode-btn" data-m="DIGL" onclick="setMode('DIGL')">DIGL</button>
+        <button class="mode-btn" data-m="DSB" onclick="setMode('DSB')">DSB</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tuning Slider (hidden by default, enable in Settings → Panel Visibility) -->
+  <div class="dock-panel dp-hidden" id="dpTuning">
+    <div class="dock-handle"><span class="dock-title">Tuning Slider</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+    <div class="dock-body">
+      <div class="tuning-knob-container">
+        <input type="range" class="tuning-slider" id="tuningSlider" min="-50" max="50" value="0" step="1"
+          oninput="adjustFrequency(this.value)" onmouseup="resetSlider()" ontouchend="resetSlider()">
+        <span class="tuning-knob-label" id="tuningStepLabel">TUNE (500Hz)</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── BODY ── -->
+<div class="body-grid">
+
+  <!-- ══ LEFT — RECEIVE ══ -->
+  <div class="side-panel" id="leftPanel">
+
+    <div class="dock-panel" id="dpSMeter">
+      <div class="dock-handle"><span class="dock-title">S-Meter</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <canvas class="smeter-canvas" id="smeterC"></canvas>
+        <div class="smeter-readout">
+          <span class="smeter-dbm" id="smDbm">–––  dBm</span>
+          <span class="smeter-sunit" id="smSunit">– – –</span>
+        </div>
+        <div style="text-align:center;margin-top:2px;"><span class="smeter-src" id="smSrc">waiting for tci</span></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
+          <span class="ctrl-lbl">CAL</span>
+          <input type="range" min="-30" max="60" value="20" step="1" id="smCalSlider" style="flex:1;height:3px;cursor:pointer;"
+            oninput="smCal=parseInt(this.value);el('smCalV').textContent=(smCal>=0?'+':'')+smCal+'dB';saveState()">
+          <span id="smCalV" style="font-size:9px;color:#e6edf3;font-family:'SF Mono',monospace;width:36px;text-align:right;">+20dB</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dock-panel" id="dpSigBar">
+      <div class="dock-handle"><span class="dock-title">Signal Bar</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="led-meter-wrap">
+          <canvas class="led-meter-canvas" id="ledMeterC"></canvas>
+          <div class="led-meter-label">
+            <span>SIG</span><span>1</span><span>3</span><span>5</span><span>7</span><span>9</span>
+            <span class="led-red">+30dB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dock-panel" id="dpNetwork">
+      <div class="dock-handle"><span class="dock-title">Network</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="bw-display">
+          <span class="bw-label">▼ RX</span>
+          <span class="bw-value" id="netRx">0 kB/s</span>
+        </div>
+        <div class="bw-display" style="margin-top:3px;">
+          <span class="bw-label">▲ TX</span>
+          <span class="bw-value" id="netTx" style="color:#388bfd;">0 kB/s</span>
+        </div>
+        <div class="bw-display" style="margin-top:3px;">
+          <span class="bw-label">TOTAL</span>
+          <span class="bw-value" id="netTotal" style="font-size:10px;color:#7d8590;">0 MB</span>
+          <span class="bw-label">PKTS</span>
+          <span class="bw-value" id="netPkts" style="font-size:10px;color:#7d8590;">0</span>
+        </div>
+        <div style="margin-top:4px;background:#0d1117;border-radius:3px;height:4px;overflow:hidden;">
+          <div id="netBar" style="height:100%;width:0%;background:linear-gradient(90deg,#3fb950,#e3b341,#f85149);border-radius:3px;transition:width 0.3s;"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="dock-panel" id="dpAFGain">
+      <div class="dock-handle"><span class="dock-title">AF Gain</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="ctrl-head" style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span class="ctrl-lbl">AF GAIN</span><span class="ctrl-val" id="afV">-10 dB</span>
+        </div>
+        <input type="range" min="-60" max="0" value="-10" step="1" id="afSlider" oninput="sl('af',this.value)" style="width:100%">
+      </div>
+    </div>
+
+
+
+
+    <div class="dock-panel" id="dpNR">
+      <div class="dock-handle"><span class="dock-title">Noise Reduction</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="chip-grid" style="grid-template-columns:repeat(5,1fr);gap:4px;">
+          <button class="chip" id="nr1C" onclick="setNR(1)">NR</button>
+          <button class="chip" id="nr2C" onclick="setNR(2)">NR2</button>
+          <button class="chip" id="nr3C" onclick="setNR(3)">NR3</button>
+          <button class="chip" id="nr4C" onclick="setNR(4)">NR4</button>
+          <button class="chip" id="anfC" onclick="togANF()">ANF</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="dock-panel" id="dpFilter">
+      <div class="dock-handle"><span class="dock-title">Filter Width</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="filter-grid" id="filtG">
+          <button class="f-btn" data-bw="8000"  onclick="setFilt(this)">8k</button>
+          <button class="f-btn" data-bw="6000"  onclick="setFilt(this)">6k</button>
+          <button class="f-btn" data-bw="4000"  onclick="setFilt(this)">4k</button>
+          <button class="f-btn" data-bw="3000"  onclick="setFilt(this)">3k</button>
+          <button class="f-btn active" data-bw="2800" onclick="setFilt(this)">2.8k</button>
+          <button class="f-btn" data-bw="1800"  onclick="setFilt(this)">1.8k</button>
+          <button class="f-btn" data-bw="500"   onclick="setFilt(this)">500</button>
+          <button class="f-btn" data-bw="250"   onclick="setFilt(this)">250</button>
+        </div>
+        <div style="display:flex;gap:4px;margin-top:5px;align-items:center;">
+          <span class="ctrl-lbl">LO</span>
+          <input type="number" class="num-in" id="flo" value="100">
+          <span class="ctrl-lbl">HI</span>
+          <input type="number" class="num-in" id="fhi" value="2900">
+          <button class="sbtn" onclick="customFilt()">SET</button>
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <div class="dock-panel" id="dpTCILog">
+      <div class="dock-handle">
+        <span class="dock-title">TCI Log</span>
+        <span class="dock-collapse" title="Collapse/expand">▾</span>
+      </div>
+      <div class="dock-body" style="padding:4px 4px 4px;">
+        <div class="tci-log" id="tciLog" style="flex:none;height:160px;border-top:none;"></div>
+        <div style="display:flex;justify-content:flex-end;gap:4px;padding-top:3px;">
+          <button onclick="copyTciLog()" style="font-size:8px;padding:1px 7px;background:#21262d;border:1px solid #30363d;border-radius:3px;color:#484f58;cursor:pointer;" id="logCopyBtn">COPY</button>
+          <button onclick="el('tciLog').innerHTML='';logN=0;" style="font-size:8px;padding:1px 7px;background:#21262d;border:1px solid #30363d;border-radius:3px;color:#484f58;cursor:pointer;">CLEAR</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end left -->
+
+  <!-- ══ CENTER ══ -->
+  <div class="center">
+
+    <!-- Spectrum -->
+    <div class="spectrum-wrap" id="specWrap">
+      <canvas class="spec" id="specC"></canvas>
+      <div id="specHover" style="position:absolute;display:none;pointer-events:none;z-index:6;background:rgba(1,4,9,0.9);border:1px solid #30363d;border-radius:4px;padding:3px 7px;font-family:'SF Mono','Consolas',monospace;font-size:10px;color:#e6edf3;"></div>
+      <div class="db-labels">
+        <span>-40</span><span>-70</span><span>-100</span><span>-130</span>
+      </div>
+      <div class="vfo-cursor" id="vfoCursor" data-f="14.225 MHz"></div>
+      <div class="spec-overlay" id="specMsg">
+        <div class="spec-msg">
+          <strong>IQ Panadapter</strong>
+          Connect to Thetis to activate.<br>
+          192 kHz wideband IQ spectrum over TCI.<br>
+          Click on spectrum to tune VFO.<br>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spectrum resize handle -->
+    <div class="spec-resize-handle" id="specResizeHandle" title="Drag to resize spectrum"></div>
+
+    <!-- Spectrum gain + waterfall speed sliders -->
+    <div class="spec-ctrl-bar">
+      <span class="ctrl-lbl" style="white-space:nowrap;">SPEC GAIN</span>
+      <input type="range" min="-60" max="120" value="-5" step="1" id="specGainSlider" style="flex:1;height:4px;cursor:pointer;"
+        oninput="specGain=parseInt(this.value);document.getElementById('specGainV').textContent=(specGain>=0?'+':'')+specGain+'dB';saveState()">
+      <span id="specGainV" class="ctrl-val" style="width:42px;text-align:right;">-5dB</span>
+      <span class="ctrl-lbl" style="white-space:nowrap;margin-left:8px;">WF SPEED</span>
+      <input type="range" min="1" max="60" value="10" step="1" id="wfSpeedSlider" style="width:80px;height:4px;cursor:pointer;"
+        oninput="wfSpeed=parseInt(this.value);document.getElementById('wfSpeedV').textContent=this.value;saveState()">
+      <span id="wfSpeedV" class="ctrl-val" style="width:16px;text-align:right;">10</span>
+      <span class="ctrl-lbl" style="white-space:nowrap;margin-left:8px;">FFT SMOOTH</span>
+      <input type="range" min="0" max="95" value="95" step="5" id="fftSmoothSlider" style="width:80px;height:4px;cursor:pointer;"
+        oninput="IQ.smooth=parseInt(this.value)/100;if(S.analyser){S.analyser.smoothingTimeConstant=parseInt(this.value)/100;}document.getElementById('fftSpeedV').textContent=this.value+'%';saveState()">
+      <span id="fftSpeedV" class="ctrl-val" style="width:28px;text-align:right;">95%</span>
+      <div class="spec-ctrl-divider"></div>
+      <button id="peakHoldBtn" onclick="togglePeakHold()" class="wf-theme-btn" style="padding:2px 8px;">PEAK</button>
+    </div>
+
+    <!-- Waterfall resize handle -->
+    <div class="wf-resize-handle" id="wfResizeHandle" title="Drag to resize waterfall"></div>
+
+    <!-- Waterfall -->
+    <div class="wf-wrap" id="wfWrap">
+      <canvas class="wf" id="wfC"></canvas>
+    </div>
+
+    <!-- Center-bottom dock zone (panels can be dragged here) -->
+    <div class="center-dock" id="centerDock"></div>
+
+  </div><!-- end center -->
+
+  <!-- ══ RIGHT — TRANSMIT ══ -->
+  <div class="side-panel right" id="rightPanel">
+
+
+    <div class="dock-panel" id="dpTransmit">
+      <div class="dock-handle"><span class="dock-title">Transmit</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <button class="ptt-btn" id="pttBtn"
+            onmousedown="setPTT(true)" onmouseup="setPTT(false)" onmouseleave="setPTT(false)"
+            ontouchstart="event.preventDefault();setPTT(true);" ontouchend="event.preventDefault();setPTT(false);">PTT</button>
+          <button class="tune-btn" id="tuneBtn" onclick="togTune()">TUNE</button>
+        </div>
+        <div class="ctrl-head" style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <span class="ctrl-lbl">DRIVE</span><span class="ctrl-val" id="drV">50%</span>
+        </div>
+        <input type="range" min="0" max="100" value="50" step="1" oninput="sl('drive',this.value)" style="width:100%">
+      </div>
+    </div>
+
+
+
+    <div class="dock-panel" id="dpOptions">
+      <div class="dock-handle"><span class="dock-title">Options</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="chip-grid">
+          <button class="chip" id="monC"    onclick="tog('mon')">MON</button>
+          <button class="chip" id="splitC"  onclick="tog('split')">SPLIT</button>
+          <button class="chip" id="muteC"   onclick="tog('mute')">MUTE</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="dock-panel" id="dpTCIAudio">
+      <div class="dock-handle"><span class="dock-title">TCI Audio</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="chip-grid" style="margin-bottom:6px;">
+          <button class="chip" id="rxAuC" onclick="togAudio('rx')">RX AUDIO</button>
+          <button class="chip" id="txMcC" onclick="togAudio('tx')">TX MIC</button>
+        </div>
+        <span class="ctrl-lbl" style="display:block;margin-bottom:3px;">RX LEVEL</span>
+        <div class="audio-wrap"><canvas class="audio-cv" id="auMtr"></canvas></div>
+        <div id="micLvlWrap" style="display:none;margin-top:5px;">
+          <span class="ctrl-lbl" style="display:block;margin-bottom:3px;">MIC LEVEL</span>
+          <div class="meter-bg"><div class="meter-fill" id="micLvlBar" style="width:0%;background:linear-gradient(90deg,#3fb950 0%,#e3b341 70%,#f85149 100%);"></div></div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="dock-panel" id="dpAntenna">
+      <div class="dock-handle"><span class="dock-title">Antenna</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div class="chip-grid">
+          <button class="chip on"  id="a1C" onclick="setAnt(1)">ANT 1</button>
+          <button class="chip"     id="a2C" onclick="setAnt(2)">ANT 2</button>
+          <button class="chip"     id="a3C" onclick="setAnt(3)">ANT 3</button>
+          <button class="chip"     id="aXC" onclick="setAnt(0)">EXT</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="dock-panel" id="dpRX2">
+      <div class="dock-handle"><span class="dock-title">Second Receiver</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <button class="chip" id="rx2C" onclick="togRX2()" style="margin-bottom:6px;">RX2 ON</button>
+        <div class="ctrl-head" style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <span class="ctrl-lbl">RX2 AF</span><span class="ctrl-val" id="rx2V">50</span>
+        </div>
+        <input type="range" min="0" max="100" value="50" step="1" oninput="sl('rx2',this.value)" style="width:100%">
+      </div>
+    </div>
+
+
+    <div class="dock-panel" id="dpDXCluster">
+      <div class="dock-handle"><span class="dock-title">DX Cluster</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">
+          <button class="chip" id="dxEnableC" onclick="togDXCluster()" style="font-size:9px;padding:3px 8px;">ENABLE</button>
+          <label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#8b949e;font-family:'SF Mono',monospace;cursor:pointer;">
+            <input type="checkbox" id="dxTrackBand" onchange="dxApplyFilter()" style="cursor:pointer;"> Track Band
+          </label>
+          <label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#8b949e;font-family:'SF Mono',monospace;cursor:pointer;">
+            <input type="checkbox" id="dxTrackMode" onchange="dxApplyFilter()" style="cursor:pointer;"> Track Mode
+          </label>
+        </div>
+        <div id="dxList" style="max-height:130px;overflow-y:auto;font-family:'SF Mono',monospace;font-size:11px;line-height:1.8;"></div>
+        <div style="margin-top:3px;font-size:9px;color:#484f58;font-family:'SF Mono',monospace;text-align:right;" id="dxAge"></div>
+      </div>
+    </div>
+
+    <div class="dock-panel" id="dpMemories">
+      <div class="dock-handle"><span class="dock-title">Memories</span><span class="dock-collapse" title="Collapse/expand">▾</span></div>
+      <div class="dock-body">
+        <div style="display:flex;gap:4px;margin-bottom:5px;flex-wrap:wrap;">
+          <button class="mbtn pri" onclick="memSave()" style="font-size:9px;padding:3px 8px;">SAVE</button>
+          <button class="mbtn" onclick="openModal('memModal')" style="font-size:9px;padding:3px 8px;">ALL</button>
+          <button class="mbtn" onclick="memExport()" style="font-size:9px;padding:3px 8px;">EXPORT</button>
+          <button class="mbtn" onclick="memImportClick()" style="font-size:9px;padding:3px 8px;">IMPORT</button>
+          <input type="file" id="memImportFile" accept=".json" style="display:none" onchange="memImportLoad(this)">
+        </div>
+        <div id="memListShort" style="max-height:120px;overflow-y:auto;"></div>
+      </div>
+    </div>
+
+  </div><!-- end right -->
+
+</div><!-- end body-grid -->
+
+<!-- DX hover tooltip -->
+<div id="dxTooltip"></div>
+
+<!-- ── SETTINGS MODAL ── -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box" style="min-width:400px;">
+    <div class="modal-title">
+      <span>⚙ Settings</span>
+      <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+    </div>
+    <label class="modal-lbl">Callsign / Operator</label>
+    <input class="modal-in" id="cfgCall" placeholder="W1AW" maxlength="12">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div><label class="modal-lbl">Grid Square</label>
+      <input class="modal-in" id="cfgGrid" placeholder="FN31" maxlength="8"></div>
+      <div><label class="modal-lbl">Name</label>
+      <input class="modal-in" id="cfgName" placeholder="Operator name" maxlength="24"></div>
+    </div>
+    <div class="modal-sep"></div>
+    <div class="modal-row">
+      <label>Auto-connect on startup</label>
+      <input type="checkbox" id="cfgAutoConn">
+    </div>
+    <div class="modal-row">
+      <label>Show digital mode markers on panadapter</label>
+      <input type="checkbox" id="cfgDigMarkers" checked>
+    </div>
+    <div class="modal-row">
+      <label>Spacebar PTT mode</label>
+      <select id="cfgPttMode" style="background:#21262d;border:1px solid #30363d;color:#e6edf3;border-radius:4px;padding:3px 6px;font-family:'SF Mono',monospace;font-size:11px;">
+        <option value="momentary">Momentary (hold)</option>
+        <option value="toggle">Toggle (click)</option>
+      </select>
+    </div>
+    <div class="modal-row">
+      <label>PTT watchdog timeout (minutes)</label>
+      <input type="number" id="cfgPttTimeout" min="1" max="30" value="3" style="width:60px;" class="modal-in" style="margin-bottom:0;">
+    </div>
+    <div class="modal-sep"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div><label class="modal-lbl">dB Floor</label>
+      <input type="number" class="modal-in" id="cfgDbFloor" value="-140" min="-200" max="-50"></div>
+      <div><label class="modal-lbl">dB Ceiling</label>
+      <input type="number" class="modal-in" id="cfgDbCeil" value="-30" min="-100" max="0"></div>
+    </div>
+    <label class="modal-lbl">Color Theme — Spectrum &amp; Waterfall</label>
+    <select class="modal-in" id="cfgColorTheme" onchange="setColorTheme(this.value)" style="margin-bottom:8px;width:100%;cursor:pointer;">
+      <optgroup label="── Standard ──">
+        <option value="classic">Classic — blue trace</option>
+        <option value="heat">Heat — orange trace</option>
+        <option value="gray">Gray — gray trace</option>
+        <option value="night">Night — green trace</option>
+        <option value="amber">Amber — amber trace</option>
+      </optgroup>
+      <optgroup label="── NFL ──">
+        <option value="nfl_chiefs">Chiefs — black / crimson / gold</option>
+        <option value="nfl_ravens">Ravens — black / purple / gold</option>
+        <option value="nfl_broncos">Broncos — black / navy / orange</option>
+        <option value="nfl_seahawks">Seahawks — navy / green</option>
+        <option value="nfl_dolphins">Dolphins — black / teal / orange</option>
+        <option value="nfl_raiders">Raiders — black / silver</option>
+        <option value="nfl_niners">49ers — black / red / gold</option>
+        <option value="nfl_packers">Packers — dark green / gold</option>
+      </optgroup>
+    </select>
+    <label class="modal-lbl">UI Color Theme</label>
+    <select class="modal-in" id="cfgUITheme" onchange="applyUITheme(this.value)" style="margin-bottom:8px;width:100%;cursor:pointer;">
+      <optgroup label="── General ──">
+        <option value="dark">Dark (default)</option>
+        <option value="midnight">Midnight — warm near-black</option>
+        <option value="navy">Navy — dark blue</option>
+        <option value="forest">Forest — deep green</option>
+        <option value="charcoal">Charcoal — medium gray</option>
+        <option value="warm">Warm — taupe brown</option>
+        <option value="parchment">Parchment — warm light</option>
+        <option value="daylight">Daylight — clean light gray</option>
+      </optgroup>
+      <optgroup label="── NFL — AFC East ──">
+        <option value="bills">Buffalo Bills — blue &amp; red</option>
+        <option value="dolphins">Miami Dolphins — teal &amp; orange</option>
+        <option value="patriots">New England Patriots — navy &amp; red</option>
+        <option value="jets">New York Jets — green &amp; white</option>
+      </optgroup>
+      <optgroup label="── NFL — AFC North ──">
+        <option value="ravens">Baltimore Ravens — purple &amp; gold</option>
+        <option value="bengals">Cincinnati Bengals — black &amp; orange</option>
+        <option value="browns">Cleveland Browns — brown &amp; orange</option>
+        <option value="steelers">Pittsburgh Steelers — black &amp; gold</option>
+      </optgroup>
+      <optgroup label="── NFL — AFC South ──">
+        <option value="texans">Houston Texans — navy &amp; red</option>
+        <option value="colts">Indianapolis Colts — blue &amp; silver</option>
+        <option value="jaguars">Jacksonville Jaguars — black &amp; gold</option>
+        <option value="titans">Tennessee Titans — navy &amp; powder blue</option>
+      </optgroup>
+      <optgroup label="── NFL — AFC West ──">
+        <option value="broncos">Denver Broncos — navy &amp; orange</option>
+        <option value="chiefs">Kansas City Chiefs — red &amp; gold</option>
+        <option value="raiders">Las Vegas Raiders — black &amp; silver</option>
+        <option value="chargers">Los Angeles Chargers — navy &amp; gold</option>
+      </optgroup>
+      <optgroup label="── NFL — NFC East ──">
+        <option value="cowboys">Dallas Cowboys — navy &amp; silver</option>
+        <option value="giants">New York Giants — blue &amp; red</option>
+        <option value="eagles">Philadelphia Eagles — midnight green &amp; silver</option>
+        <option value="commanders">Washington Commanders — burgundy &amp; gold</option>
+      </optgroup>
+      <optgroup label="── NFL — NFC North ──">
+        <option value="bears">Chicago Bears — navy &amp; orange</option>
+        <option value="lions">Detroit Lions — blue &amp; silver</option>
+        <option value="packers">Green Bay Packers — green &amp; gold</option>
+        <option value="vikings">Minnesota Vikings — purple &amp; gold</option>
+      </optgroup>
+      <optgroup label="── NFL — NFC South ──">
+        <option value="falcons">Atlanta Falcons — black &amp; red</option>
+        <option value="panthers">Carolina Panthers — black &amp; blue</option>
+        <option value="saints">New Orleans Saints — black &amp; gold</option>
+        <option value="bucs">Tampa Bay Buccaneers — red &amp; pewter</option>
+      </optgroup>
+      <optgroup label="── NFL — NFC West ──">
+        <option value="cardinals">Arizona Cardinals — cardinal &amp; black</option>
+        <option value="rams">Los Angeles Rams — blue &amp; gold</option>
+        <option value="niners">San Francisco 49ers — red &amp; gold</option>
+        <option value="seahawks">Seattle Seahawks — navy &amp; green</option>
+      </optgroup>
+    </select>
+    <div class="modal-sep"></div>
+
+    <!-- DX Cluster Filters -->
+    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:10px;letter-spacing:0.04em;">DX Cluster Filters</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="modal-lbl">My Continent</label>
+        <select class="modal-in" id="cfgMyContinent" style="margin-bottom:0;">
+          <option value="">— not set —</option>
+          <option value="NA">NA — North America</option>
+          <option value="SA">SA — South America</option>
+          <option value="EU">EU — Europe</option>
+          <option value="AF">AF — Africa</option>
+          <option value="AS">AS — Asia</option>
+          <option value="OC">OC — Oceania</option>
+        </select>
+      </div>
+      <div>
+        <label class="modal-lbl">My CQ Zone (1–40)</label>
+        <input type="number" class="modal-in" id="cfgMyZone" min="1" max="40" placeholder="e.g. 5" style="margin-bottom:0;">
+      </div>
+    </div>
+
+    <div class="modal-row">
+      <label>Only show spots where DX is in my CQ zone</label>
+      <input type="checkbox" id="cfgDxOnlyMyZone">
+    </div>
+    <div class="modal-row">
+      <label>Hide DX on my continent (true DX only)</label>
+      <input type="checkbox" id="cfgDxHideMyContinent">
+    </div>
+    <div class="modal-row">
+      <label>Only spots from my continent (local spotters)</label>
+      <input type="checkbox" id="cfgDxLocalSpotters">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="modal-lbl">Max spot age</label>
+        <select class="modal-in" id="cfgDxMaxAge" style="margin-bottom:0;">
+          <option value="0">All time</option>
+          <option value="15">15 minutes</option>
+          <option value="30" selected>30 minutes</option>
+          <option value="60">1 hour</option>
+          <option value="120">2 hours</option>
+        </select>
+      </div>
+      <div>
+        <label class="modal-lbl">DX continent</label>
+        <select class="modal-in" id="cfgDxContinent" style="margin-bottom:0;">
+          <option value="">All continents</option>
+          <option value="NA">NA — North America</option>
+          <option value="SA">SA — South America</option>
+          <option value="EU">EU — Europe</option>
+          <option value="AF">AF — Africa</option>
+          <option value="AS">AS — Asia</option>
+          <option value="OC">OC — Oceania</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-sep"></div>
+
+    <!-- Layout Presets -->
+    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:10px;letter-spacing:0.04em;">Layout Presets</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="mbtn" onclick="applyLayoutPreset('dx')">DX Hunting</button>
+      <button class="mbtn" onclick="applyLayoutPreset('mobile')">Compact</button>
+      <button class="mbtn" onclick="applyLayoutPreset('full')">Full Station</button>
+    </div>
+
+    <!-- Panel Visibility -->
+    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:10px;letter-spacing:0.04em;">Panel Visibility</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:10px;font-size:11px;">
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Bands</label><input type="checkbox" id="vis_dpBands" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>VFO</label><input type="checkbox" id="vis_dpVFO" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Tune Step</label><input type="checkbox" id="vis_dpStep" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Mode</label><input type="checkbox" id="vis_dpMode" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Tuning Slider</label><input type="checkbox" id="vis_dpTuning"></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>S-Meter</label><input type="checkbox" id="vis_dpSMeter" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Signal Bar</label><input type="checkbox" id="vis_dpSigBar" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Network</label><input type="checkbox" id="vis_dpNetwork" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>AF Gain</label><input type="checkbox" id="vis_dpAFGain" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Noise Reduction</label><input type="checkbox" id="vis_dpNR" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Filter Width</label><input type="checkbox" id="vis_dpFilter" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>TCI Log</label><input type="checkbox" id="vis_dpTCILog" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Transmit</label><input type="checkbox" id="vis_dpTransmit" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Options</label><input type="checkbox" id="vis_dpOptions" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>TCI Audio</label><input type="checkbox" id="vis_dpTCIAudio" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Antenna</label><input type="checkbox" id="vis_dpAntenna" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Second Receiver</label><input type="checkbox" id="vis_dpRX2"></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>DX Cluster</label><input type="checkbox" id="vis_dpDXCluster" checked></div>
+      <div class="modal-row" style="margin:0;padding:2px 0;"><label>Memories</label><input type="checkbox" id="vis_dpMemories" checked></div>
+    </div>
+    <div class="modal-sep"></div>
+
+    <!-- Greyline Map -->
+    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:10px;letter-spacing:0.04em;">Greyline Propagation Map</div>
+    <div class="modal-row">
+      <label>Show greyline map overlay on panadapter</label>
+      <input type="checkbox" id="cfgGreyline">
+    </div>
+    <div style="margin-bottom:8px;">
+      <label class="modal-lbl">Greyline image URL (refreshed every 5 min)</label>
+      <input class="modal-in" id="cfgGreylineUrl" placeholder="https://pure-editions.com/on7off/greyline.jpg" style="font-size:11px;">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="modal-lbl">Opacity (0–100%)</label>
+        <input type="number" class="modal-in" id="cfgGreylineOpacity" min="10" max="100" value="80" style="margin-bottom:0;">
+      </div>
+    </div>
+
+    <div class="modal-sep"></div>
+
+    <!-- Settings export / import -->
+    <div style="font-size:11px;font-weight:600;color:#e6edf3;margin-bottom:6px;letter-spacing:0.04em;">Backup &amp; Restore</div>
+    <div style="font-size:10px;color:#e3b341;background:#2d2200;border:1px solid #6a4e00;border-radius:4px;padding:6px 9px;margin-bottom:8px;">
+      ⚠ Export your settings before upgrading to a new version — especially if you open TOTW as a local file.
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:4px;">
+      <button class="mbtn" onclick="exportSettings()" style="flex:1;">⬇ Export settings…</button>
+      <button class="mbtn" onclick="el('importSettingsFile').click()" style="flex:1;">⬆ Import settings…</button>
+      <!-- Hidden file input — triggered by the Import button above -->
+      <input type="file" id="importSettingsFile" accept=".json" style="display:none" onchange="importSettings(this)">
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:4px;">
+      <button class="mbtn" onclick="exportAllState()" style="flex:1;">Export full backup</button>
+      <button class="mbtn" onclick="el('importAllStateFile').click()" style="flex:1;">Import full backup</button>
+      <input type="file" id="importAllStateFile" accept=".json" style="display:none" onchange="importAllState(this)">
+    </div>
+    <div style="font-size:10px;color:#7d8590;margin-bottom:8px;">Saves all settings, themes, and filters to a JSON file you can reload after upgrading.</div>
+
+    <div class="modal-sep"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;">
+      <button class="mbtn danger" onclick="resetSettings()" style="margin-right:auto;">Reset to Defaults</button>
+      <button class="mbtn" onclick="closeModal('settingsModal')">Cancel</button>
+      <button class="mbtn pri" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIAGNOSTICS MODAL -->
+<div class="modal-overlay hidden" id="diagModal">
+  <div class="modal-box" style="min-width:520px;max-width:720px;">
+    <div class="modal-title">
+      <span>Diagnostics</span>
+      <button class="modal-close" onclick="closeModal('diagModal')">x</button>
+    </div>
+    <div id="diagSummary" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;"></div>
+    <textarea id="diagText" readonly style="width:100%;height:240px;background:#0d1117;border:1px solid #30363d;border-radius:5px;color:#e6edf3;font-family:'SF Mono','Consolas',monospace;font-size:11px;padding:8px;resize:vertical;"></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
+      <button class="mbtn" onclick="copyDiagnostics()">Copy</button>
+      <button class="mbtn" onclick="refreshDiagnostics()">Refresh</button>
+      <button class="mbtn pri" onclick="closeModal('diagModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── KEYBOARD SHORTCUTS MODAL ── -->
+<div class="modal-overlay hidden" id="keysModal">
+  <div class="modal-box" style="min-width:360px;">
+    <div class="modal-title">
+      <span>⌨ Keyboard Shortcuts</span>
+      <button class="modal-close" onclick="closeModal('keysModal')">✕</button>
+    </div>
+    <div class="keys-grid">
+      <span class="kbd">Space</span><span class="kdesc">PTT (momentary hold)</span>
+      <span class="kbd">F1–F4</span><span class="kdesc">Recall memories 1–4</span>
+      <span class="kbd">↑ / ↓</span><span class="kdesc">VFO step up / down</span>
+      <span class="kbd">Ctrl+↑/↓</span><span class="kdesc">Large step (×10)</span>
+      <span class="kbd">M</span><span class="kdesc">Save current freq to memory</span>
+      <span class="kbd">Ctrl+scroll</span><span class="kdesc">Zoom in/out on panadapter</span>
+      <span class="kbd">Dbl-click spec</span><span class="kdesc">Reset zoom</span>
+      <span class="kbd">D</span><span class="kdesc">Toggle digital mode markers</span>
+      <span class="kbd">X</span><span class="kdesc">Toggle DX cluster overlay</span>
+      <span class="kbd">P</span><span class="kdesc">Toggle peak hold</span>
+      <span class="kbd">?</span><span class="kdesc">This help overlay</span>
+      <span class="kbd">Esc</span><span class="kdesc">Close modals / cancel</span>
+    </div>
+    <div style="margin-top:16px;border-top:1px solid #30363d;padding-top:12px;">
+      <div style="font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#484f58;margin-bottom:8px;">Contributors</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span class="kbd">N9BC</span><span class="kdesc">Brent</span>
+        <span class="kbd">N8SDR</span><span class="kdesc">Rick</span>
+        <span class="kbd">KC8YTK</span><span class="kdesc">Tim</span>
+        <span class="kbd">VK2LAT</span><span class="kdesc">Murry</span>
+        <span class="kbd">ON7OFF</span><span class="kdesc">Kurt</span>
+        <span class="kbd" style="font-size:9px;">Claude.ai</span><span class="kdesc">Sonnet 4.6</span>
+      </div>
+    </div>
+    <div style="text-align:right;margin-top:14px;">
+      <button class="mbtn pri" onclick="closeModal('keysModal')">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MEMORIES MODAL ── -->
+<div class="modal-overlay hidden" id="memModal">
+  <div class="modal-box" style="min-width:420px;">
+    <div class="modal-title">
+      <span>♦ Frequency Memories</span>
+      <button class="modal-close" onclick="closeModal('memModal')">✕</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+      <button class="mbtn pri" onclick="memSave()">Save current freq</button>
+      <button class="mbtn" onclick="memExport()">Export JSON</button>
+      <button class="mbtn" onclick="memImportClick()">Import JSON</button>
+      <button class="mbtn danger" onclick="memClearAll()">Clear all</button>
+    </div>
+    <div id="memModalList"></div>
+    <div style="text-align:right;margin-top:10px;">
+      <button class="mbtn pri" onclick="closeModal('memModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ JS ════════════════════ -->
+<script src="assets/totw.js"></script>
+
+<!-- ── MOBILE TOUCH BAR ──
+     Shown only on touch-capable devices (html[data-touch] set by JS).
+     Left: rotary VFO knob canvas  |  Center: freq + mode readout  |  Right: PTT button -->
+<div id="mobileBar">
+
+  <!-- Left: rotary VFO knob + controls drawer toggle stacked -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;">
+    <canvas id="vfoKnob" width="86" height="86"></canvas>
+    <button id="mobileMenuBtn" onclick="toggleMobileDrawer()">☰</button>
+  </div>
+
+  <!-- Center: VFO A frequency + mode/band readout -->
+  <div id="mobileBarCenter">
+    <div id="mobileBarFreq">14.225.00</div>
+    <div id="mobileBarInfo">USB · 20m</div>
+  </div>
+
+  <!-- Right: PTT — uses setPTT(true/false), matching the desktop button exactly -->
+  <button class="ptt-btn" id="pttBtnMobile"
+    ontouchstart="event.preventDefault();setPTT(true);"
+    ontouchend="event.preventDefault();setPTT(false);"
+    onmousedown="setPTT(true)" onmouseup="setPTT(false)" onmouseleave="setPTT(false)">
+    PTT
+  </button>
+
+</div>
+
+<!-- ── MOBILE CONTROLS DRAWER ── -->
+<!-- Slide-up panel with band/mode/filter/step/AF controls. Shown only on touch devices. -->
+<div id="mobileDrawerBackdrop" onclick="toggleMobileDrawer()"></div>
+<div id="mobileDrawer">
+
+  <!-- Drag handle / close affordance -->
+  <div style="text-align:center;margin-bottom:10px;">
+    <div style="width:40px;height:4px;background:#30363d;border-radius:2px;display:inline-block;"></div>
+  </div>
+
+  <!-- Band -->
+  <span class="mdrw-lbl">Band</span>
+  <div class="mdrw-row">
+    <button class="band-btn" data-band="160m" data-freq="1900000">160m</button>
+    <button class="band-btn" data-band="80m"  data-freq="3700000">80m</button>
+    <button class="band-btn" data-band="60m"  data-freq="5330500">60m</button>
+    <button class="band-btn" data-band="40m"  data-freq="7200000">40m</button>
+    <button class="band-btn" data-band="30m"  data-freq="10130000">30m</button>
+    <button class="band-btn" data-band="20m"  data-freq="14225000">20m</button>
+    <button class="band-btn" data-band="17m"  data-freq="18130000">17m</button>
+    <button class="band-btn" data-band="15m"  data-freq="21300000">15m</button>
+    <button class="band-btn" data-band="12m"  data-freq="24940000">12m</button>
+    <button class="band-btn" data-band="10m"  data-freq="28500000">10m</button>
+    <button class="band-btn" data-band="6m"   data-freq="50200000">6m</button>
+  </div>
+
+  <!-- Mode -->
+  <span class="mdrw-lbl">Mode</span>
+  <div class="mdrw-row">
+    <button class="mode-btn" data-m="LSB"  onclick="setMode('LSB')">LSB</button>
+    <button class="mode-btn" data-m="USB"  onclick="setMode('USB')">USB</button>
+    <button class="mode-btn" data-m="CWL"  onclick="setMode('CWL')">CWL</button>
+    <button class="mode-btn" data-m="CWU"  onclick="setMode('CWU')">CWU</button>
+    <button class="mode-btn" data-m="AM"   onclick="setMode('AM')">AM</button>
+    <button class="mode-btn" data-m="NFM"  onclick="setMode('NFM')">FM</button>
+    <button class="mode-btn" data-m="DIGU" onclick="setMode('DIGU')">DIGU</button>
+    <button class="mode-btn" data-m="DIGL" onclick="setMode('DIGL')">DIGL</button>
+  </div>
+
+  <!-- Filter -->
+  <span class="mdrw-lbl">Filter</span>
+  <div class="mdrw-row">
+    <button class="f-btn" data-bw="8000"  onclick="setFilt(this)">8k</button>
+    <button class="f-btn" data-bw="6000"  onclick="setFilt(this)">6k</button>
+    <button class="f-btn" data-bw="4000"  onclick="setFilt(this)">4k</button>
+    <button class="f-btn" data-bw="3000"  onclick="setFilt(this)">3k</button>
+    <button class="f-btn" data-bw="2800"  onclick="setFilt(this)">2.8k</button>
+    <button class="f-btn" data-bw="1800"  onclick="setFilt(this)">1.8k</button>
+    <button class="f-btn" data-bw="500"   onclick="setFilt(this)">500</button>
+    <button class="f-btn" data-bw="250"   onclick="setFilt(this)">250</button>
+  </div>
+
+  <!-- Tune Step -->
+  <span class="mdrw-lbl">Tune Step</span>
+  <div class="mdrw-row">
+    <button class="sbtn" data-hz="100"  onclick="setStep(this,100)">100</button>
+    <button class="sbtn" data-hz="500"  onclick="setStep(this,500)">500</button>
+    <button class="sbtn" data-hz="1000" onclick="setStep(this,1000)">1k</button>
+    <button class="sbtn" data-hz="5000" onclick="setStep(this,5000)">5k</button>
+    <button class="sbtn" data-hz="9000" onclick="setStep(this,9000)">9k</button>
+  </div>
+
+  <!-- AF Gain -->
+  <span class="mdrw-lbl">AF Gain</span>
+  <div class="mdrw-slider-row">
+    <span style="font-size:11px;color:#7d8590;font-family:'SF Mono',monospace;">VOL</span>
+    <input type="range" min="-60" max="0" value="-10" step="1" id="afSliderMobile"
+      oninput="sl('af',this.value);el('afSlider').value=this.value;">
+    <span id="afVMobile">-10 dB</span>
+  </div>
+
+  <!-- TUNE + close row -->
+  <div style="display:flex;gap:8px;margin-top:14px;align-items:center;">
+    <button class="tune-btn" id="tuneBtnMobile" onclick="togTune()" style="flex:1;min-height:44px;font-size:15px;">TUNE</button>
+    <button onclick="toggleMobileDrawer()" style="flex:1;min-height:44px;font-size:14px;background:#21262d;border:1px solid #30363d;color:#7d8590;border-radius:6px;cursor:pointer;">✕ Close</button>
+  </div>
+
+</div>
+</body>
+</html>
